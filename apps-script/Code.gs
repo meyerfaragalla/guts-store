@@ -539,8 +539,8 @@ function sendTestEmail() {
   var ok = sendCustomer_(s, s['Order email'], 'en', 'received', {
     code: 'GD-TEST', tier: 'Premium', design: 'Dragon Slayer', estimate: 4500, outside: false, waitlist: false
   });
-  Logger.log(ok ? 'Test email sent to ' + s['Order email'] + ' from Guts Decor <' + s['Order email'] + '>.' :
-    'Not sent: add ' + s['Order email'] + ' under "Send mail as" in Gmail first. Nothing was sent from your personal address.');
+  Logger.log(ok ? 'Test email sent to ' + s['Order email'] + ' by the Guts Decor mailer.' :
+    'Not sent: connect the mailer first (MAILER_URL and MAILER_SECRET in Project Settings → Script Properties). Nothing was sent to the customer.');
 }
 
 function warnMeyer_(s, code, msg) {
@@ -565,27 +565,34 @@ function notifyMeyerNewOrder_(s, row, inCairoGiza) {
 }
 
 /**
- * Customer emails are sent from the official business address only, never from a personal one.
- * If this Google account can't send as that address, the email is skipped and Meyer is told.
+ * Customer emails are sent BY the Guts Decor account itself, through the mailer (Mailer.gs) that lives there.
+ * "Send mail as" is never used: it leaks the personal address in the email's hidden details.
+ * If the mailer isn't connected or fails, nothing goes to the customer and Meyer is told instead.
  */
 function sendCustomer_(s, to, lang, kind, info) {
-  var from = s['Order email'];
   var msg = customerMessage_(s, lang, kind, info);
-  var me = Session.getEffectiveUser().getEmail().toLowerCase();
+  var props = PropertiesService.getScriptProperties();
+  var url = props.getProperty('MAILER_URL');
+  var secret = props.getProperty('MAILER_SECRET');
   try {
-    if (me === String(from).toLowerCase()) {
+    if (Session.getEffectiveUser().getEmail().toLowerCase() === String(s['Order email']).toLowerCase()) {
       MailApp.sendEmail({ to: to, subject: msg.subject, body: msg.body, name: 'Guts Decor' });
       return true;
     }
-    if (GmailApp.getAliases().map(function (a) { return a.toLowerCase(); }).indexOf(String(from).toLowerCase()) !== -1) {
-      GmailApp.sendEmail(to, msg.subject, msg.body, { from: from, name: 'Guts Decor', replyTo: from });
-      return true;
+    if (url && secret) {
+      var res = UrlFetchApp.fetch(url, {
+        method: 'post',
+        contentType: 'text/plain',
+        payload: JSON.stringify({ secret: secret, to: to, subject: msg.subject, body: msg.body }),
+        muteHttpExceptions: true
+      });
+      if (JSON.parse(res.getContentText()).ok) return true;
     }
   } catch (err) {
     console.error(err);
   }
-  warnMeyer_(s, info.code, 'The customer email "' + msg.subject + '" was NOT sent, because this account cannot send as ' + from +
-    '. Please send it yourself:\n\nTo: ' + to + '\n\n' + msg.body);
+  warnMeyer_(s, info.code, 'The customer email "' + msg.subject + '" was NOT sent (the Guts Decor mailer is not connected or failed). ' +
+    'Please send it yourself from ' + s['Order email'] + ':\n\nTo: ' + to + '\n\n' + msg.body);
   return false;
 }
 
