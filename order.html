@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en" data-lang="en" dir="ltr" data-title-en="Order request | Guts Decor" data-title-ar="طلب جديد | Guts Decor">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order request | Guts Decor</title>
+<meta name="description" content="Send an order request for a handmade wooden sword. No payment now.">
+<meta name="theme-color" content="#1E0B2E">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/GD-Mark.png">
+<script>(function(){var l;try{l=localStorage.getItem("gd-lang")}catch(e){}if(l!=="en"&&l!=="ar"){l=/^ar\b/i.test(navigator.language||"")?"ar":"en"}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l;h.dir=l==="ar"?"rtl":"ltr"})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700&family=Cinzel:wght@600;700&family=Montserrat:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="order">
+<header id="site-header"></header>
+
+<main id="main" class="section">
+  <div class="wrap form-card">
+    <h1 class="center"><span data-l="en">Order request</span><span data-l="ar">طلب جديد</span></h1>
+    <p class="center muted"><span data-l="en">No payment now. I reply within 24 hours and confirm your date and price before you pay anything.</span><span data-l="ar">مفيش دفع دلوقتي. برد عليك خلال ٢٤ ساعة وبأكدلك الميعاد والسعر قبل ما تدفع أي حاجة.</span></p>
+
+    <div class="notice pink hidden" id="full-notice" role="status"></div>
+    <div class="notice hidden" id="load-error" role="alert"></div>
+
+    <form id="order-form" novalidate>
+      <p class="small muted"><span data-l="en">Fields marked <span class="req">*</span> are required.</span><span data-l="ar">الخانات اللي عليها <span class="req">*</span> لازم تتملي.</span></p>
+
+      <!-- What you'd like -->
+      <fieldset>
+        <legend><span data-l="en">Your sword</span><span data-l="ar">سيفك</span></legend>
+
+        <div class="field" role="radiogroup" aria-labelledby="tier-label">
+          <span class="label" id="tier-label"><span data-l="en">Level</span><span data-l="ar">المستوى</span> <span class="req">*</span></span>
+          <div class="tier-pick" id="tier-pick"></div>
+          <div class="err hidden" id="err-tier"></div>
+        </div>
+
+        <div class="field hidden" id="premium-gift-field">
+          <label for="premiumGift"><span data-l="en">Your free Premium gift</span><span data-l="ar">هدية Premium المجانية</span> <span class="req">*</span></label>
+          <select id="premiumGift" name="premiumGift"></select>
+          <div class="err hidden" id="err-premiumGift"></div>
+        </div>
+
+        <div class="field">
+          <label for="design"><span data-l="en">Design</span><span data-l="ar">التصميم</span></label>
+          <select id="design" name="design"></select>
+          <p class="hint"><span data-l="en">Ready designs are delivered in 4 days. A custom design takes 14 days.</span><span data-l="ar">التصميمات الجاهزة بتتسلم في ٤ أيام. التصميم المخصوص بياخد ١٤ يوم.</span></p>
+        </div>
+
+        <div class="field" id="addons-field">
+          <span class="label"><span data-l="en">Add-ons</span><span data-l="ar">إضافات</span> <span class="opt"><span data-l="en">(optional)</span><span data-l="ar">(اختياري)</span></span></span>
+          <div id="addons"></div>
+        </div>
+
+        <div class="field">
+          <label for="engraving"><span data-l="en">Engraving text</span><span data-l="ar">نص الحفر</span> <span class="opt"><span data-l="en">(optional)</span><span data-l="ar">(اختياري)</span></span></label>
+          <input type="text" id="engraving" name="engraving" maxlength="40" autocomplete="off" aria-describedby="engraving-hint">
+          <p class="hint" id="engraving-hint"><span data-l="en">Up to 40 characters. Free with Collector's. For other levels I'll confirm the price first. You'll see it in the proof before anything is engraved.</span><span data-l="ar">لحد ٤٠ حرف. مجاني مع Collector's، ولباقي المستويات هأكدلك السعر الأول. هتشوف الحفر في البروفة قبل ما يتعمل.</span></p>
+        </div>
+      </fieldset>
+
+      <!-- Gift -->
+      <fieldset>
+        <legend><span data-l="en">Gift and date</span><span data-l="ar">هدية وميعاد</span></legend>
+        <label class="check" for="isGift">
+          <input type="checkbox" id="isGift" name="isGift">
+          <span><span data-l="en">It's a gift</span><span data-l="ar">دي هدية</span></span>
+        </label>
+        <div class="field hidden" id="recipient-field">
+          <label for="recipient"><span data-l="en">Recipient's name</span><span data-l="ar">اسم الشخص اللي هتهاديه</span> <span class="req">*</span></label>
+          <input type="text" id="recipient" name="recipient" maxlength="80" autocomplete="off">
+          <p class="hint"><span data-l="en">Photos and emails go to you only, never to them. No price inside the box.</span><span data-l="ar">الصور والإيميلات بتوصلك إنت بس، مش ليه. ومفيش سعر جوه العلبة.</span></p>
+          <div class="err hidden" id="err-recipient"></div>
+        </div>
+        <div class="field">
+          <label for="occasionDate"><span data-l="en">Occasion date</span><span data-l="ar">ميعاد المناسبة</span> <span class="opt"><span data-l="en">(optional)</span><span data-l="ar">(اختياري)</span></span></label>
+          <input type="date" id="occasionDate" name="occasionDate">
+          <div class="notice hidden" id="date-note" role="status">
+            <span data-l="en">That's less than 14 days away. Have a look at my <a href="gallery.html?filter=ready">designs ready in 4 days</a>, or tell me in the notes that you need paid rush (only a few rush spots each month).</span>
+            <span data-l="ar">الميعاد ده أقل من ١٤ يوم. بص على <a href="gallery.html?filter=ready">التصميمات الجاهزة في ٤ أيام</a>، أو اكتبلي في الملاحظات إنك محتاج تسليم مستعجل بفلوس زيادة (أماكنه قليلة كل شهر).</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Contact -->
+      <fieldset>
+        <legend><span data-l="en">Your details</span><span data-l="ar">بياناتك</span></legend>
+        <div class="field">
+          <label for="name"><span data-l="en">Full name</span><span data-l="ar">الاسم بالكامل</span> <span class="req">*</span></label>
+          <input type="text" id="name" name="name" maxlength="80" autocomplete="name" required>
+          <div class="err hidden" id="err-name"></div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="email"><span data-l="en">Email</span><span data-l="ar">الإيميل</span> <span class="req">*</span></label>
+            <input type="email" id="email" name="email" maxlength="120" autocomplete="email" dir="ltr" required>
+            <div class="err hidden" id="err-email"></div>
+          </div>
+          <div class="field">
+            <label for="email2"><span data-l="en">Email again</span><span data-l="ar">الإيميل تاني</span> <span class="req">*</span></label>
+            <input type="email" id="email2" name="email2" maxlength="120" autocomplete="off" dir="ltr" required>
+            <div class="err hidden" id="err-email2"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="phone"><span data-l="en">Phone</span><span data-l="ar">رقم الموبايل</span> <span class="req">*</span></label>
+          <input type="tel" id="phone" name="phone" maxlength="20" autocomplete="tel" dir="ltr" inputmode="tel" required aria-describedby="phone-hint">
+          <p class="hint" id="phone-hint"><span data-l="en">For the courier only.</span><span data-l="ar">لمندوب الشحن بس.</span></p>
+          <div class="err hidden" id="err-phone"></div>
+        </div>
+      </fieldset>
+
+      <!-- Address -->
+      <fieldset>
+        <legend><span data-l="en">Delivery address</span><span data-l="ar">عنوان التوصيل</span></legend>
+        <div class="row-2">
+          <div class="field">
+            <label for="governorate"><span data-l="en">Governorate</span><span data-l="ar">المحافظة</span> <span class="req">*</span></label>
+            <select id="governorate" name="governorate" required></select>
+            <div class="err hidden" id="err-governorate"></div>
+          </div>
+          <div class="field">
+            <label for="area"><span data-l="en">Area</span><span data-l="ar">المنطقة</span> <span class="req">*</span></label>
+            <input type="text" id="area" name="area" maxlength="80" autocomplete="address-level3" required>
+            <div class="err hidden" id="err-area"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="street"><span data-l="en">Street</span><span data-l="ar">الشارع</span> <span class="req">*</span></label>
+          <input type="text" id="street" name="street" maxlength="120" autocomplete="address-line1" required>
+          <div class="err hidden" id="err-street"></div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="building"><span data-l="en">Building</span><span data-l="ar">رقم العمارة</span> <span class="req">*</span></label>
+            <input type="text" id="building" name="building" maxlength="30" required>
+            <div class="err hidden" id="err-building"></div>
+          </div>
+          <div class="field">
+            <label for="floor"><span data-l="en">Floor</span><span data-l="ar">الدور</span> <span class="req">*</span></label>
+            <input type="text" id="floor" name="floor" maxlength="20" required>
+            <div class="err hidden" id="err-floor"></div>
+          </div>
+          <div class="field">
+            <label for="apartment"><span data-l="en">Apartment</span><span data-l="ar">الشقة</span> <span class="req">*</span></label>
+            <input type="text" id="apartment" name="apartment" maxlength="20" required>
+            <div class="err hidden" id="err-apartment"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="landmark"><span data-l="en">Nearby landmark</span><span data-l="ar">علامة مميزة جنبك</span> <span class="opt"><span data-l="en">(optional)</span><span data-l="ar">(اختياري)</span></span></label>
+          <input type="text" id="landmark" name="landmark" maxlength="120">
+        </div>
+      </fieldset>
+
+      <!-- Extras -->
+      <fieldset>
+        <legend><span data-l="en">Anything else</span><span data-l="ar">حاجات تانية</span></legend>
+        <div class="field">
+          <label for="notes"><span data-l="en">Notes</span><span data-l="ar">ملاحظات</span> <span class="opt"><span data-l="en">(optional)</span><span data-l="ar">(اختياري)</span></span></label>
+          <textarea id="notes" name="notes" maxlength="500"></textarea>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="friendCode"><span data-l="en">Friend's code</span><span data-l="ar">كود صاحبك</span> <span class="opt"><span data-l="en">(optional)</span><span data-l="ar">(اختياري)</span></span></label>
+            <input type="text" id="friendCode" name="friendCode" maxlength="20" autocomplete="off" dir="ltr">
+          </div>
+          <div class="field">
+            <label for="foundVia"><span data-l="en">How did you find us?</span><span data-l="ar">عرفتنا منين؟</span> <span class="opt"><span data-l="en">(optional)</span><span data-l="ar">(اختياري)</span></span></label>
+            <select id="foundVia" name="foundVia"></select>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Price summary -->
+      <section class="summary" aria-labelledby="sum-title" aria-live="polite">
+        <h2 id="sum-title" style="font-size:1.2rem"><span data-l="en">Price estimate</span><span data-l="ar">السعر التقريبي</span></h2>
+        <div id="summary"></div>
+        <p class="small muted" style="margin:0"><span data-l="en">No payment now. I confirm the final price with you first, and it's held for 7 days. No hidden fees.</span><span data-l="ar">مفيش دفع دلوقتي. هأكدلك السعر النهائي الأول، وهيفضل ثابت ٧ أيام. مفيش رسوم مستخبية.</span></p>
+      </section>
+
+      <!-- Spam trap: people never see or fill this -->
+      <div class="hp" aria-hidden="true">
+        <label for="website">Leave this empty</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="field" style="margin-top:22px">
+        <label class="check" for="terms">
+          <input type="checkbox" id="terms" name="terms" required>
+          <span><span data-l="en">I'm 18 or older, and I agree to the <a href="terms.html" target="_blank">Terms</a>, <a href="privacy.html" target="_blank">Privacy policy</a> and <a href="refund.html" target="_blank">Refund policy</a>, and to being contacted by email about my order.</span><span data-l="ar">عندي ١٨ سنة أو أكتر، وموافق على <a href="terms.html" target="_blank">الشروط</a> و<a href="privacy.html" target="_blank">سياسة الخصوصية</a> و<a href="refund.html" target="_blank">سياسة الاسترجاع</a>، وإنك تكلمني على الإيميل بخصوص طلبي.</span> <span class="req">*</span></span>
+        </label>
+        <div class="err hidden" id="err-terms"></div>
+      </div>
+
+      <div class="status bad hidden" id="form-status" role="alert"></div>
+      <button type="submit" class="btn btn-gold" id="submit-btn" style="width:100%;margin-top:10px"><span data-l="en">Send my order request</span><span data-l="ar">ابعت طلبي</span></button>
+    </form>
+  </div>
+</main>
+
+<footer id="site-footer"></footer>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/order.js"></script>
+</body>
+</html>

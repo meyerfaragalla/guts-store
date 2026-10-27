@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" data-lang="en" dir="ltr" data-title-en="Order received | Guts Decor" data-title-ar="الطلب وصل | Guts Decor">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order received | Guts Decor</title>
+<meta name="theme-color" content="#1E0B2E">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/GD-Mark.png">
+<script>(function(){var l;try{l=localStorage.getItem("gd-lang")}catch(e){}if(l!=="en"&&l!=="ar"){l=/^ar\b/i.test(navigator.language||"")?"ar":"en"}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l;h.dir=l==="ar"?"rtl":"ltr"})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700&family=Cinzel:wght@600;700&family=Montserrat:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="thanks">
+<header id="site-header"></header>
+
+<main id="main" class="section center">
+  <div class="wrap" style="max-width:720px">
+    <h1><span data-l="en">Thank you! Your request is in.</span><span data-l="ar">شكرًا! طلبك وصلني.</span></h1>
+    <p><span data-l="en">Your order code is:</span><span data-l="ar">كود طلبك:</span></p>
+    <div class="code-box" id="code">GD-····</div>
+    <p class="muted"><span data-l="en">Save this code. I've also sent it to your email (check your spam folder too).</span><span data-l="ar">احتفظ بالكود ده. وكمان بعتهولك على الإيميل (بص في الـ Spam برضه).</span></p>
+
+    <div class="card" style="text-align:start;margin-top:26px">
+      <h2 style="font-size:1.3rem"><span data-l="en">What happens next</span><span data-l="ar">اللي هيحصل بعد كده</span></h2>
+      <ol>
+        <li><span data-l="en">I reply within 24 hours and confirm your date and final price.</span><span data-l="ar">هرد عليك خلال ٢٤ ساعة وأأكدلك الميعاد والسعر النهائي.</span></li>
+        <li><span data-l="en">Once I confirm, I email you my InstaPay details for the 50% deposit. Nothing is due before that.</span><span data-l="ar">بعد ما أأكد، هبعتلك بيانات الـ InstaPay على الإيميل عشان عربون الـ ٥٠٪. مفيش أي دفع قبل كده.</span></li>
+        <li><span data-l="en">After paying, upload your receipt on the <a href="pay.html">payment page</a> using your code.</span><span data-l="ar">بعد الدفع، ارفع الإيصال في <a href="pay.html">صفحة الدفع</a> بالكود بتاعك.</span></li>
+      </ol>
+      <p class="notice small"><span data-l="en">I only ever accept InstaPay to the name in my confirmation email. I will never ask you to pay a different account.</span><span data-l="ar">أنا مبقبلش غير InstaPay على الاسم اللي في إيميل التأكيد، وعمري ما هطلب منك تدفع على حساب تاني.</span></p>
+    </div>
+
+    <p style="margin-top:26px"><a class="btn btn-ghost" href="gallery.html"><span data-l="en">See more of my work</span><span data-l="ar">شوف شغلي</span></a></p>
+  </div>
+</main>
+
+<footer id="site-footer"></footer>
+<script src="assets/js/site.js"></script>
+<script>
+  (function () {
+    var code = new URLSearchParams(location.search).get("code") || "";
+    if (/^GD-[A-Z0-9]{4}$/.test(code)) document.getElementById("code").textContent = code;
+  })();
+</script>
+</body>
+</html>

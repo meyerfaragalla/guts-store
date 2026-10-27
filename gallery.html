@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-lang="en" dir="ltr" data-title-en="Gallery | Guts Decor" data-title-ar="المعرض | Guts Decor">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery | Guts Decor</title>
+<meta name="description" content="Handmade wooden swords, mounts and stands by Guts Decor, Cairo.">
+<meta name="theme-color" content="#1E0B2E">
+<link rel="icon" href="assets/GD-Mark.png">
+<script>(function(){var l;try{l=localStorage.getItem("gd-lang")}catch(e){}if(l!=="en"&&l!=="ar"){l=/^ar\b/i.test(navigator.language||"")?"ar":"en"}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l;h.dir=l==="ar"?"rtl":"ltr"})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700&family=Cinzel:wght@600;700&family=Montserrat:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="gallery">
+<header id="site-header"></header>
+
+<main id="main" class="section">
+  <div class="wrap">
+    <h1 class="center"><span data-l="en">Gallery</span><span data-l="ar">المعرض</span></h1>
+    <p class="center muted"><span data-l="en">Every piece here was made by my own hands.</span><span data-l="ar">كل قطعة هنا معمولة بإيدي.</span></p>
+
+    <div class="filters" role="group" aria-label="Filter gallery">
+      <button type="button" class="filter-btn" data-filter="all" aria-pressed="true"><span data-l="en">All</span><span data-l="ar">الكل</span></button>
+      <button type="button" class="filter-btn" data-filter="swords" aria-pressed="false"><span data-l="en">Swords</span><span data-l="ar">سيوف</span></button>
+      <button type="button" class="filter-btn" data-filter="decor" aria-pressed="false"><span data-l="en">Decor</span><span data-l="ar">ديكور</span></button>
+      <button type="button" class="filter-btn" data-filter="ready" aria-pressed="false"><span data-l="en">Ready in 4 days</span><span data-l="ar">جاهز في ٤ أيام</span></button>
+    </div>
+
+    <div class="gallery" id="gallery" aria-live="polite"></div>
+    <p class="center muted" id="gallery-msg"><span data-l="en">Loading photos…</span><span data-l="ar">بنحمّل الصور…</span></p>
+
+    <div class="center" style="margin-top:40px">
+      <a class="btn btn-gold" href="order.html"><span data-l="en">Order your own</span><span data-l="ar">اطلب بتاعك</span></a>
+    </div>
+  </div>
+</main>
+
+<footer id="site-footer"></footer>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/gallery.js"></script>
+</body>
+</html>

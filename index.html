@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" data-lang="en" dir="ltr" data-title-en="Guts Decor | Handmade wooden swords, Cairo" data-title-ar="Guts Decor | سيوف خشب معمولة باليد، القاهرة">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guts Decor | Handmade wooden swords, Cairo</title>
+<meta name="description" content="Handmade custom wooden swords and decor, made by hand in Cairo. Where legends become real.">
+<meta name="theme-color" content="#1E0B2E">
+<link rel="icon" href="assets/GD-Mark.png">
+<script>(function(){var l;try{l=localStorage.getItem("gd-lang")}catch(e){}if(l!=="en"&&l!=="ar"){l=/^ar\b/i.test(navigator.language||"")?"ar":"en"}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l;h.dir=l==="ar"?"rtl":"ltr"})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700&family=Cinzel:wght@600;700&family=Montserrat:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="home">
+<header id="site-header"></header>
+
+<main id="main">
+
+  <!-- 1. Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <!-- When Meyer's workshop video is ready it goes here as assets/hero.mp4 (silent, looping). -->
+    <img class="hero-media" src="assets/hero.jpg" alt="" onerror="this.remove()">
+    <div class="hero-inner">
+      <img class="hero-logo" src="assets/Guts-Decor-Logo.svg" alt="Guts Decor logo" width="120" height="120" onerror="this.remove()">
+      <h1 id="hero-title"><span data-l="en">Where legends become real</span><span data-l="ar" class="ar-tagline">هنا الأساطير بتبقى حقيقة</span></h1>
+      <p class="ar-line" data-l="en" lang="ar">هنا الأساطير بتبقى حقيقة</p>
+      <p class="ar-line" data-l="ar" lang="en" style="font-family:var(--head-en)">Where legends become real</p>
+      <a class="btn btn-gold" href="order.html"><span data-l="en">Start your order</span><span data-l="ar">ابدأ طلبك</span></a>
+      <div><p class="spots hidden" id="spots" aria-live="polite"></p></div>
+    </div>
+  </section>
+
+  <!-- 2. Trust strip -->
+  <div class="trust" id="trust">
+    <span data-l="en"><span class="gold">150+</span> pieces handmade in 3 years</span>
+    <span data-l="ar"><span class="gold">أكتر من ١٥٠</span> قطعة اتعملت بإيدي في ٣ سنين</span>
+  </div>
+
+  <!-- 3. Two paths -->
+  <section class="section" aria-labelledby="paths-title">
+    <div class="wrap">
+      <h2 id="paths-title" class="center"><span data-l="en">Who is it for?</span><span data-l="ar">الطلب ده لمين؟</span></h2>
+      <div class="grid grid-2">
+        <a class="card path-card" href="order.html?gift=1">
+          <h3><span data-l="en">It's a gift</span><span data-l="ar">هدية</span></h3>
+          <p class="muted"><span data-l="en">I'll put the recipient's name on it, keep the price out of the box, and send every photo to you only.</span><span data-l="ar">هكتب اسم الشخص اللي هتهاديه، ومفيش سعر جوه العلبة، وكل الصور هتوصلك إنت بس.</span></p>
+          <span class="btn btn-ghost"><span data-l="en">Order a gift</span><span data-l="ar">اطلب هدية</span></span>
+        </a>
+        <a class="card path-card" href="order.html">
+          <h3><span data-l="en">It's for me</span><span data-l="ar">ليّا أنا</span></h3>
+          <p class="muted"><span data-l="en">Pick your sword and your level of detail. I'll build it by hand and show you the finished piece before you pay the rest.</span><span data-l="ar">اختار سيفك ومستوى التفاصيل، وأنا هعمله بإيدي وأوريك القطعة خلصانة قبل ما تدفع الباقي.</span></p>
+          <span class="btn btn-ghost"><span data-l="en">Order for me</span><span data-l="ar">اطلب لنفسي</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Tiers -->
+  <section class="section alt" id="tiers" aria-labelledby="tiers-title">
+    <div class="wrap">
+      <h2 id="tiers-title" class="center"><span data-l="en">Choose your level</span><span data-l="ar">اختار المستوى</span></h2>
+      <p class="center muted"><span data-l="en">Every level is true to size and made by my own hands.</span><span data-l="ar">كل المستويات بمقاس حقيقي ومعمولة بإيدي.</span></p>
+      <div class="grid grid-4" id="tier-list" style="margin-top:30px">
+        <p class="muted center" id="tier-loading"><span data-l="en">Loading prices…</span><span data-l="ar">بنحمّل الأسعار…</span></p>
+      </div>
+      <div class="teaser">
+        <strong><span data-l="en">Coming soon:</span><span data-l="ar">قريب:</span></strong>
+        <span data-l="en">design your own sword.</span><span data-l="ar">صمّم سيفك بنفسك.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. How it works -->
+  <section class="section" aria-labelledby="how-title">
+    <div class="wrap">
+      <h2 id="how-title" class="center"><span data-l="en">How it works</span><span data-l="ar">إزاي بنشتغل</span></h2>
+      <ol class="steps" style="margin-top:28px">
+        <li><h3><span data-l="en">Send your request</span><span data-l="ar">ابعت طلبك</span></h3><p class="muted"><span data-l="en">Pick your sword and level. No payment yet.</span><span data-l="ar">اختار السيف والمستوى. مفيش دفع دلوقتي.</span></p></li>
+        <li><h3><span data-l="en">I confirm</span><span data-l="ar">بأكدلك</span></h3><p class="muted" id="reply-promise"><span data-l="en">I reply within 24 hours and confirm your date and price before you pay anything.</span><span data-l="ar">برد عليك خلال ٢٤ ساعة وبأكدلك الميعاد والسعر قبل ما تدفع أي حاجة.</span></p></li>
+        <li><h3><span data-l="en">50% deposit</span><span data-l="ar">عربون ٥٠٪</span></h3><p class="muted"><span data-l="en">Paid by InstaPay only. Your quoted price is held for 7 days.</span><span data-l="ar">بالـ InstaPay بس. السعر اللي اتفقنا عليه ثابت لمدة ٧ أيام.</span></p></li>
+        <li><h3><span data-l="en">I build it</span><span data-l="ar">بعمله بإيدي</span></h3><p class="muted"><span data-l="en">14 days standard, 4 days for ready designs. You see it finished first.</span><span data-l="ar">١٤ يوم عادي، و٤ أيام للتصميمات الجاهزة. هتشوفه خلصان الأول.</span></p></li>
+        <li><h3><span data-l="en">Pay the rest, it ships</span><span data-l="ar">ادفع الباقي ويتشحن</span></h3><p class="muted"><span data-l="en">200 LE to Cairo &amp; Giza, from 300 LE elsewhere.</span><span data-l="ar">٢٠٠ جنيه للقاهرة والجيزة، ومن ٣٠٠ جنيه لباقي المحافظات.</span></p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 6. Reviews -->
+  <section class="section alt" aria-labelledby="reviews-title">
+    <div class="wrap">
+      <h2 id="reviews-title" class="center"><span data-l="en">What customers say</span><span data-l="ar">الزباين بيقولوا إيه</span></h2>
+      <div class="reviews" id="review-list" style="margin-top:24px"></div>
+      <p class="center" id="reviews-fallback">
+        <span data-l="en">Real reviews from real customers live in my Instagram “Review” highlight.</span>
+        <span data-l="ar">الريفيوهات الحقيقية من زباين حقيقيين موجودة في هايلايت “Review” على إنستجرام.</span><br>
+        <a href="https://www.instagram.com/guts_san_store/" target="_blank" rel="noopener"><span data-l="en">See them on Instagram</span><span data-l="ar">شوفها على إنستجرام</span></a>
+      </p>
+    </div>
+  </section>
+
+  <!-- 7. Guarantee -->
+  <section class="section" aria-labelledby="guarantee-title">
+    <div class="wrap">
+      <div class="guarantee">
+        <h2 id="guarantee-title" class="center"><span data-l="en">Nothing Ships Until You Love It.</span><span data-l="ar">مفيش حاجة بتتشحن غير لما تحبها</span></h2>
+        <ol>
+          <li><span data-l="en">You see your finished sword before the rest is due. If anything doesn't match the design you approved, I fix it.</span><span data-l="ar">هتشوف سيفك خلصان قبل ما تدفع الباقي. لو أي حاجة مش زي التصميم اللي وافقت عليه، هصلّحها.</span></li>
+          <li><span data-l="en">Damaged in shipping? Send me photos or your unboxing video within 24 hours of delivery and I'll repair or replace it.</span><span data-l="ar">اتكسر في الشحن؟ ابعتلي صور أو فيديو فتح العلبة خلال ٢٤ ساعة من الاستلام وهصلّحه أو أبدّله.</span></li>
+          <li><span data-l="en">Swing-tested by my own hands: built to be held and swung, never to strike anything.</span><span data-l="ar">متجرّب بإيدي: معمول عشان يتمسك ويتلوّح، مش عشان يضرب أي حاجة.</span></li>
+        </ol>
+        <div class="signature center">
+          <img src="assets/signature.png" alt="Meyer's signature" onerror="this.outerHTML='— Meyer'">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. FAQ -->
+  <section class="section alt" id="faq" aria-labelledby="faq-title">
+    <div class="wrap faq" style="max-width:820px">
+      <h2 id="faq-title" class="center"><span data-l="en">Questions</span><span data-l="ar">أسئلة بتتسأل كتير</span></h2>
+      <details><summary><span data-l="en">How do I pay?</span><span data-l="ar">بدفع إزاي؟</span></summary>
+        <p><span data-l="en">InstaPay only, and only after I've confirmed your order by email. I send my InstaPay details in that email. I only ever accept InstaPay to the name in my confirmation email. I will never ask you to pay a different account.</span><span data-l="ar">بالـ InstaPay بس، وبعد ما أأكدلك الطلب على الإيميل. ببعتلك بيانات الـ InstaPay في الإيميل ده. أنا مبقبلش غير InstaPay على الاسم اللي في إيميل التأكيد، وعمري ما هطلب منك تدفع على حساب تاني.</span></p></details>
+      <details><summary><span data-l="en">How much is the deposit?</span><span data-l="ar">العربون كام؟</span></summary>
+        <p><span data-l="en">50% to start the work. You pay the rest after you see your finished piece.</span><span data-l="ar">٥٠٪ عشان أبدأ الشغل، والباقي بعد ما تشوف القطعة خلصانة.</span></p></details>
+      <details><summary><span data-l="en">How long does it take?</span><span data-l="ar">بياخد وقت قد إيه؟</span></summary>
+        <p><span data-l="en">14 days for a custom piece, 4 days for ready designs, counted from your deposit. If I'm ever going to be late, I'll tell you before the date.</span><span data-l="ar">١٤ يوم للقطعة المخصوصة، و٤ أيام للتصميمات الجاهزة، من يوم العربون. ولو هتأخر، هقولك قبل الميعاد.</span></p></details>
+      <details><summary><span data-l="en">How much is shipping?</span><span data-l="ar">الشحن بكام؟</span></summary>
+        <p><span data-l="en">200 LE to Cairo and Giza, from 300 LE to other governorates. Big pieces are quoted. No hidden fees: you see the full amount before you pay.</span><span data-l="ar">٢٠٠ جنيه للقاهرة والجيزة، ومن ٣٠٠ جنيه لباقي المحافظات. القطع الكبيرة ليها سعر شحن خاص. مفيش رسوم مستخبية: هتعرف المبلغ كله قبل ما تدفع.</span></p></details>
+      <details><summary><span data-l="en">Can I get my deposit back?</span><span data-l="ar">أقدر أرجّع العربون؟</span></summary>
+        <p><span data-l="en">Yes, in full, if you cancel before I start cutting or printing. Once work begins, the deposit can't be refunded. <a href="refund.html">Read the refund policy</a>.</span><span data-l="ar">أيوه، كامل، لو لغيت قبل ما أبدأ القص أو الطباعة. بعد ما الشغل يبدأ، العربون مش بيرجع. <a href="refund.html">اقرا سياسة الاسترجاع</a>.</span></p></details>
+      <details><summary><span data-l="en">Can I add a name or engraving?</span><span data-l="ar">ينفع أكتب اسم أو حفر؟</span></summary>
+        <p><span data-l="en">Yes. It's free with Collector's. For other levels I confirm the price before you pay anything. I'll always show you the engraving in the proof first.</span><span data-l="ar">أيوه. مجاني مع Collector's، ولباقي المستويات بأكدلك السعر قبل ما تدفع أي حاجة. ودايمًا هوريك الحفر في البروفة الأول.</span></p></details>
+      <details><summary><span data-l="en">Are these official merchandise?</span><span data-l="ar">دي منتجات رسمية؟</span></summary>
+        <p><span data-l="en">No. They're my own handmade pieces, inspired by the characters fans love. The names and characters belong to their owners.</span><span data-l="ar">لأ. دي قطع أنا عاملها بإيدي، مستوحاة من شخصيات الفانز بيحبوها. الأسماء والشخصيات ملك أصحابها.</span></p></details>
+      <details><summary><span data-l="en">Are they safe?</span><span data-l="ar">هي آمنة؟</span></summary>
+        <p><span data-l="en">They're wooden decor pieces for adults (18+), with no sharp edge. They're built to be held and swung, never to strike anything or anyone.</span><span data-l="ar">دي قطع ديكور خشب للكبار (+١٨)، من غير حد حاد. معمولة عشان تتمسك وتتلوّح، مش عشان تضرب بيها أي حاجة أو أي حد.</span></p></details>
+      <details><summary><span data-l="en">How do I contact you?</span><span data-l="ar">أكلمك إزاي؟</span></summary>
+        <p><span data-l="en">On Instagram <a href="https://www.instagram.com/guts_san_store/" target="_blank" rel="noopener">@guts_san_store</a> or by email using the “Email me” button at the bottom of the page.</span><span data-l="ar">على إنستجرام <a href="https://www.instagram.com/guts_san_store/" target="_blank" rel="noopener">@guts_san_store</a> أو بالإيميل من زرار “ابعتلي إيميل” تحت في الصفحة.</span></p></details>
+    </div>
+  </section>
+
+  <!-- 9. Order button -->
+  <section class="section center" aria-labelledby="cta-title">
+    <div class="wrap">
+      <h2 id="cta-title"><span data-l="en">Ready to make your legend real?</span><span data-l="ar">جاهز تخلّي أسطورتك حقيقة؟</span></h2>
+      <p class="muted"><span data-l="en">No payment now. I'll confirm everything with you first.</span><span data-l="ar">مفيش دفع دلوقتي. هأكد معاك كل حاجة الأول.</span></p>
+      <a class="btn btn-gold" href="order.html"><span data-l="en">Send my order request</span><span data-l="ar">ابعت طلبي</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer id="site-footer"></footer>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/home.js"></script>
+</body>
+</html>
