@@ -21,6 +21,11 @@
     <h1 class="center"><span data-l="en">Upload a payment</span><span data-l="ar">ارفع إيصال الدفع</span></h1>
     <p class="center muted"><span data-l="en">Paid by InstaPay? Upload a screenshot of the receipt here and I'll check it.</span><span data-l="ar">دفعت بالـ InstaPay؟ ارفع صورة الإيصال هنا وأنا هراجعها.</span></p>
 
+    <section class="hidden" id="pay-video-wrap" aria-labelledby="pay-video-title" style="margin-bottom:24px">
+      <h2 id="pay-video-title" class="center" style="font-size:1.3rem"><span data-l="en">How paying works</span><span data-l="ar">الدفع بيمشي إزاي</span></h2>
+      <div class="video-spot" id="pay-video"></div>
+    </section>
+
     <form id="lookup-form" class="card" novalidate>
       <div class="field">
         <label for="code"><span data-l="en">Your order code</span><span data-l="ar">كود الطلب</span> <span class="req">*</span></label>
@@ -55,6 +60,13 @@
 
 <footer id="site-footer"></footer>
 <script src="assets/js/site.js"></script>
+<script src="assets/js/videos.js"></script>
 <script src="assets/js/pay.js"></script>
+<script>
+  GD.mountTalking("pay-video-wrap", "pay-video", "payment", {
+    en: "How paying works", ar: "الدفع بيمشي إزاي",
+    altEn: "Paying the deposit by InstaPay", altAr: "دفع العربون بالـ InstaPay"
+  });
+</script>
 </body>
 </html>

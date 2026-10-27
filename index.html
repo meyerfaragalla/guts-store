@@ -20,8 +20,8 @@
 
   <!-- 1. Hero -->
   <section class="hero" aria-labelledby="hero-title">
-    <!-- When Meyer's workshop video is ready it goes here as assets/hero.mp4 (silent, looping). -->
-    <img class="hero-media" src="assets/hero.jpg" alt="" onerror="this.remove()">
+    <!-- Silent background loop or photo, from the Videos tab of the sheet -->
+    <div class="hero-media-wrap" id="hero-media"></div>
     <div class="hero-inner">
       <img class="hero-logo" src="assets/Guts-Decor-Logo.svg" alt="Guts Decor logo" width="120" height="120" onerror="this.remove()">
       <h1 id="hero-title"><span data-l="en">Where legends become real</span><span data-l="ar" class="ar-tagline">هنا الأساطير بتبقى حقيقة</span></h1>
@@ -101,7 +101,11 @@
 
   <!-- 7. Guarantee -->
   <section class="section" aria-labelledby="guarantee-title">
-    <div class="wrap">
+    <div class="wrap guarantee-row">
+      <aside class="meet hidden" id="meet-wrap" aria-labelledby="meet-title">
+        <h3 id="meet-title"><span data-l="en">Hi, I'm Meyer</span><span data-l="ar">أهلًا، أنا ماير</span></h3>
+        <div class="video-spot" id="meet-video"></div>
+      </aside>
       <div class="guarantee">
         <h2 id="guarantee-title" class="center"><span data-l="en">Nothing Ships Until You Love It.</span><span data-l="ar">مفيش حاجة بتتشحن غير لما تحبها</span></h2>
         <ol>
@@ -154,6 +158,7 @@
 
 <footer id="site-footer"></footer>
 <script src="assets/js/site.js"></script>
+<script src="assets/js/videos.js"></script>
 <script src="assets/js/home.js"></script>
 </body>
 </html>

@@ -201,6 +201,17 @@ function publicContent_() {
   });
   var spotsPerMonth = firstNum_(s['Spots per month'], 0);
 
+  var VIDEO_SPOTS = { 'home background loop': 'hero', "hi, i'm meyer": 'meet', 'payment explainer': 'payment', 'thank you': 'thanks' };
+  var videos = {};
+  readTable_('Videos').forEach(function (r) {
+    var key = VIDEO_SPOTS[String(r['Spot']).toLowerCase()];
+    if (!key) return;
+    videos[key] = {
+      video: r['Video link'], photo: r['Photo link (shown if no video)'], tall: /^tall$/i.test(r['Shape (Wide / Tall)']),
+      captionsEn: r['Captions EN (file)'], captionsAr: r['Captions AR (file)']
+    };
+  });
+
   // Only safe, public fields. InstaPay details are never included here.
   var out = {
     ok: true,
@@ -221,7 +232,8 @@ function publicContent_() {
     designs: c.designs.map(function (d) { return { name: d.name, inspiredBy: d.inspiredBy, readyDays: d.readyDays, photo: d.photo }; }),
     addons: c.addons.map(function (a) { return { name: a.name, price: a.price, priceText: a.priceText }; }),
     gallery: gallery,
-    reviews: reviews
+    reviews: reviews,
+    videos: videos
   };
   cache.put('content', JSON.stringify(out), CONTENT_CACHE_SECONDS);
   return out;

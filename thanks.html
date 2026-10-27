@@ -23,6 +23,10 @@
     <div class="code-box" id="code">GD-····</div>
     <p class="muted"><span data-l="en">Save this code. I've also sent it to your email (check your spam folder too).</span><span data-l="ar">احتفظ بالكود ده. وكمان بعتهولك على الإيميل (بص في الـ Spam برضه).</span></p>
 
+    <section class="hidden" id="thanks-video-wrap" aria-label="A thank-you from Meyer" style="margin-top:10px">
+      <div class="video-spot" id="thanks-video"></div>
+    </section>
+
     <div class="card" style="text-align:start;margin-top:26px">
       <h2 style="font-size:1.3rem"><span data-l="en">What happens next</span><span data-l="ar">اللي هيحصل بعد كده</span></h2>
       <ol>
@@ -39,6 +43,13 @@
 
 <footer id="site-footer"></footer>
 <script src="assets/js/site.js"></script>
+<script src="assets/js/videos.js"></script>
+<script>
+  GD.mountTalking("thanks-video-wrap", "thanks-video", "thanks", {
+    en: "A thank-you from Meyer", ar: "شكر من ماير",
+    altEn: "Meyer saying thank you from the workshop", altAr: "ماير بيقولك شكرًا من الورشة"
+  });
+</script>
 <script>
   (function () {
     var code = new URLSearchParams(location.search).get("code") || "";

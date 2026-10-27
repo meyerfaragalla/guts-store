@@ -73,8 +73,14 @@
     renderReviews();
   }
 
+  GD.mountTalking("meet-wrap", "meet-video", "meet", {
+    en: "Hi, I'm Meyer", ar: "أهلًا، أنا ماير",
+    altEn: "Meyer, the maker behind Guts Decor, in the workshop", altAr: "ماير، صانع Guts Decor، في الورشة"
+  });
+
   GD.getContent().then(function (c) {
     content = c;
+    GD.renderHero(document.getElementById("hero-media"), (c.videos || {}).hero);
     renderAll();
   }).catch(function () {
     document.getElementById("tier-list").innerHTML =
