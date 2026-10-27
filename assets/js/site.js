@@ -4,7 +4,7 @@
 
   // The public address of the order system (Google Apps Script web app).
   // This is not a secret: it only ever hands out the safe, public parts of the sheet.
-  var API_URL = "";
+  var API_URL = "https://script.google.com/macros/s/AKfycbxv8S5aSy0oY1L0XW3k7H8yIAo9inJjTwJZP8yNT1u89kX58q9LVh8IDtetbmSP/exec";
 
   var LANG_KEY = "gd-lang";
 
