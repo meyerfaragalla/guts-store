@@ -94,7 +94,7 @@
       '<p><span data-l="en">Handmade wooden swords and decor.<br>Cairo, Egypt</span><span data-l="ar">سيوف وديكورات خشب معمولة بإيدي.<br>القاهرة، مصر</span></p></div>' +
       '<div><h3><span data-l="en">Contact</span><span data-l="ar">تواصل معايا</span></h3><ul>' +
       '<li><a href="https://www.instagram.com/guts_san_store/" rel="noopener" target="_blank">Instagram @guts_san_store</a></li>' +
-      '<li><button type="button" class="link-btn" data-email-btn><span data-l="en">Email me</span><span data-l="ar">ابعتلي إيميل</span></button></li>' +
+      '<li><button type="button" class="link-btn" data-email-btn><span data-l="en">Email us</span><span data-l="ar">راسلنا</span></button></li>' +
       "</ul></div>" +
       '<div><h3><span data-l="en">Policies</span><span data-l="ar">السياسات</span></h3><ul>' +
       '<li><a href="privacy.html"><span data-l="en">Privacy policy</span><span data-l="ar">سياسة الخصوصية</span></a></li>' +

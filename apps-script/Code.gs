@@ -530,6 +530,19 @@ function onOrdersEdit(e) {
   }
 }
 
+/**
+ * Sends one sample "order received" email, exactly as a customer would get it,
+ * to the business address in Settings. Run it from the editor to check the sender.
+ */
+function sendTestEmail() {
+  var s = settings_();
+  var ok = sendCustomer_(s, s['Order email'], 'en', 'received', {
+    code: 'GD-TEST', tier: 'Premium', design: 'Dragon Slayer', estimate: 4500, outside: false, waitlist: false
+  });
+  Logger.log(ok ? 'Test email sent to ' + s['Order email'] + ' from Guts Decor <' + s['Order email'] + '>.' :
+    'Not sent: add ' + s['Order email'] + ' under "Send mail as" in Gmail first. Nothing was sent from your personal address.');
+}
+
 function warnMeyer_(s, code, msg) {
   MailApp.sendEmail({ to: s['Order email'], subject: 'Action needed on ' + code, body: msg });
 }
