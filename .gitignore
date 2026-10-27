@@ -1,0 +1,14 @@
+# Private planning documents: stay on this computer only, never uploaded.
+build-spec.md
+protection-plan.md
+
+# Anything private (InstaPay details, passwords, sheet secrets) goes here and is never uploaded.
+private/
+*.secret
+.env
+.env.*
+
+# Editor and system clutter
+.DS_Store
+Thumbs.db
+desktop.ini
