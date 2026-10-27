@@ -67,8 +67,7 @@ img { max-width: 100%; display: block; }
 .site-header { position: sticky; top: 0; z-index: 50; background: rgba(30, 11, 46, .94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: var(--head-en); font-weight: 700; font-size: 1.15rem; letter-spacing: .04em; }
-.brand img { width: 40px; height: 40px; }
-.brand-mark { width: 40px; height: 40px; border: 2px solid var(--gold); border-radius: 50%; display: grid; place-items: center; color: var(--gold); font-size: .9rem; }
+.brand img { width: 72px; height: 36px; border-radius: 6px; }
 .nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .nav a { color: var(--text); text-decoration: none; padding: 8px 10px; border-radius: 8px; font-weight: 600; font-size: .95rem; }
 .nav a:hover, .nav a[aria-current="page"] { color: var(--gold); }

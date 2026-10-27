@@ -69,7 +69,7 @@
     header.innerHTML =
       '<a class="skip-link" href="#main"><span data-l="en">Skip to content</span><span data-l="ar">تخطَّ إلى المحتوى</span></a>' +
       '<div class="wrap">' +
-      '<a class="brand" href="index.html"><img src="assets/GD-Mark.svg" alt="" width="40" height="40" onerror="this.outerHTML=\'<span class=&quot;brand-mark&quot; aria-hidden=&quot;true&quot;>GD</span>\'">' +
+      '<a class="brand" href="index.html"><img src="assets/img/mark-header.png" alt="" width="72" height="36">' +
       '<span class="brand-name">Guts Decor</span></a>' +
       '<nav class="nav" aria-label="Main">' +
       navLink("index.html", "home", "Home", "الرئيسية") +
