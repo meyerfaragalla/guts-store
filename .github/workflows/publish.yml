@@ -37,7 +37,8 @@ jobs:
         run: |
           curl -sSL --max-time 90 "$CONTENT_URL" -o new.json || true
           if jq -e '.ok == true' new.json > /dev/null 2>&1; then
-            jq -c . new.json > assets/content.json
+            # Keep only the encoded email in the saved copy, never the plain address.
+            jq -c 'del(.settings.contactEmail)' new.json > assets/content.json
             echo "fresh=yes" >> "$GITHUB_OUTPUT"
           else
             echo "The sheet didn't answer; publishing without a fresh copy (pages then load straight from the sheet)."
