@@ -63,7 +63,9 @@
     var snapshot = fetch(SNAPSHOT_URL, { cache: "no-cache" })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
-    var live = API_URL
+    // On this computer (localhost) the saved test copy is used as is, so new sheet columns can be tried before going live.
+    var testing = /^(localhost|127\.)/.test(location.hostname);
+    var live = API_URL && !testing
       ? fetch(API_URL + "?action=content").then(function (r) { return r.json(); }).catch(function () { return null; })
       : Promise.resolve(null);
 
@@ -113,6 +115,15 @@
     (root || document).querySelectorAll("[data-t]").forEach(function (el) { el.textContent = tx(el.getAttribute("data-t")); });
     (root || document).querySelectorAll("[data-t-alt]").forEach(function (el) { el.setAttribute("alt", tx(el.getAttribute("data-t-alt"))); });
     (root || document).querySelectorAll("[data-t-aria]").forEach(function (el) { el.setAttribute("aria-label", tx(el.getAttribute("data-t-aria"))); });
+    // Headlines written in the sheet as "line|line|*italic line*", optionally stepped (data-steps="0,22,6").
+    (root || document).querySelectorAll("[data-rich]").forEach(function (el) {
+      var steps = (el.getAttribute("data-steps") || "").split(",").map(Number);
+      el.innerHTML = tx(el.getAttribute("data-rich")).split("|").map(function (line, i) {
+        var html = esc(line.trim()).replace(/\*([^*]+)\*/g, "<em>$1</em>");
+        var pad = steps.length > 1 ? steps[i % steps.length] : 0;
+        return '<span class="ln"' + (pad ? ' style="padding-inline-start:' + pad + '%"' : "") + ">" + html + "</span>";
+      }).join("");
+    });
     var titleKey = document.documentElement.getAttribute("data-title-key");
     if (titleKey && tx(titleKey)) document.title = tx(titleKey);
   }
@@ -183,10 +194,10 @@
   var brandHtml = '<a class="brand" href="index.html" aria-label="Guts Decor"><span class="gd-mark" aria-hidden="true">GD</span>' +
     '<span class="wordmark" aria-hidden="true">GUTS DECOR</span></a>';
 
-  // Menu links. Until each page exists (phase 2), a link points to the matching part of the Home page.
+  // Menu links. Until the part C pages exist, links go to the matching Home section; Commissions opens the VIP request form (phase 4).
   var MENU = [
     ["menu.1", "index.html#swords"], ["menu.2", "index.html#designs"], ["menu.3", "index.html#centrepiece"],
-    ["menu.4", "order.html?gift=1", "gold"], ["menu.5", "order.html?tier=VIP"], ["menu.6", "gallery.html"],
+    ["menu.4", "index.html#paths", "gold"], ["menu.5", "order.html?tier=VIP"], ["menu.6", "gallery.html"],
     ["menu.7", "index.html#how"], ["menu.8", "index.html#maker"]
   ];
   var SWORD_SVG = '<svg viewBox="0 0 40 400" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linejoin="round" aria-hidden="true">' +
@@ -200,10 +211,13 @@
     header.className = "site-header";
     header.innerHTML =
       '<a class="skip-link" href="#main" data-t="nav.skip"></a>' +
-      '<div class="bar">' + brandHtml +
+      '<div class="bar">' + brandHtml + '<div class="bar-end">' +
+      '<a class="cart-link" href="cart.html" id="cart-link"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">' +
+      '<path d="M5 7h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8L5 7Z"/><path d="M9 7V5.5a3 3 0 0 1 6 0V7"/></svg>' +
+      '<span class="cart-count" id="cart-count" aria-hidden="true"></span></a>' +
       '<button type="button" class="menu-btn" id="menu-open" aria-controls="site-menu" aria-expanded="false">' +
       '<span data-t="nav.menu"></span><span class="bars" aria-hidden="true"><span></span><span></span></span></button>' +
-      "</div>";
+      "</div></div>";
 
     var menu = document.createElement("div");
     menu.className = "menu";
@@ -291,8 +305,29 @@
       '<p class="fine">&copy; ' + new Date().getFullYear() + " Guts Decor</p></div>";
   }
 
+  // ---------- Cart (kept in this browser only: free, no login) ----------
+  var CART_KEY = "gd-cart-v1";
+  function cartGet() {
+    try { var c = JSON.parse(localStorage.getItem(CART_KEY) || "[]"); return Array.isArray(c) ? c : []; } catch (e) { return []; }
+  }
+  function cartSet(lines) {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(lines)); } catch (e) { /* ignore */ }
+    renderCartCount();
+  }
+  function cartCount() { return cartGet().reduce(function (n, l) { return n + (Number(l.qty) || 1); }, 0); }
+  function renderCartCount() {
+    var n = cartCount();
+    var badge = document.getElementById("cart-count");
+    var link = document.getElementById("cart-link");
+    if (badge) { badge.textContent = n ? String(n) : ""; badge.classList.toggle("hidden", !n); }
+    if (link) link.setAttribute("aria-label", tx("nav.cart", { n: num(n) }) || "Cart");
+  }
+  window.addEventListener("storage", function (e) { if (e.key === CART_KEY) renderCartCount(); });
+  renderCartCount();
+
   onContent(renderDm);
   onContent(renderMenuExtras);
+  onContent(renderCartCount);
 
   // Turns a Google Drive share link into an image address.
   function driveImage(link, width) {
@@ -318,7 +353,34 @@
     return fetch(API_URL + "?" + q).then(function (r) { return r.json(); });
   }
 
+  // ---------- Anonymous counting ----------
+  // Only "+1" for things like "visit:gifts" or "cta:swords". No cookies, nothing about the visitor.
+  var queue = [];
+  var timer = null;
+  function sendQueue() {
+    timer = null;
+    if (!queue.length || !API_URL) return;
+    var body = JSON.stringify({ action: "track", e: queue.splice(0, 10) });
+    if (!(navigator.sendBeacon && navigator.sendBeacon(API_URL, body))) {
+      fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: body, keepalive: true }).catch(function () {});
+    }
+    if (queue.length) timer = setTimeout(sendQueue, 200);
+  }
+  function track(name) {
+    var e = String(name).toLowerCase().replace(/[^a-z0-9:._'\-]+/g, "-").slice(0, 60);
+    if (!e || /^(localhost|127\.)/.test(location.hostname)) return; // don't count tests on this computer
+    queue.push(e);
+    if (!timer) timer = setTimeout(sendQueue, 1000);
+  }
+  window.addEventListener("pagehide", sendQueue);
+  document.addEventListener("click", function (ev) {
+    var el = ev.target.closest && ev.target.closest("[data-track]");
+    if (el) { track(el.getAttribute("data-track")); sendQueue(); }
+  });
+  if (page) track("visit:" + page);
+
   window.GD = {
+    track: track, cart: { get: cartGet, set: cartSet, count: cartCount },
     lang: lang, t: t, tx: tx, num: num, money: money, esc: esc,
     getContent: getContent, onContent: onContent, applyText: applyText, dmHtml: dmHtml,
     post: post, get: get, driveImage: driveImage, swordSvg: SWORD_SVG,

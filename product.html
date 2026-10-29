@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guts Decor</title>
+<meta name="description" content="Handmade wooden swords and display pieces, made by hand in Cairo.">
+<meta name="theme-color" content="#1E0B2E">
+<link rel="icon" type="image/png" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<script>(function(){var l;try{l=localStorage.getItem("gd-lang")}catch(e){}if(l!=="en"&&l!=="ar"){l=/^ar\b/i.test(navigator.language||"")?"ar":"en"}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l;h.dir=l==="ar"?"rtl":"ltr"})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/style.css?v=20261030c">
+</head>
+<body data-page="product">
+<header id="site-header"></header>
+
+<main id="main">
+  <section class="ivory pp" aria-labelledby="pp-name">
+    <div class="pp-grid">
+      <div class="pp-gallery">
+        <div class="pp-photos" id="pp-photos"></div>
+        <div class="pp-dots" id="pp-dots"></div>
+      </div>
+      <form class="pp-info" id="pp-form" novalidate>
+        <p class="eyebrow" id="pp-eyebrow"></p>
+        <h1 id="pp-name"></h1>
+        <p class="pp-benefit" id="pp-benefit"></p>
+        <div id="pp-versions"></div>
+        <div class="pp-price" id="pp-price" aria-live="polite"></div>
+        <p class="pp-deposit" id="pp-deposit"></p>
+        <p class="pp-ready" id="pp-ready"></p>
+        <div id="pp-options"></div>
+        <div id="pp-display"></div>
+        <div class="pp-qty">
+          <span class="qty-label" data-t="pp.qty"></span>
+          <div class="stepper"><button type="button" id="qty-minus" data-t-aria="cart.minus">−</button><output id="qty" aria-live="polite">1</output><button type="button" id="qty-plus" data-t-aria="cart.plus">+</button></div>
+        </div>
+        <div class="err hidden" id="pp-err" role="alert"></div>
+        <div class="pp-buttons" id="pp-buttons">
+          <button type="submit" class="btn btn-gold" id="pp-add" data-t="pp.add"></button>
+          <button type="button" class="btn btn-ghost" id="pp-now" data-t="pp.now"></button>
+        </div>
+        <div class="pp-added hidden" id="pp-added" role="status"><span data-t="pp.added"></span> <a class="link-u" href="cart.html" data-t="pp.viewCart"></a></div>
+        <div class="pp-quote hidden" id="pp-quote"></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="p-sec" id="pp-details-sec" aria-labelledby="pp-details-title">
+    <div class="inner">
+      <h2 class="head-2" id="pp-details-title" data-t="pp.details"></h2>
+      <ul class="n-list on-purple" id="pp-details"></ul>
+    </div>
+  </section>
+
+  <section class="ivory i-sec" aria-labelledby="pp-g-title">
+    <div class="inner">
+      <h2 class="head-2" id="pp-g-title" data-t="pp.guarantees"></h2>
+      <ul class="n-list">
+        <li><span class="no">01</span><span class="txt"><span class="tt" data-t="home.guarantee.1.t"></span><span class="bd" data-t="home.guarantee.1"></span></span></li>
+        <li><span class="no">02</span><span class="txt"><span class="tt" data-t="home.guarantee.2.t"></span><span class="bd" data-t="home.guarantee.2"></span></span></li>
+        <li><span class="no">03</span><span class="txt"><span class="tt" data-t="home.guarantee.3.t"></span><span class="bd" data-t="home.guarantee.3"></span></span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="p-sec hidden" id="pp-reviews-sec" aria-labelledby="pp-reviews-title">
+    <div class="inner">
+      <h2 class="head-2 italic-title" id="pp-reviews-title" data-t="pp.reviews"></h2>
+      <div class="pp-reviews" id="pp-reviews"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Phones: the Add to cart button follows the visitor while they read -->
+<div class="sticky-buy hidden" id="sticky-buy" aria-hidden="true">
+  <div class="sb-text"><span class="sb-name" id="sb-name"></span><span class="sb-price" id="sb-price"></span></div>
+  <button type="button" class="btn btn-gold" id="sb-add" tabindex="-1" data-t="pp.add"></button>
+</div>
+
+<footer id="site-footer"></footer>
+<script src="assets/js/site.js?v=20261030c"></script>
+<script src="assets/js/shop.js?v=20261030c"></script>
+<script src="assets/js/product.js?v=20261030c"></script>
+</body>
+</html>

@@ -8,18 +8,6 @@
   function pick(en, ar) { return GD.lang() === "ar" ? (ar || en || "") : (en || ar || ""); }
   function phLabel(key) { var t = GD.tx(key); return t ? '<span class="ph-label">' + esc(t) + "</span>" : ""; }
 
-  // Headlines written in the sheet as "line|line|*italic line*".
-  function renderRich() {
-    document.querySelectorAll("[data-rich]").forEach(function (el) {
-      var steps = (el.getAttribute("data-steps") || "").split(",").map(Number);
-      el.innerHTML = GD.tx(el.getAttribute("data-rich")).split("|").map(function (line, i) {
-        var html = esc(line.trim()).replace(/\*([^*]+)\*/g, "<em>$1</em>");
-        var pad = steps.length > 1 ? steps[i % steps.length] : 0;
-        return '<span class="ln"' + (pad ? ' style="padding-inline-start:' + pad + '%"' : "") + ">" + html + "</span>";
-      }).join("");
-    });
-  }
-
   function renderMedia(c) {
     var v = c.videos || {};
     var hasHero = GD.renderLoop($("hero-media"), v.hero, { className: "hero-loop" });
@@ -62,18 +50,18 @@
     $("final-ig").href = "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
   }
 
-  function designLink(c, d) {
-    return d.price ? "order.html?design=" + encodeURIComponent(d.name) : "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
-  }
+  function slug(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  // Every sword opens its own product page (it shows "Ask for the price" itself when there's no price yet).
+  function designLink(c, d) { return "product.html?id=d-" + slug(d.name); }
 
   function renderPills(c) {
     var swords = (c.designs || []).map(function (d) {
-      var ext = !d.price;
-      return '<a class="pill" href="' + esc(designLink(c, d)) + '"' + (ext ? ' target="_blank" rel="noopener"' : "") + ">" + esc(d.name) + "</a>";
+      return '<a class="pill" href="' + esc(designLink(c, d)) + '">' + esc(d.name) + "</a>";
     }).join("");
     var tiers = c.tiers.slice().sort(function (a, b) { return (a.price || Infinity) - (b.price || Infinity); }).map(function (t) {
       var on = /most chosen|best seller/i.test(t.badge || "");
-      return '<a class="pill' + (on ? " on" : "") + '" href="order.html?tier=' + encodeURIComponent(t.name) + '">' + esc(t.name) + "</a>";
+      var href = t.price ? "product.html?id=t-" + slug(t.name) : "order.html?tier=" + encodeURIComponent(t.name);
+      return '<a class="pill' + (on ? " on" : "") + '" href="' + esc(href) + '">' + esc(t.name) + "</a>";
     }).join("");
     $("pills").innerHTML =
       '<span class="k">' + esc(GD.tx("home.pills.swords")) + '</span><div class="v">' + swords + "</div>" +
@@ -81,7 +69,8 @@
   }
 
   function renderGrid(c) {
-    var designs = (c.designs || []).slice().sort(function (a, b) {
+    // Only designs marked "Show on Home" (column P); before that column reached the site, show them all.
+    var designs = (c.designs || []).filter(function (d) { return d.showOnHome !== false; }).sort(function (a, b) {
       function rank(d) { return /best seller/i.test(d.badge || "") ? 0 : d.shippingIncluded ? 2 : 1; }
       return rank(a) - rank(b);
     });
@@ -90,18 +79,17 @@
       var isSet = d.shippingIncluded;
       var price = "";
       if (d.price) {
-        price = isSet && d.badge
-          ? GD.tx("home.designs.save", { price: GD.money(d.price), save: pick(d.badge, d.badgeAr) })
-          : (isSet ? GD.money(d.price) : GD.tx("home.design.from", { price: GD.money(d.price) }));
+        if (isSet) price = d.badge ? GD.tx("home.designs.save", { price: GD.money(d.price), save: pick(d.badge, d.badgeAr) }) : GD.money(d.price);
+        else if (d.classicPrice) price = GD.tx("home.design.from", { price: GD.money(d.classicPrice) });
+        else price = GD.money(d.price);
       } else {
         price = GD.tx("home.design.ask");
       }
       var corner = !isSet && d.badge ? '<span class="tag">' + esc(pick(d.badge, d.badgeAr)) + "</span>" : "";
-      var ext = !d.price;
-      return '<a class="p-card" href="' + esc(designLink(c, d)) + '"' + (ext ? ' target="_blank" rel="noopener"' : "") + ">" + corner +
+      return '<a class="p-card" href="' + esc(designLink(c, d)) + '" data-track="card:' + esc(d.name) + '">' + corner +
         '<span class="ph">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(d.name + (d.inspiredBy ? ", " + d.inspiredBy : "")) + '">' : phLabel("ph.card")) + "</span>" +
         '<span class="info"><span class="name">' + esc(d.name + (d.inspiredBy && !isSet ? ", " + d.inspiredBy.split(",")[0] : "")) + "</span>" +
-        '<span class="price">' + esc(price) + "</span>" +
+        '<span class="price">' + (d.wasPrice ? '<s class="was">' + esc(GD.money(d.wasPrice)) + "</s> " : "") + esc(price) + "</span>" +
         (pick(d.benefitEn, d.benefitAr) ? '<span class="benefit">' + esc(pick(d.benefitEn, d.benefitAr)) + "</span>" : "") +
         "</span></a>";
     }).join("");
@@ -125,7 +113,6 @@
   }
 
   GD.onContent(function (c) {
-    renderRich();
     renderMedia(c);
     renderHero(c);
     renderPills(c);

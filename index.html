@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261029b">
+<link rel="stylesheet" href="assets/css/style.css?v=20261030c">
 </head>
 <body data-page="home">
 <header id="site-header"></header>
@@ -32,7 +32,7 @@
       <div class="left">
         <p class="made" data-t="home.subline"></p>
         <p class="offer" id="hero-offer"></p>
-        <a class="link-u" href="order.html" data-t="home.start"></a>
+        <a class="link-u" href="order.html" data-track="tap:start" data-t="home.start"></a>
       </div>
       <a class="scroll" href="#headline"><span data-t="hero.scroll"></span><span class="line" aria-hidden="true"><span></span></span></a>
     </div>
@@ -53,8 +53,8 @@
   <section class="ivory rail-sec tight" id="paths" aria-labelledby="paths-title">
     <h2 id="paths-title" data-t="home.paths.title"></h2>
     <div class="rail" id="paths-rail">
-      <a class="rail-card" href="order.html?gift=1" data-photo="card-it-s-a-gift"><span class="tag" data-t="home.gift.title"></span></a>
-      <a class="rail-card" href="order.html" data-photo="card-it-s-for-me"><span class="tag" data-t="home.me.title"></span></a>
+      <a class="rail-card" href="index.html#designs" data-photo="card-it-s-a-gift" data-track="tap:gift"><span class="tag" data-t="home.gift.title"></span></a>
+      <a class="rail-card" href="index.html#designs" data-photo="card-it-s-for-me" data-track="tap:me"><span class="tag" data-t="home.me.title"></span></a>
     </div>
     <div class="rail-bar" aria-hidden="true"><span></span></div>
   </section>
@@ -69,7 +69,7 @@
       <h3 class="pick-title" id="swords" data-t="home.swords.title"></h3>
       <div class="pills" id="pills"></div>
       <div class="photo-card" id="meet-card"></div>
-      <div class="after-link"><a class="link-u" href="order.html" data-t="home.start"></a></div>
+      <div class="after-link"><a class="link-u" href="order.html" data-track="tap:start" data-t="home.start"></a></div>
     </div>
   </section>
 
@@ -77,7 +77,7 @@
   <section class="ivory grid-sec" id="designs" aria-labelledby="designs-title" style="padding-top:80px">
     <div class="grid-head">
       <div><p class="eyebrow" data-t="home.designs.label"></p><h2 id="designs-title" data-t="home.designs.title"></h2></div>
-      <a class="link-u" href="gallery.html" data-t="home.designs.all"></a>
+      <a class="link-u" href="index.html#designs" data-t="home.designs.all"></a>
     </div>
     <div class="p-grid" id="design-grid"></div>
   </section>
@@ -86,8 +86,8 @@
   <section class="ivory rail-sec tight" id="centrepiece" aria-labelledby="centre-title">
     <h2 id="centre-title" data-t="home.centre.title"></h2>
     <div class="rail" id="centre-rail">
-      <a class="rail-card" href="gallery.html?filter=decor" data-photo="card-display-pieces"><span class="tag" data-t="home.centre.display.title"></span></a>
-      <a class="rail-card" href="order.html?tier=VIP" data-photo="card-commissions"><span class="tag" data-t="home.centre.comm.title"></span></a>
+      <a class="rail-card" href="index.html#centrepiece" data-photo="card-display-pieces" data-track="tap:display"><span class="tag" data-t="home.centre.display.title"></span></a>
+      <a class="rail-card" href="order.html?tier=VIP" data-photo="card-commissions" data-track="tap:commissions"><span class="tag" data-t="home.centre.comm.title"></span></a>
     </div>
     <div class="rail-bar" aria-hidden="true"><span></span></div>
     <p class="rail-note" data-t="home.centre.bonus"></p>
@@ -113,7 +113,7 @@
         <p data-t="home.flow.gift"></p>
         <p class="hold" data-t="home.hold"></p>
       </div>
-      <div class="center" style="margin-top:28px"><a class="btn btn-gold" href="order.html" data-t="home.start"></a></div>
+      <div class="center" style="margin-top:28px"><a class="btn btn-gold" href="order.html" data-track="cta:home" data-t="home.start"></a></div>
     </div>
   </section>
 
@@ -127,7 +127,7 @@
         <li><span class="no">02</span><span class="txt"><span class="tt" data-t="home.guarantee.2.t"></span><span class="bd" data-t="home.guarantee.2"></span></span></li>
         <li><span class="no">03</span><span class="txt"><span class="tt" data-t="home.guarantee.3.t"></span><span class="bd" data-t="home.guarantee.3"></span></span></li>
       </ul>
-      <div class="after-link"><a class="link-u" href="order.html" data-t="home.start"></a></div>
+      <div class="after-link"><a class="link-u" href="order.html" data-track="tap:start" data-t="home.start"></a></div>
     </div>
   </section>
 
@@ -136,7 +136,7 @@
     <div class="inner">
       <h2 class="italic-title" id="reviews-title" data-t="home.reviews.title"></h2>
       <div class="reel" id="reviews-reel"></div>
-      <a class="btn btn-gold" href="order.html" data-t="home.reviews.button"></a>
+      <a class="btn btn-gold" href="order.html" data-track="cta:home" data-t="home.reviews.button"></a>
     </div>
   </section>
 
@@ -144,15 +144,15 @@
   <section class="final" aria-labelledby="final-title">
     <h2 id="final-title" data-t="home.final.title"></h2>
     <p data-t="home.final.body"></p>
-    <a class="btn btn-gold" href="order.html" data-t="home.final.order"></a>
-    <div class="ig-link"><a id="final-ig" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-t="home.final.ig"></a></div>
+    <a class="btn btn-gold" href="order.html" data-track="cta:home" data-t="home.final.order"></a>
+    <div class="ig-link"><a id="final-ig" data-track="tap:ig" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-t="home.final.ig"></a></div>
   </section>
 
 </main>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261029b"></script>
-<script src="assets/js/videos.js?v=20261029b"></script>
-<script src="assets/js/home.js?v=20261029b"></script>
+<script src="assets/js/site.js?v=20261030c"></script>
+<script src="assets/js/videos.js?v=20261030c"></script>
+<script src="assets/js/home.js?v=20261030c"></script>
 </body>
 </html>

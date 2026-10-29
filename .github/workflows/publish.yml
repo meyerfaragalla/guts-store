@@ -21,7 +21,7 @@ concurrency:
 
 env:
   CONTENT_URL: https://script.google.com/macros/s/AKfycbxv8S5aSy0oY1L0XW3k7H8yIAo9inJjTwJZP8yNT1u89kX58q9LVh8IDtetbmSP/exec?action=content
-  LIVE_COPY: https://meyerfaragalla.github.io/guts-store/assets/content.json
+  LIVE_COPY: https://gutsdecor.com/assets/content.json
 
 jobs:
   publish:

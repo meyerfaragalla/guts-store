@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" data-lang="en" dir="ltr" data-title-key="co.title">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guts Decor</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1E0B2E">
+<link rel="icon" type="image/png" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<script>(function(){var l;try{l=localStorage.getItem("gd-lang")}catch(e){}if(l!=="en"&&l!=="ar"){l=/^ar\b/i.test(navigator.language||"")?"ar":"en"}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l;h.dir=l==="ar"?"rtl":"ltr"})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/style.css?v=20261030c">
+</head>
+<body data-page="checkout">
+<header id="site-header"></header>
+
+<main id="main">
+  <section class="ivory co-sec" aria-labelledby="co-heading">
+    <div class="co-progress" aria-hidden="true"><span id="co-bar"></span></div>
+    <div class="co-wrap">
+      <p class="eyebrow"><span data-t="co.label"></span> · <span id="co-step"></span></p>
+      <h1 id="co-heading" class="italic-title"></h1>
+
+      <div class="cart-empty hidden" id="co-empty">
+        <p data-t="cart.empty"></p>
+        <a class="btn btn-gold" href="index.html#designs" data-t="cart.browse"></a>
+      </div>
+
+      <form id="co-form" novalidate>
+        <!-- Step 1: contact -->
+        <fieldset class="co-step" data-step="1">
+          <legend class="sr-only" data-t="co.s1"></legend>
+          <div class="field"><label for="name" data-t="co.name"></label><input type="text" id="name" maxlength="80" autocomplete="name"><div class="err hidden" id="err-name"></div></div>
+          <div class="field"><label for="email" data-t="co.email"></label><input type="email" id="email" maxlength="120" autocomplete="email" dir="ltr" aria-describedby="email-note"><p class="hint" id="email-note" data-t="co.email.note"></p><div class="err hidden" id="err-email"></div></div>
+          <div class="field"><label for="email2" data-t="co.email2"></label><input type="email" id="email2" maxlength="120" autocomplete="off" dir="ltr"><div class="err hidden" id="err-email2"></div></div>
+          <div class="field"><label for="phone" data-t="co.phone"></label><input type="tel" id="phone" maxlength="20" autocomplete="tel" inputmode="tel" dir="ltr" aria-describedby="phone-hint"><p class="hint" id="phone-hint" data-t="co.phone.hint"></p><div class="err hidden" id="err-phone"></div></div>
+          <div class="field"><label for="instagram"><span data-t="co.ig"></span> <span class="opt" data-t="co.optional"></span></label><input type="text" id="instagram" maxlength="31" autocomplete="off" dir="ltr" placeholder="@"><div class="err hidden" id="err-instagram"></div></div>
+        </fieldset>
+
+        <!-- Step 2: gift or for me -->
+        <fieldset class="co-step hidden" data-step="2">
+          <legend class="sr-only" data-t="co.s2"></legend>
+          <div class="co-choice" role="radiogroup">
+            <label class="ver"><input type="radio" name="who" value="me" checked><span data-t="co.forMe"></span></label>
+            <label class="ver"><input type="radio" name="who" value="gift"><span data-t="co.gift"></span></label>
+          </div>
+          <div class="hidden" id="gift-fields">
+            <div class="field"><label for="recipient" data-t="co.recipient"></label><input type="text" id="recipient" maxlength="80" autocomplete="off" aria-describedby="recipient-hint"><p class="hint" id="recipient-hint" data-t="co.recipient.hint"></p><div class="err hidden" id="err-recipient"></div></div>
+            <div class="field"><label for="occasionDate"><span data-t="co.date"></span> <span class="opt" data-t="co.optional"></span></label><input type="date" id="occasionDate" aria-describedby="date-hint"><p class="hint" id="date-hint" data-t="co.date.hint"></p><p class="notice hidden" id="date-soon" role="status"></p></div>
+          </div>
+        </fieldset>
+
+        <!-- Step 3: address -->
+        <fieldset class="co-step hidden" data-step="3">
+          <legend class="sr-only" data-t="co.s3"></legend>
+          <div class="field"><label for="governorate" data-t="co.gov"></label><select id="governorate"></select><div class="err hidden" id="err-governorate"></div></div>
+          <div class="field"><label for="area" data-t="co.area"></label><input type="text" id="area" maxlength="80" autocomplete="address-level3"><div class="err hidden" id="err-area"></div></div>
+          <div class="field"><label for="street" data-t="co.street"></label><input type="text" id="street" maxlength="120" autocomplete="address-line1"><div class="err hidden" id="err-street"></div></div>
+          <div class="row-3">
+            <div class="field"><label for="building" data-t="co.building"></label><input type="text" id="building" maxlength="30"><div class="err hidden" id="err-building"></div></div>
+            <div class="field"><label for="floor" data-t="co.floor"></label><input type="text" id="floor" maxlength="20"><div class="err hidden" id="err-floor"></div></div>
+            <div class="field"><label for="apartment" data-t="co.apt"></label><input type="text" id="apartment" maxlength="20"><div class="err hidden" id="err-apartment"></div></div>
+          </div>
+          <div class="field"><label for="landmark"><span data-t="co.landmark"></span> <span class="opt" data-t="co.optional"></span></label><input type="text" id="landmark" maxlength="120"></div>
+          <div class="field"><label for="notes"><span data-t="co.notes"></span> <span class="opt" data-t="co.optional"></span></label><textarea id="notes" maxlength="500"></textarea></div>
+          <div class="field"><label for="foundVia"><span data-t="co.found"></span> <span class="opt" data-t="co.optional"></span></label><select id="foundVia"></select></div>
+        </fieldset>
+
+        <!-- Step 4: pay the deposit -->
+        <fieldset class="co-step hidden" data-step="4">
+          <legend class="sr-only" data-t="co.s4"></legend>
+          <p class="co-intro" data-t="co.pay.intro"></p>
+          <div class="pay-panel">
+            <div class="pp-row"><span class="k" data-t="co.pay.amount"></span><span class="v gold" id="pay-amount"></span></div>
+            <div class="pp-row hidden" id="pay-to-row"><span class="k" data-t="co.pay.to"></span><span class="v"><span id="pay-to" dir="ltr"></span> <button type="button" class="copy-btn" id="pay-copy" data-t="co.pay.copy"></button></span></div>
+            <p class="pay-check hidden" id="pay-check"></p>
+            <p class="pay-wait hidden" id="pay-wait" data-t="co.pay.notReady"></p>
+          </div>
+          <div class="video-spot hidden" id="pay-video-wrap"><div class="video-spot" id="pay-video"></div></div>
+          <div class="field"><label for="receipt"><span data-t="co.pay.shot"></span> <span class="opt" data-t="co.optional"></span></label>
+            <input type="file" id="receipt" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" aria-describedby="receipt-hint"><p class="hint" id="receipt-hint" data-t="co.pay.shot.hint"></p><div class="err hidden" id="err-receipt"></div></div>
+          <p class="co-refund" data-t="co.refund"></p>
+          <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input type="text" id="website" tabindex="-1" autocomplete="off"></div>
+          <label class="check" for="terms"><input type="checkbox" id="terms"><span data-t="co.terms"></span></label>
+          <p class="co-links small"><a href="terms.html" target="_blank" data-t="footer.terms"></a> · <a href="privacy.html" target="_blank" data-t="footer.privacy"></a> · <a href="refund.html" target="_blank" data-t="footer.refund"></a></p>
+          <div class="err hidden" id="err-terms"></div>
+        </fieldset>
+
+        <div class="status bad hidden" id="co-status" role="alert"></div>
+        <div class="co-nav">
+          <button type="button" class="link-u" id="co-back" data-t="co.back"></button>
+          <button type="submit" class="btn btn-gold" id="co-next"></button>
+        </div>
+      </form>
+
+      <details class="co-summary" id="co-summary">
+        <summary><span data-t="co.summary"></span> <span id="co-sum-total"></span></summary>
+        <ul id="co-items"></ul>
+        <dl>
+          <div class="row"><dt data-t="co.total"></dt><dd id="co-total"></dd></div>
+          <div class="row"><dt data-t="co.shipping"></dt><dd id="co-ship"></dd></div>
+        </dl>
+      </details>
+    </div>
+  </section>
+</main>
+
+<div class="co-bar-bottom" id="co-bottom"><span id="co-bottom-text"></span></div>
+
+<footer id="site-footer"></footer>
+<script src="assets/js/site.js?v=20261030c"></script>
+<script src="assets/js/videos.js?v=20261030c"></script>
+<script src="assets/js/shop.js?v=20261030c"></script>
+<script src="assets/js/checkout.js?v=20261030c"></script>
+</body>
+</html>

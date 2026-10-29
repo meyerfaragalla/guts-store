@@ -1,57 +1,78 @@
 <!doctype html>
-<html lang="en" data-lang="en" dir="ltr" data-title-en="Order received | Guts Decor" data-title-ar="الطلب وصل | Guts Decor">
+<html lang="en" data-lang="en" dir="ltr" data-title-key="th.title">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Order received | Guts Decor</title>
-<meta name="theme-color" content="#1E0B2E">
+<title>Guts Decor</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#1E0B2E">
 <link rel="icon" type="image/png" href="assets/img/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 <script>(function(){var l;try{l=localStorage.getItem("gd-lang")}catch(e){}if(l!=="en"&&l!=="ar"){l=/^ar\b/i.test(navigator.language||"")?"ar":"en"}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l;h.dir=l==="ar"?"rtl":"ltr"})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261029b">
+<link rel="stylesheet" href="assets/css/style.css?v=20261030c">
 </head>
 <body data-page="thanks">
 <header id="site-header"></header>
 
-<main id="main" class="section center">
-  <div class="wrap" style="max-width:720px">
-    <h1><span data-l="en">Thank you! Your request is in.</span><span data-l="ar">شكرًا! طلبك وصلني.</span></h1>
-    <p><span data-l="en">Your order code is:</span><span data-l="ar">كود طلبك:</span></p>
-    <div class="code-box" id="code">GD-····</div>
-    <p class="muted"><span data-l="en">Save this code. I've also sent it to your email (check your spam folder too).</span><span data-l="ar">احتفظ بالكود ده. وكمان بعتهولك على الإيميل (بص في الـ Spam برضه).</span></p>
-
-    <section class="hidden" id="thanks-video-wrap" aria-label="A thank-you from Meyer" style="margin-top:10px">
-      <div class="video-spot" id="thanks-video"></div>
-    </section>
-
-    <div class="card" style="text-align:start;margin-top:26px">
-      <h2 style="font-size:1.3rem"><span data-l="en">What happens next</span><span data-l="ar">اللي هيحصل بعد كده</span></h2>
-      <ol>
-        <li><span data-l="en">I reply within 24 hours and confirm your date and final price.</span><span data-l="ar">هرد عليك خلال ٢٤ ساعة وأأكدلك الميعاد والسعر النهائي.</span></li>
-        <li><span data-l="en">Once I confirm, I email you my InstaPay details for the 50% deposit. Nothing is due before that.</span><span data-l="ar">بعد ما أأكد، هبعتلك بيانات الـ InstaPay على الإيميل عشان عربون الـ ٥٠٪. مفيش أي دفع قبل كده.</span></li>
-        <li><span data-l="en">After paying, upload your receipt on the <a href="pay.html">payment page</a> using your code.</span><span data-l="ar">بعد الدفع، ارفع الإيصال في <a href="pay.html">صفحة الدفع</a> بالكود بتاعك.</span></li>
-      </ol>
-      <p class="notice small"><span data-l="en">I only ever accept InstaPay to the name in my confirmation email. I will never ask you to pay a different account.</span><span data-l="ar">أنا مبقبلش غير InstaPay على الاسم اللي في إيميل التأكيد، وعمري ما هطلب منك تدفع على حساب تاني.</span></p>
+<main id="main" class="page">
+  <section class="intro th-intro" aria-labelledby="th-title">
+    <div class="inner center">
+      <p class="eyebrow" data-t="th.label"></p>
+      <h1 class="stepped italic-title" id="th-title" data-t="th.headline"></h1>
+      <p class="body-copy th-lead" id="th-lead"></p>
+      <p class="th-code-label" data-t="th.code"></p>
+      <div class="code-box" id="code">GD-····</div>
+      <p class="body-copy th-save" data-t="th.save"></p>
+      <a class="btn btn-gold hidden" id="th-upload" href="pay.html" data-t="th.upload"></a>
+      <div class="photo-card tall hidden" id="thanks-video-wrap"><div class="video-spot" id="thanks-video"></div></div>
     </div>
+  </section>
 
-    <p style="margin-top:26px"><a class="btn btn-ghost" href="gallery.html"><span data-l="en">See more of my work</span><span data-l="ar">شوف شغلي</span></a></p>
-  </div>
+  <section class="ivory i-sec" aria-labelledby="th-next-title">
+    <div class="inner">
+      <p class="eyebrow" id="th-next-title" data-t="th.next.label"></p>
+      <ul class="n-list">
+        <li><span class="no">01</span><span class="txt"><span class="tt" data-t="th.next.1.t"></span><span class="bd" data-t="th.next.1.d"></span></span></li>
+        <li><span class="no">02</span><span class="txt"><span class="tt" data-t="th.next.2.t"></span><span class="bd" data-t="th.next.2.d"></span></span></li>
+        <li><span class="no">03</span><span class="txt"><span class="tt" data-t="th.next.3.t"></span><span class="bd" id="th-date"></span></span></li>
+        <li><span class="no">04</span><span class="txt"><span class="tt" data-t="th.next.4.t"></span><span class="bd" data-t="th.next.4.d"></span></span></li>
+        <li><span class="no">05</span><span class="txt"><span class="tt" data-t="th.next.5.t"></span><span class="bd" data-t="th.next.5.d"></span></span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="ig-link"><a id="th-ig" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-track="tap:ig" data-t="th.ig"></a></div>
+    <div class="after-link"><a class="link-u" href="index.html" data-t="th.shop"></a></div>
+  </section>
 </main>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261029b"></script>
-<script src="assets/js/videos.js?v=20261029b"></script>
-<script>
-  GD.mountTalking("thanks-video-wrap", "thanks-video", "thanks", { titleKey: "thanks.video.title", altKey: "thanks.video.alt" });
-</script>
+<script src="assets/js/site.js?v=20261030c"></script>
+<script src="assets/js/videos.js?v=20261030c"></script>
 <script>
   (function () {
-    var code = new URLSearchParams(location.search).get("code") || "";
-    if (/^GD-[A-Z0-9]{4}$/.test(code)) document.getElementById("code").textContent = code;
+    var q = new URLSearchParams(location.search);
+    var code = (q.get("code") || "").toUpperCase();
+    var shot = q.get("s");
+    var days = Math.min(90, Math.max(1, Number(q.get("d")) || 14));
+    if (/^GD-[A-Z0-9]{4}$/.test(code)) {
+      document.getElementById("code").textContent = code;
+      document.getElementById("th-upload").href = "pay.html?code=" + encodeURIComponent(code);
+    }
+    document.getElementById("th-upload").classList.toggle("hidden", shot !== "0");
+    GD.mountTalking("thanks-video-wrap", "thanks-video", "thanks", { titleKey: "thanks.video.title", altKey: "thanks.video.alt" });
+    GD.onContent(function (c) {
+      document.getElementById("th-lead").textContent = shot === "1" ? GD.tx("th.inWithShot") : shot === "0" ? GD.tx("th.inNoShot") : "";
+      var d = new Date(); d.setDate(d.getDate() + days);
+      document.getElementById("th-date").textContent = GD.tx("th.next.3.d", {
+        date: d.toLocaleDateString(GD.lang() === "ar" ? "ar-EG" : "en-GB", { day: "numeric", month: "long" })
+      });
+      document.getElementById("th-ig").href = "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
+    });
   })();
 </script>
 </body>
