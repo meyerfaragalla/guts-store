@@ -150,5 +150,6 @@
   }
 
   GD.renderLoop = renderLoop;
+  GD.renderTalking = renderTalking;
   GD.mountTalking = mountTalking;
 })();

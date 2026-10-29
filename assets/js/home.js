@@ -1,4 +1,4 @@
-/* Home page: everything comes from the Website Content sheet (Text, Tiers, Ready Designs, Videos, Settings) */
+/* Home page: the approved design (design/home.html), filled from the Website Content sheet */
 (function () {
   "use strict";
   var GD = window.GD;
@@ -6,98 +6,134 @@
 
   function $(id) { return document.getElementById(id); }
   function pick(en, ar) { return GD.lang() === "ar" ? (ar || en || "") : (en || ar || ""); }
+  function phLabel(key) { var t = GD.tx(key); return t ? '<span class="ph-label">' + esc(t) + "</span>" : ""; }
+
+  // Headlines written in the sheet as "line|line|*italic line*".
+  function renderRich() {
+    document.querySelectorAll("[data-rich]").forEach(function (el) {
+      var steps = (el.getAttribute("data-steps") || "").split(",").map(Number);
+      el.innerHTML = GD.tx(el.getAttribute("data-rich")).split("|").map(function (line, i) {
+        var html = esc(line.trim()).replace(/\*([^*]+)\*/g, "<em>$1</em>");
+        var pad = steps.length > 1 ? steps[i % steps.length] : 0;
+        return '<span class="ln"' + (pad ? ' style="padding-inline-start:' + pad + '%"' : "") + ">" + html + "</span>";
+      }).join("");
+    });
+  }
 
   function renderMedia(c) {
     var v = c.videos || {};
-    GD.renderLoop($("hero-media"), v.hero, { className: "hero-media" });
-    var hasHands = GD.renderLoop($("hands-video"), v.hands, { className: "hands-media", altKey: "home.hands.alt", width: 700 });
-    $("hands-wrap").classList.toggle("hidden", !hasHands);
-    $("hero-logo").classList.toggle("hidden", hasHands);
-    var hasReel = GD.renderLoop($("reviews-reel"), v.reviews, { className: "reel-media", altKey: "home.reviews.title", lazy: true, width: 800 });
+    var hasHero = GD.renderLoop($("hero-media"), v.hero, { className: "hero-loop" });
+    $("hero-ph").classList.toggle("hidden", hasHero || !GD.tx("ph.hero"));
+    $("hero-deco").innerHTML = hasHero ? "" : GD.swordSvg;
+
+    var box = $("hands-box");
+    if (!GD.renderLoop(box, v.hands, { className: "hands-loop", altKey: "home.hands.alt", width: 800 })) box.innerHTML = phLabel("ph.hands");
+
+    document.querySelectorAll(".rail-card[data-photo]").forEach(function (card) {
+      var spot = v[card.getAttribute("data-photo")];
+      var src = spot && GD.driveImage(spot.photo, 900);
+      var old = card.querySelector("img, .ph-label");
+      if (old) old.remove();
+      card.insertAdjacentHTML("afterbegin", src ? '<img loading="lazy" src="' + esc(src) + '" alt="">' : phLabel("ph.card"));
+    });
+
+    var card = $("meet-card");
+    if (!GD.renderTalking(card, v.meet, { titleKey: "home.story.title", altKey: "home.story.photoAlt" })) card.innerHTML = phLabel("ph.card");
+
+    var hasReel = GD.renderLoop($("reviews-reel"), v.reviews, { altKey: "home.reviews.title", lazy: true, width: 800 });
     $("reviews").classList.toggle("hidden", !hasReel);
   }
 
   function renderHero(c) {
     var prices = c.tiers.map(function (t) { return t.price; }).filter(Boolean);
     $("hero-offer").textContent = prices.length ? GD.tx("home.offer", { price: GD.money(Math.min.apply(null, prices)) }) : "";
-    var s = c.settings;
-    var spots = $("spots");
-    if (typeof s.spotsLeft === "number" && s.spotsPerMonth) {
-      spots.textContent = s.spotsLeft > 0
-        ? GD.tx("home.spots", { left: GD.num(s.spotsLeft), total: GD.num(s.spotsPerMonth) })
-        : GD.tx("home.spotsFull");
-      spots.classList.toggle("hidden", !spots.textContent);
-    }
-    var proof = pick(s.proofLine, s.proofLineAr);
-    $("trust").textContent = proof;
-    $("trust").classList.toggle("hidden", !proof);
+
+    // "150+ pieces handmade in 3 years" -> big gold "150+" and a small label.
+    var proof = pick(c.settings.proofLine, c.settings.proofLineAr);
+    var m = proof.match(/[\d٠-٩][\d٠-٩,٬]*\+?/);
+    var plus = /\+|أكتر من|أكثر من|more than/i.test(proof);
+    var n = m ? m[0].replace("+", "") + (plus ? "+" : "") : "";
+    $("big-num").innerHTML = m
+      ? '<span class="n" dir="ltr">' + esc(n) + '</span><span class="t">' +
+        esc(proof.replace(m[0], "").replace(/(أكتر من|أكثر من|more than)\s*/i, "").replace(/^[\s+]+|\s+$/g, "")) + "</span>"
+      : "";
+    $("big-num").classList.toggle("hidden", !m);
+
+    $("final-ig").href = "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
   }
 
-  function badge(en, ar) {
-    var b = pick(en, ar);
-    return b ? '<span class="badge">' + esc(b) + "</span>" : "";
+  function designLink(c, d) {
+    return d.price ? "order.html?design=" + encodeURIComponent(d.name) : "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
   }
 
-  function renderDesigns(c) {
+  function renderPills(c) {
+    var swords = (c.designs || []).map(function (d) {
+      var ext = !d.price;
+      return '<a class="pill" href="' + esc(designLink(c, d)) + '"' + (ext ? ' target="_blank" rel="noopener"' : "") + ">" + esc(d.name) + "</a>";
+    }).join("");
+    var tiers = c.tiers.slice().sort(function (a, b) { return (a.price || Infinity) - (b.price || Infinity); }).map(function (t) {
+      var on = /most chosen|best seller/i.test(t.badge || "");
+      return '<a class="pill' + (on ? " on" : "") + '" href="order.html?tier=' + encodeURIComponent(t.name) + '">' + esc(t.name) + "</a>";
+    }).join("");
+    $("pills").innerHTML =
+      '<span class="k">' + esc(GD.tx("home.pills.swords")) + '</span><div class="v">' + swords + "</div>" +
+      '<span class="k">' + esc(GD.tx("home.pills.tiers")) + '</span><div class="v">' + tiers + "</div>";
+  }
+
+  function renderGrid(c) {
     var designs = (c.designs || []).slice().sort(function (a, b) {
-      function rank(d) { return /best seller/i.test(d.badge || "") ? 0 : d.shippingIncluded ? 1 : 2; }
+      function rank(d) { return /best seller/i.test(d.badge || "") ? 0 : d.shippingIncluded ? 2 : 1; }
       return rank(a) - rank(b);
     });
-    var dm = "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
-    $("design-list").innerHTML = designs.map(function (d) {
-      var img = GD.driveImage(d.photo, 800);
-      var price = d.price ? (d.shippingIncluded ? GD.money(d.price) : GD.tx("home.design.from", { price: GD.money(d.price) })) : "";
-      var link = d.price ? "order.html?design=" + encodeURIComponent(d.name) : dm;
-      return '<article class="card product' + (/best seller/i.test(d.badge || "") ? " featured" : "") + '">' +
-        badge(d.badge, d.badgeAr) +
-        (img ? '<div class="product-photo"><img loading="lazy" src="' + esc(img) + '" alt="' + esc(d.name + (d.inspiredBy ? ", " + d.inspiredBy : "")) + '"></div>' : "") +
-        "<h3>" + esc(d.name) + "</h3>" +
-        (d.inspiredBy ? '<p class="small muted">' + esc(d.inspiredBy) + "</p>" : "") +
-        '<p class="benefit">' + esc(pick(d.benefitEn, d.benefitAr)) + "</p>" +
-        (d.sizes ? '<p class="small muted">' + esc(GD.tx("home.design.sizes", { sizes: d.sizes })) + "</p>" : "") +
-        (price ? '<div class="price">' + esc(price) + "</div>" : "") +
-        '<a class="btn ' + (d.price ? "btn-gold" : "btn-ghost") + '" href="' + esc(link) + '"' + (d.price ? "" : ' target="_blank" rel="noopener"') + ">" +
-        esc(GD.tx(d.price ? "home.design.choose" : "home.design.ask")) + "</a>" +
-        "</article>";
+    $("design-grid").innerHTML = designs.map(function (d) {
+      var img = GD.driveImage(d.photo, 700);
+      var isSet = d.shippingIncluded;
+      var price = "";
+      if (d.price) {
+        price = isSet && d.badge
+          ? GD.tx("home.designs.save", { price: GD.money(d.price), save: pick(d.badge, d.badgeAr) })
+          : (isSet ? GD.money(d.price) : GD.tx("home.design.from", { price: GD.money(d.price) }));
+      } else {
+        price = GD.tx("home.design.ask");
+      }
+      var corner = !isSet && d.badge ? '<span class="tag">' + esc(pick(d.badge, d.badgeAr)) + "</span>" : "";
+      var ext = !d.price;
+      return '<a class="p-card" href="' + esc(designLink(c, d)) + '"' + (ext ? ' target="_blank" rel="noopener"' : "") + ">" + corner +
+        '<span class="ph">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(d.name + (d.inspiredBy ? ", " + d.inspiredBy : "")) + '">' : phLabel("ph.card")) + "</span>" +
+        '<span class="info"><span class="name">' + esc(d.name + (d.inspiredBy && !isSet ? ", " + d.inspiredBy.split(",")[0] : "")) + "</span>" +
+        '<span class="price">' + esc(price) + "</span>" +
+        (pick(d.benefitEn, d.benefitAr) ? '<span class="benefit">' + esc(pick(d.benefitEn, d.benefitAr)) + "</span>" : "") +
+        "</span></a>";
     }).join("");
   }
 
-  function renderTiers(c) {
-    var tiers = c.tiers.slice().sort(function (a, b) { return (b.price || Infinity) - (a.price || Infinity); });
-    $("tier-list").innerHTML = tiers.map(function (t) {
-      var featured = /most chosen|best seller/i.test(t.badge || "");
-      return '<article class="card tier' + (featured ? " featured" : "") + '">' +
-        badge(t.badge, t.badgeAr) +
-        "<h3>" + esc(t.name) + "</h3>" +
-        '<p class="benefit">' + esc(pick(t.forEn, t.forAr)) + "</p>" +
-        '<div class="price">' + esc(t.price ? GD.money(t.price) : GD.tx("home.price.quote")) + "</div>" +
-        '<a class="btn ' + (featured ? "btn-gold" : "btn-ghost") + '" href="order.html?tier=' + encodeURIComponent(t.name) + '">' +
-        esc(t.price ? GD.tx("home.tier.choose", { name: t.name }) : GD.tx("home.tier.quote")) + "</a>" +
-        "</article>";
-    }).join("");
+  // Thin bar under each swipe row shows how far it has been swiped.
+  function wireRails() {
+    document.querySelectorAll(".rail").forEach(function (rail) {
+      var bar = rail.parentElement.querySelector(".rail-bar span");
+      if (!bar) return;
+      function update() {
+        var max = rail.scrollWidth - rail.clientWidth;
+        var ratio = max > 0 ? Math.abs(rail.scrollLeft) / max : 0;
+        bar.style.insetInlineStart = (ratio * 120) + "px";
+        rail.parentElement.querySelector(".rail-bar").style.visibility = max > 0 ? "visible" : "hidden";
+      }
+      rail.addEventListener("scroll", update, { passive: true });
+      window.addEventListener("resize", update);
+      update();
+    });
   }
-
-  function renderFaq() {
-    var html = "";
-    for (var n = 1; n < 40; n++) {
-      var q = GD.tx("home.faq." + n + ".q");
-      if (!q) break;
-      html += "<details><summary>" + esc(q) + "</summary><p>" + esc(GD.tx("home.faq." + n + ".a")) + "</p></details>";
-    }
-    $("faq-list").innerHTML = html;
-  }
-
-  GD.mountTalking("story-media-wrap", "meet-video", "meet", { titleKey: "home.story.title", altKey: "home.story.photoAlt" });
 
   GD.onContent(function (c) {
+    renderRich();
     renderMedia(c);
     renderHero(c);
-    renderDesigns(c);
-    renderTiers(c);
-    renderFaq();
+    renderPills(c);
+    renderGrid(c);
   });
+  wireRails();
 
   GD.getContent().catch(function () {
-    $("design-list").innerHTML = '<p class="muted center">This couldn’t load right now. Please refresh, or message me on Instagram @guts_san_store.</p>';
+    $("design-grid").innerHTML = '<p style="padding:0 20px">This couldn’t load right now. Please refresh, or message me on Instagram @guts_san_store.</p>';
   });
 })();

@@ -179,27 +179,101 @@
   // ---------- Header & footer ----------
   var page = document.body.getAttribute("data-page") || "";
 
-  function navLink(href, key, textKey) {
-    return '<a href="' + href + '"' + (page === key ? ' aria-current="page"' : "") + ' data-t="' + textKey + '"></a>';
-  }
+  var IG_URL = "https://www.instagram.com/guts_san_store/";
+  var brandHtml = '<a class="brand" href="index.html" aria-label="Guts Decor"><span class="gd-mark" aria-hidden="true">GD</span>' +
+    '<span class="wordmark" aria-hidden="true">GUTS DECOR</span></a>';
+
+  // Menu links. Until each page exists (phase 2), a link points to the matching part of the Home page.
+  var MENU = [
+    ["menu.1", "index.html#swords"], ["menu.2", "index.html#designs"], ["menu.3", "index.html#centrepiece"],
+    ["menu.4", "order.html?gift=1", "gold"], ["menu.5", "order.html?tier=VIP"], ["menu.6", "gallery.html"],
+    ["menu.7", "index.html#how"], ["menu.8", "index.html#maker"]
+  ];
+  var SWORD_SVG = '<svg viewBox="0 0 40 400" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M19 6 L23.5 16 Q26.5 140 22.5 262 L17.5 262 Q20.5 140 19 6 Z"/><path d="M19.6 18 Q22.6 140 20 260"/><rect x="16.5" y="262" width="7" height="6" rx="1"/>' +
+    '<ellipse cx="20" cy="272" rx="15" ry="4"/><rect x="16" y="277" width="8" height="104" rx="3"/>' +
+    '<path d="M16 285 L24 295 L16 305 L24 315 L16 325 L24 335 L16 345 L24 355 L16 365 L24 375"/>' +
+    '<path d="M24 285 L16 295 L24 305 L16 315 L24 325 L16 335 L24 345 L16 355 L24 365 L16 375"/><rect x="15" y="381" width="10" height="7" rx="2"/></svg>';
 
   var header = document.getElementById("site-header");
   if (header) {
     header.className = "site-header";
     header.innerHTML =
       '<a class="skip-link" href="#main" data-t="nav.skip"></a>' +
-      '<div class="wrap">' +
-      '<a class="brand" href="index.html"><img src="assets/img/mark-header.png" alt="" width="72" height="36">' +
-      '<span class="brand-name">Guts Decor</span></a>' +
-      '<nav class="nav" aria-label="Main">' +
-      navLink("index.html", "home", "nav.home") +
-      navLink("gallery.html", "gallery", "nav.gallery") +
-      navLink("order.html", "order", "nav.order") +
-      '<a class="nav-ig" href="https://www.instagram.com/guts_san_store/" target="_blank" rel="noopener" data-t-aria="nav.instagram">' + igIcon() + "</a>" +
-      '<button type="button" class="lang-btn" id="lang-toggle" data-t="nav.lang"></button>' +
-      "</nav></div>";
-    document.getElementById("lang-toggle").addEventListener("click", function () {
-      setLang(lang() === "ar" ? "en" : "ar");
+      '<div class="bar">' + brandHtml +
+      '<button type="button" class="menu-btn" id="menu-open" aria-controls="site-menu" aria-expanded="false">' +
+      '<span data-t="nav.menu"></span><span class="bars" aria-hidden="true"><span></span><span></span></span></button>' +
+      "</div>";
+
+    var menu = document.createElement("div");
+    menu.className = "menu";
+    menu.id = "site-menu";
+    menu.hidden = true;
+    menu.setAttribute("role", "dialog");
+    menu.setAttribute("aria-modal", "true");
+    menu.innerHTML =
+      '<span class="deco" aria-hidden="true">' + SWORD_SVG + "</span>" +
+      '<div class="bar" style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px">' + brandHtml +
+      '<button type="button" class="close-btn" id="menu-close"><span data-t="nav.close"></span><span class="x" aria-hidden="true"><span></span><span></span></span></button></div>' +
+      '<nav aria-label="Main"><ul>' + MENU.map(function (m, i) {
+        return '<li' + (m[2] ? ' class="' + m[2] + '"' : "") + '><a href="' + m[1] + '"><span class="num">0' + (i + 1) + '</span><span class="name" data-t="' + m[0] + '"></span></a></li>';
+      }).join("") + "</ul></nav>" +
+      '<div class="menu-foot"><a class="btn btn-gold" href="order.html" data-t="home.start"></a>' +
+      '<div class="row"><div class="lang-switch"><button type="button" data-set-lang="en" lang="en">EN</button><span class="sep" aria-hidden="true">/</span>' +
+      '<button type="button" data-set-lang="ar" lang="ar" class="ar">عربي</button></div>' +
+      '<div class="menu-links" id="menu-links"></div></div></div>';
+    document.body.appendChild(menu);
+
+    var opener = document.getElementById("menu-open");
+    function openMenu() {
+      menu.hidden = false;
+      document.body.classList.add("menu-open");
+      opener.setAttribute("aria-expanded", "true");
+      document.getElementById("menu-close").focus();
+    }
+    function closeMenu(returnFocus) {
+      menu.hidden = true;
+      document.body.classList.remove("menu-open");
+      opener.setAttribute("aria-expanded", "false");
+      if (returnFocus) opener.focus();
+    }
+    opener.addEventListener("click", openMenu);
+    document.getElementById("menu-close").addEventListener("click", function () { closeMenu(true); });
+    menu.addEventListener("click", function (e) { if (e.target.closest("a")) closeMenu(false); });
+    document.addEventListener("keydown", function (e) {
+      if (menu.hidden) return;
+      if (e.key === "Escape") closeMenu(true);
+      if (e.key === "Tab") { // keep keyboard focus inside the open menu
+        var f = menu.querySelectorAll("a, button");
+        if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+      }
+    });
+    menu.querySelectorAll("[data-set-lang]").forEach(function (b) {
+      b.addEventListener("click", function () { setLang(b.getAttribute("data-set-lang")); });
+    });
+
+    // Transparent over the Home page's first screen, purple everywhere else.
+    if (page === "home") {
+      var onScroll = function () {
+        var hero = document.querySelector(".h-hero");
+        header.classList.toggle("is-over", !!hero && window.scrollY < hero.offsetHeight - 80);
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    }
+  }
+
+  function renderMenuExtras() {
+    var s = (content && content.settings) || {};
+    var links = document.getElementById("menu-links");
+    if (links) {
+      links.innerHTML = '<a href="https://www.instagram.com/' + encodeURIComponent(s.instagram || "guts_san_store") + '/" target="_blank" rel="noopener">' +
+        esc(tx("footer.instagram")) + "</a>" +
+        (s.whatsapp ? '<a href="https://wa.me/' + encodeURIComponent(s.whatsapp) + '" target="_blank" rel="noopener">WhatsApp</a>' : "");
+    }
+    document.querySelectorAll("[data-set-lang]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-set-lang") === lang()));
     });
   }
 
@@ -207,24 +281,18 @@
   if (footer) {
     footer.className = "site-footer";
     footer.innerHTML =
-      '<div class="wrap">' +
-      '<div class="footer-grid">' +
-      '<div><h3>Guts Decor</h3><p><span data-t="footer.about"></span><br><span data-t="footer.city"></span></p></div>' +
-      '<div><h3 data-t="footer.contact"></h3><ul>' +
-      '<li><a class="nav-ig-text" href="https://www.instagram.com/guts_san_store/" rel="noopener" target="_blank">' + igIcon() + " @guts_san_store</a></li>" +
-      '<li><button type="button" class="link-btn" data-email-btn data-t="footer.email"></button></li>' +
-      "</ul></div>" +
-      '<div><h3 data-t="footer.policies"></h3><ul>' +
-      '<li><a href="privacy.html" data-t="footer.privacy"></a></li>' +
-      '<li><a href="terms.html" data-t="footer.terms"></a></li>' +
-      '<li><a href="refund.html" data-t="footer.refund"></a></li>' +
-      '<li><a href="pay.html" data-t="footer.pay"></a></li>' +
-      "</ul></div></div>" +
-      '<div class="disclaimer"><p data-t="footer.fanart"></p><p data-t="footer.adults"></p>' +
-      "<p>&copy; " + new Date().getFullYear() + " Guts Decor</p></div></div>";
+      '<div class="inner">' + brandHtml.replace('class="brand"', 'class="brand" style="pointer-events:auto"') +
+      '<div class="links"><a href="' + IG_URL + '" target="_blank" rel="noopener" data-t="footer.instagram"></a>' +
+      '<button type="button" class="link-btn" data-email-btn data-t="footer.email"></button>' +
+      '<a href="privacy.html" data-t="footer.privacy"></a><a href="terms.html" data-t="footer.terms"></a>' +
+      '<a href="refund.html" data-t="footer.refunds"></a><a href="pay.html" data-t="footer.pay"></a></div>' +
+      '<p class="made" data-t="footer.made"></p>' +
+      '<p class="fine" data-t="footer.fanart"></p><p class="fine" data-t="footer.adults"></p>' +
+      '<p class="fine">&copy; ' + new Date().getFullYear() + " Guts Decor</p></div>";
   }
 
   onContent(renderDm);
+  onContent(renderMenuExtras);
 
   // Turns a Google Drive share link into an image address.
   function driveImage(link, width) {
@@ -253,7 +321,7 @@
   window.GD = {
     lang: lang, t: t, tx: tx, num: num, money: money, esc: esc,
     getContent: getContent, onContent: onContent, applyText: applyText, dmHtml: dmHtml,
-    post: post, get: get, driveImage: driveImage,
+    post: post, get: get, driveImage: driveImage, swordSvg: SWORD_SVG,
     configured: function () { return !!API_URL; }
   };
 

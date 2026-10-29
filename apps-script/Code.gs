@@ -223,8 +223,10 @@ function publicContent_() {
     'hands wrapping a handle': 'hands', 'reviews reel': 'reviews' };
   var videos = {};
   readTable_('Videos').forEach(function (r) {
-    var key = VIDEO_SPOTS[String(r['Spot']).toLowerCase()];
-    if (!key) return;
+    var spot = String(r['Spot']).trim().toLowerCase();
+    if (!spot) return;
+    // Known spots keep their short names; any new row is passed on too, named from its Spot text ("Card: It's a gift" -> "card-its-a-gift").
+    var key = VIDEO_SPOTS[spot] || spot.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     videos[key] = {
       video: r['Video link'], photo: r['Photo link (shown if no video)'], tall: /^tall$/i.test(r['Shape (Wide / Tall)']),
       captionsEn: r['Captions EN (file)'], captionsAr: r['Captions AR (file)']
@@ -243,8 +245,7 @@ function publicContent_() {
       shipping: c.shipping,
       shippingOutsideMin: c.shippingOutsideMin,
       deliveryDays: firstNum_(s['Standard delivery (days)'], 14),
-      contactEmail: s['Order email'] || '',
-      // Same address, reversed and encoded, so it isn't readable as plain text in saved copies of this data.
+      // The business email, reversed and encoded, so it is never readable as plain text in this public data.
       contactEmailEnc: Utilities.base64Encode((s['Order email'] || '').split('').reverse().join('')),
       instagram: String(s['Instagram handle'] || '').replace(/^@/, '').trim(),
       whatsapp: String(s['WhatsApp number'] || '').replace(/[^\d]/g, ''),

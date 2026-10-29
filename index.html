@@ -11,155 +11,148 @@
 <script>(function(){var l;try{l=localStorage.getItem("gd-lang")}catch(e){}if(l!=="en"&&l!=="ar"){l=/^ar\b/i.test(navigator.language||"")?"ar":"en"}var h=document.documentElement;h.setAttribute("data-lang",l);h.lang=l;h.dir=l==="ar"?"rtl":"ltr"})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700&family=Cinzel:wght@600;700&family=Montserrat:wght@400;600;700;800&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261029a">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/style.css?v=20261029b">
 </head>
 <body data-page="home">
 <header id="site-header"></header>
 
 <main id="main">
 
-  <!-- First screen: background loop, headline, offer, main button -->
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="hero-media-wrap" id="hero-media"></div>
-    <div class="hero-inner">
-      <img class="hero-logo" id="hero-logo" src="assets/img/logo-240.png" alt="Guts Decor" width="120" height="120">
-      <div class="hands-wrap hidden" id="hands-wrap"><div class="hands" id="hands-video"></div></div>
+  <!-- 1. First screen: silent loop behind the logo -->
+  <section class="h-hero" aria-label="Guts Decor">
+    <div class="media" id="hero-media"></div>
+    <div class="deco" id="hero-deco" aria-hidden="true"></div>
+    <div class="centre">
+      <span class="big-mark" aria-hidden="true">GD</span>
+      <span class="big-word" aria-hidden="true">GUTS DECOR</span>
+      <span class="ph" id="hero-ph"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1 L9 5 L2 9 Z" fill="currentColor"/></svg><span data-t="ph.hero"></span></span>
+    </div>
+    <div class="bottom">
+      <div class="left">
+        <p class="made" data-t="home.subline"></p>
+        <p class="offer" id="hero-offer"></p>
+        <a class="link-u" href="order.html" data-t="home.start"></a>
+      </div>
+      <a class="scroll" href="#headline"><span data-t="hero.scroll"></span><span class="line" aria-hidden="true"><span></span></span></a>
+    </div>
+  </section>
+
+  <!-- 2. Big headline over the hands video -->
+  <section class="ivory h-headline" id="headline" aria-labelledby="hero-title">
+    <div class="tags"><span data-t="home.tag.left"></span><span data-t="home.tag.right"></span></div>
+    <div class="stage">
+      <div class="media-box" id="hands-box"><span class="ph-label" data-t="ph.hands"></span></div>
       <h1 id="hero-title" data-t="home.headline"></h1>
-      <p class="hero-sub" data-t="home.subline"></p>
-      <p class="hero-offer" id="hero-offer"></p>
-      <a class="btn btn-gold" href="order.html" data-t="home.start"></a>
-      <div><p class="spots hidden" id="spots" aria-live="polite"></p></div>
+    </div>
+    <p class="sub" data-t="home.headline.sub"></p>
+    <a class="round-next" href="#paths" data-t-aria="home.next"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M9 2 L9 15 M3 9.5 L9 15.5 L15 9.5"/></svg></a>
+  </section>
+
+  <!-- 3. It's a gift / It's for me, right under the top video -->
+  <section class="ivory rail-sec tight" id="paths" aria-labelledby="paths-title">
+    <h2 id="paths-title" data-t="home.paths.title"></h2>
+    <div class="rail" id="paths-rail">
+      <a class="rail-card" href="order.html?gift=1" data-photo="card-it-s-a-gift"><span class="tag" data-t="home.gift.title"></span></a>
+      <a class="rail-card" href="order.html" data-photo="card-it-s-for-me"><span class="tag" data-t="home.me.title"></span></a>
+    </div>
+    <div class="rail-bar" aria-hidden="true"><span></span></div>
+  </section>
+
+  <!-- 4. The maker -->
+  <section class="p-sec" id="maker" aria-labelledby="maker-title">
+    <div class="inner">
+      <p class="eyebrow" data-t="home.story.title"></p>
+      <h2 class="stepped" id="maker-title" data-rich="home.maker.headline" data-steps="0,22,6,0,34"></h2>
+      <p class="body-copy" style="margin-top:44px" data-t="home.story.text"></p>
+      <div class="big-num" id="big-num"></div>
+      <h3 class="pick-title" id="swords" data-t="home.swords.title"></h3>
+      <div class="pills" id="pills"></div>
+      <div class="photo-card" id="meet-card"></div>
+      <div class="after-link"><a class="link-u" href="order.html" data-t="home.start"></a></div>
     </div>
   </section>
 
-  <!-- Gift or for me, right under the first screen -->
-  <section class="section paths" aria-label="Who is it for">
-    <div class="wrap grid grid-2">
-      <a class="card path-card" href="order.html?gift=1">
-        <h2 class="h3" data-t="home.gift.title"></h2>
-        <p class="muted" data-t="home.gift.text"></p>
-        <span class="btn btn-gold" data-t="home.gift.button"></span>
-      </a>
-      <a class="card path-card" href="order.html">
-        <h2 class="h3" data-t="home.me.title"></h2>
-        <p class="muted" data-t="home.me.text"></p>
-        <span class="btn btn-ghost" data-t="home.me.button"></span>
-      </a>
+  <!-- 5. Ready designs (Hermès grid) -->
+  <section class="ivory grid-sec" id="designs" aria-labelledby="designs-title" style="padding-top:80px">
+    <div class="grid-head">
+      <div><p class="eyebrow" data-t="home.designs.label"></p><h2 id="designs-title" data-t="home.designs.title"></h2></div>
+      <a class="link-u" href="gallery.html" data-t="home.designs.all"></a>
     </div>
+    <div class="p-grid" id="design-grid"></div>
   </section>
 
-  <div class="trust" id="trust"></div>
-
-  <!-- Maker story -->
-  <section class="section" aria-labelledby="story-title">
-    <div class="wrap story">
-      <div class="story-media" id="story-media-wrap">
-        <div class="video-spot" id="meet-video"></div>
-      </div>
-      <div class="story-text">
-        <h2 id="story-title" data-t="home.story.title"></h2>
-        <p class="lead" data-t="home.story.text"></p>
-        <a class="btn btn-ghost" href="#swords" data-t="home.story.button"></a>
-      </div>
+  <!-- 6. Make it a centrepiece -->
+  <section class="ivory rail-sec tight" id="centrepiece" aria-labelledby="centre-title">
+    <h2 id="centre-title" data-t="home.centre.title"></h2>
+    <div class="rail" id="centre-rail">
+      <a class="rail-card" href="gallery.html?filter=decor" data-photo="card-display-pieces"><span class="tag" data-t="home.centre.display.title"></span></a>
+      <a class="rail-card" href="order.html?tier=VIP" data-photo="card-commissions"><span class="tag" data-t="home.centre.comm.title"></span></a>
     </div>
+    <div class="rail-bar" aria-hidden="true"><span></span></div>
+    <p class="rail-note" data-t="home.centre.bonus"></p>
   </section>
 
-  <!-- Swords -->
-  <section class="section alt" id="swords" aria-labelledby="swords-title">
-    <div class="wrap">
-      <h2 id="swords-title" class="center" data-t="home.swords.title"></h2>
-      <p class="center muted" data-t="home.swords.sub"></p>
-      <div class="grid grid-3 products" id="design-list"></div>
-      <h3 class="center sub-title" data-t="home.tiers.title"></h3>
-      <div class="grid grid-4" id="tier-list"></div>
-      <p class="teaser" data-t="home.teaser"></p>
-    </div>
-  </section>
-
-  <!-- Make it a centrepiece -->
-  <section class="section" aria-labelledby="centre-title">
-    <div class="wrap">
-      <h2 id="centre-title" class="center" data-t="home.centre.title"></h2>
-      <div class="grid grid-2">
-        <div class="card">
-          <h3 data-t="home.centre.display.title"></h3>
-          <p class="muted" data-t="home.centre.display.text"></p>
-          <a class="btn btn-ghost" href="gallery.html?filter=decor" data-t="home.centre.display.button"></a>
-        </div>
-        <div class="card">
-          <h3 data-t="home.centre.comm.title"></h3>
-          <p class="muted" data-t="home.centre.comm.text"></p>
-          <a class="btn btn-ghost" href="order.html?tier=VIP" data-t="home.centre.comm.button"></a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How it works -->
-  <section class="section alt" aria-labelledby="how-title">
-    <div class="wrap">
-      <h2 id="how-title" class="center" data-t="home.how.title"></h2>
-      <ol class="steps">
-        <li><h3 data-t="home.how.1.t"></h3><p class="muted" data-t="home.how.1.d"></p></li>
-        <li><h3 data-t="home.how.2.t"></h3><p class="muted" data-t="home.how.2.d"></p></li>
-        <li><h3 data-t="home.how.3.t"></h3><p class="muted" data-t="home.how.3.d"></p></li>
-        <li><h3 data-t="home.how.4.t"></h3><p class="muted" data-t="home.how.4.d"></p></li>
-        <li><h3 data-t="home.how.5.t"></h3><p class="muted" data-t="home.how.5.d"></p></li>
+  <!-- 7. How ordering works -->
+  <section class="p-sec" id="how" aria-labelledby="how-title">
+    <div class="inner">
+      <p class="eyebrow" data-t="home.how.label"></p>
+      <h2 class="head-2" id="how-title" data-rich="home.how.headline"></h2>
+      <p class="body-copy" style="margin-top:24px" data-t="home.how.body"></p>
+      <ol class="flow">
+        <li><div class="circle"><span class="t" data-t="home.flow.1.t"></span><span class="d" data-t="home.flow.1.d"></span></div><span class="dash" aria-hidden="true"></span></li>
+        <li><div class="circle"><span class="t" data-t="home.flow.2.t"></span><span class="d" data-t="home.flow.2.d"></span></div><span class="dash" aria-hidden="true"></span></li>
+        <li><div class="circle"><span class="t" data-t="home.flow.3.t"></span><span class="d" data-t="home.flow.3.d"></span></div><span class="dash" aria-hidden="true"></span></li>
+        <li><span class="pill-g" data-t="home.flow.guarantee"></span><span class="dash" aria-hidden="true"></span></li>
+        <li><div class="circle filled"><span class="t" data-t="home.flow.4.t"></span><span class="d" data-t="home.flow.4.d"></span></div><span class="dash" aria-hidden="true"></span></li>
+        <li><div class="circle"><span class="t" data-t="home.flow.5.t"></span><span class="d" data-t="home.flow.5.d"></span></div><span class="dash" aria-hidden="true"></span></li>
+        <li><div class="circle ring"><span class="t" data-t="home.flow.6.t"></span><span class="d" data-t="home.flow.6.d"></span></div></li>
       </ol>
-      <p class="notice hold center" data-t="home.hold"></p>
-      <div class="center"><a class="btn btn-gold" href="order.html" data-t="home.start"></a></div>
-    </div>
-  </section>
-
-  <!-- Guarantee -->
-  <section class="section" aria-labelledby="guarantee-title">
-    <div class="wrap">
-      <div class="guarantee">
-        <h2 id="guarantee-title" class="center" data-t="home.guarantee.title"></h2>
-        <ol>
-          <li data-t="home.guarantee.1"></li>
-          <li data-t="home.guarantee.2"></li>
-          <li data-t="home.guarantee.3"></li>
-        </ol>
-        <div class="signature center"><img src="assets/signature.png" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="sig-text" data-t="home.guarantee.sign" hidden></span></div>
-        <div class="center"><a class="btn btn-gold" href="order.html" data-t="home.start"></a></div>
+      <p class="flow-end"><span class="a" data-t="home.flow.end1"></span><br><span class="b" data-t="home.flow.end2"></span></p>
+      <div class="flow-notes">
+        <p data-t="home.flow.gift"></p>
+        <p class="hold" data-t="home.hold"></p>
       </div>
+      <div class="center" style="margin-top:28px"><a class="btn btn-gold" href="order.html" data-t="home.start"></a></div>
     </div>
   </section>
 
-  <!-- Reviews reel (hidden when the Videos tab has no reel) -->
-  <section class="section alt hidden" id="reviews" aria-labelledby="reviews-title">
-    <div class="wrap center">
-      <h2 id="reviews-title" data-t="home.reviews.title"></h2>
+  <!-- 8. Guarantees -->
+  <section class="ivory i-sec" aria-labelledby="guarantee-title">
+    <div class="inner">
+      <p class="eyebrow" data-t="home.guarantee.label"></p>
+      <h2 class="head-2" id="guarantee-title" data-rich="home.guarantee.title"></h2>
+      <ul class="n-list">
+        <li><span class="no">01</span><span class="txt"><span class="tt" data-t="home.guarantee.1.t"></span><span class="bd" data-t="home.guarantee.1"></span></span></li>
+        <li><span class="no">02</span><span class="txt"><span class="tt" data-t="home.guarantee.2.t"></span><span class="bd" data-t="home.guarantee.2"></span></span></li>
+        <li><span class="no">03</span><span class="txt"><span class="tt" data-t="home.guarantee.3.t"></span><span class="bd" data-t="home.guarantee.3"></span></span></li>
+      </ul>
+      <div class="after-link"><a class="link-u" href="order.html" data-t="home.start"></a></div>
+    </div>
+  </section>
+
+  <!-- 9. Reviews reel (hidden while the Videos tab has no reel) -->
+  <section class="p-sec center hidden" id="reviews" aria-labelledby="reviews-title">
+    <div class="inner">
+      <h2 class="italic-title" id="reviews-title" data-t="home.reviews.title"></h2>
       <div class="reel" id="reviews-reel"></div>
       <a class="btn btn-gold" href="order.html" data-t="home.reviews.button"></a>
     </div>
   </section>
 
-  <!-- FAQ -->
-  <section class="section" id="faq" aria-labelledby="faq-title">
-    <div class="wrap faq narrow">
-      <h2 id="faq-title" class="center" data-t="home.faq.title"></h2>
-      <div id="faq-list"></div>
-      <div class="center" data-dm></div>
-    </div>
-  </section>
-
-  <!-- Final next step -->
-  <section class="section alt center" aria-labelledby="final-title">
-    <div class="wrap">
-      <h2 id="final-title" data-t="home.final.title"></h2>
-      <div data-dm></div>
-      <a class="btn btn-ghost" href="order.html" data-t="home.final.order"></a>
-    </div>
+  <!-- 10. Final next step -->
+  <section class="final" aria-labelledby="final-title">
+    <h2 id="final-title" data-t="home.final.title"></h2>
+    <p data-t="home.final.body"></p>
+    <a class="btn btn-gold" href="order.html" data-t="home.final.order"></a>
+    <div class="ig-link"><a id="final-ig" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-t="home.final.ig"></a></div>
   </section>
 
 </main>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261029a"></script>
-<script src="assets/js/videos.js?v=20261029a"></script>
-<script src="assets/js/home.js?v=20261029a"></script>
+<script src="assets/js/site.js?v=20261029b"></script>
+<script src="assets/js/videos.js?v=20261029b"></script>
+<script src="assets/js/home.js?v=20261029b"></script>
 </body>
 </html>
