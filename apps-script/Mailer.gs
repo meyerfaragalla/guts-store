@@ -1,9 +1,9 @@
 /**
  * Guts Decor — mailer.
- * Lives in the guts.san.offical@gmail.com Google account (NOT the personal one).
+ * Lives in the Guts Decor business Google account (NOT the personal one).
  *
  * The order system sends each customer email here, and this account sends it itself,
- * so customers only ever see Guts Decor <guts.san.offical@gmail.com>.
+ * so customers only ever see the Guts Decor business address.
  *
  * It only works with the private key (MAILER_SECRET) that setup() creates.
  * The key lives in Script Properties, never in this file.
