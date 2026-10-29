@@ -12,3 +12,9 @@ private/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Snapshot of the public sheet data, built fresh by GitHub on every publish
+assets/content.json
+
+# Local tools for previewing the site
+.claude/

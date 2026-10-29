@@ -1,6 +1,6 @@
 /* Video spots: links come from the "Videos" tab of the Website Content sheet.
- * - The home background loop is always muted, never has controls, and is skipped (photo shown instead)
- *   on data-saver, very slow connections, or when the visitor prefers reduced motion.
+ * - Silent loops (home background, hands wrapping a handle, reviews reel) are always muted, never have controls,
+ *   and are skipped (photo shown instead) on data-saver, very slow connections, or when the visitor prefers reduced motion.
  * - Talking videos never play by themselves and always come with captions.
  *   YouTube links load nothing from YouTube until the visitor presses play.
  */
@@ -27,29 +27,35 @@
 
   function photo(spot, width) { return spot ? GD.driveImage(spot.photo, width) : ""; }
 
-  // ---------- Home background loop ----------
-  function renderHero(el, spot) {
-    var photoSrc = photo(spot, 1600);
+  // ---------- Silent loops ----------
+  // Returns true when something (video or photo) was shown.
+  function renderLoop(el, spot, opts) {
+    opts = opts || {};
+    var photoSrc = photo(spot, opts.width || 1600);
     var src = spot && parse(spot.video);
     var reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     var conn = navigator.connection || {};
     var slow = conn.saveData || /(^|-)2g$/.test(conn.effectiveType || "");
+    var alt = opts.altKey ? GD.tx(opts.altKey) : "";
+    var cls = opts.className || "loop-media";
 
     function showPhoto() {
-      el.innerHTML = photoSrc ? '<img class="hero-media" src="' + GD.esc(photoSrc) + '" alt="">' : "";
+      el.innerHTML = photoSrc ? '<img class="' + cls + '" src="' + GD.esc(photoSrc) + '" alt="' + GD.esc(alt) + '">' : "";
+      return !!photoSrc;
     }
+    if (el.querySelector("video")) return true; // already playing: don't restart on language switch
     if (!src || src.type !== "file" || reduced || slow) return showPhoto();
 
     var v = document.createElement("video");
-    v.className = "hero-media";
+    v.className = cls;
     v.muted = true;
     v.defaultMuted = true;
     v.setAttribute("muted", "");
     v.setAttribute("playsinline", "");
-    v.setAttribute("aria-hidden", "true");
+    if (alt) { v.setAttribute("aria-label", alt); v.setAttribute("role", "img"); } else v.setAttribute("aria-hidden", "true");
     v.autoplay = true;
     v.loop = true;
-    v.preload = "auto";
+    v.preload = opts.lazy ? "none" : "auto";
     v.disablePictureInPicture = true;
     if (photoSrc) v.poster = photoSrc;
     v.addEventListener("error", showPhoto);
@@ -60,11 +66,10 @@
     // Anything that moves for more than 5 seconds needs a pause button.
     var btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "hero-pause";
+    btn.className = "loop-pause";
     function label() {
-      var paused = v.paused;
-      btn.setAttribute("aria-label", paused ? GD.t("Play background video", "شغّل فيديو الخلفية") : GD.t("Pause background video", "أوقف فيديو الخلفية"));
-      btn.textContent = paused ? "▶" : "❚❚";
+      btn.setAttribute("aria-label", GD.tx(v.paused ? "video.resume" : "video.pause"));
+      btn.textContent = v.paused ? "▶" : "❚❚";
     }
     btn.addEventListener("click", function () { if (v.paused) v.play(); else v.pause(); });
     v.addEventListener("play", label);
@@ -72,14 +77,21 @@
     document.addEventListener("gd:lang", label);
     el.appendChild(btn);
     label();
-    var p = v.play();
-    if (p && p.catch) p.catch(label);
+
+    function start() { var p = v.play(); if (p && p.catch) p.catch(label); }
+    if (opts.lazy && "IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) { v.preload = "auto"; start(); io.disconnect(); }
+      });
+      io.observe(el);
+    } else start();
+    return true;
   }
 
   // ---------- Talking videos ----------
   function renderTalking(el, spot, text) {
     if (el.querySelector("iframe") || (el.querySelector("video") && !el.querySelector("video").paused)) return true;
-    var title = GD.t(text.en, text.ar);
+    var title = GD.tx(text.titleKey);
     var src = spot && parse(spot.video);
     var photoSrc = photo(spot, 1000);
     var capEn = spot && captionFile(spot.captionsEn);
@@ -89,9 +101,9 @@
     if (src && src.type === "youtube") {
       var poster = photoSrc || "https://i.ytimg.com/vi/" + src.id + "/hqdefault.jpg";
       el.innerHTML = '<div class="video-frame"><button type="button" class="video-facade" aria-label="' +
-        GD.esc(GD.t("Play video with captions: ", "شغّل الفيديو بالترجمة: ") + title) + '">' +
+        GD.esc(GD.tx("video.play") + title) + '">' +
         '<img src="' + GD.esc(poster) + '" alt="" loading="lazy"><span class="play-icon" aria-hidden="true"></span></button></div>' +
-        '<p class="hint">' + GD.t("Captions on. It only plays when you press play.", "بالترجمة. مش بيشتغل غير لما تدوس تشغيل.") + "</p>";
+        '<p class="hint">' + GD.esc(GD.tx("video.hint")) + "</p>";
       el.querySelector(".video-facade").addEventListener("click", function () {
         var lang = GD.lang();
         var f = document.createElement("iframe");
@@ -120,7 +132,7 @@
 
     // No usable video (or a video without captions): show the photo instead.
     if (photoSrc) {
-      el.innerHTML = '<div class="video-frame photo"><img src="' + GD.esc(photoSrc) + '" alt="' + GD.esc(GD.t(text.altEn, text.altAr)) + '" loading="lazy"></div>';
+      el.innerHTML = '<div class="video-frame photo"><img src="' + GD.esc(photoSrc) + '" alt="' + GD.esc(GD.tx(text.altKey)) + '" loading="lazy"></div>';
       return true;
     }
     el.innerHTML = "";
@@ -132,15 +144,11 @@
     var wrap = document.getElementById(wrapId);
     var el = document.getElementById(spotId);
     if (!wrap || !el) return;
-    var current = null;
-    function draw() { wrap.classList.toggle("hidden", !renderTalking(el, current, text)); }
-    GD.getContent().then(function (c) {
-      current = (c.videos || {})[key] || null;
-      draw();
-    }).catch(function () { wrap.classList.add("hidden"); });
-    document.addEventListener("gd:lang", function () { if (current) draw(); });
+    GD.onContent(function (c) {
+      wrap.classList.toggle("hidden", !renderTalking(el, (c.videos || {})[key] || null, text));
+    });
   }
 
-  GD.renderHero = renderHero;
+  GD.renderLoop = renderLoop;
   GD.mountTalking = mountTalking;
 })();

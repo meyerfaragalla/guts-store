@@ -1,92 +1,103 @@
-/* Home page: tiers, spots counter, reviews and text from the sheet */
+/* Home page: everything comes from the Website Content sheet (Text, Tiers, Ready Designs, Videos, Settings) */
 (function () {
   "use strict";
   var GD = window.GD;
-  var content = null;
-  var original = {
-    trust: document.getElementById("trust").innerHTML,
-    reply: document.getElementById("reply-promise").innerHTML
-  };
+  var esc = GD.esc;
 
-  var BADGES_AR = { "best seller": "الأكثر طلبًا", "top tier": "أعلى مستوى", "by quote": "بالاتفاق" };
+  function $(id) { return document.getElementById(id); }
+  function pick(en, ar) { return GD.lang() === "ar" ? (ar || en || "") : (en || ar || ""); }
 
-  function priceText(tier) {
-    if (!tier.price) return GD.t("By quote", "السعر بالاتفاق");
-    var from = /from/i.test(tier.display || "");
-    return (from ? GD.t("From ", "من ") : "") + GD.money(tier.price);
+  function renderMedia(c) {
+    var v = c.videos || {};
+    GD.renderLoop($("hero-media"), v.hero, { className: "hero-media" });
+    var hasHands = GD.renderLoop($("hands-video"), v.hands, { className: "hands-media", altKey: "home.hands.alt", width: 700 });
+    $("hands-wrap").classList.toggle("hidden", !hasHands);
+    $("hero-logo").classList.toggle("hidden", hasHands);
+    var hasReel = GD.renderLoop($("reviews-reel"), v.reviews, { className: "reel-media", altKey: "home.reviews.title", lazy: true, width: 800 });
+    $("reviews").classList.toggle("hidden", !hasReel);
   }
 
-  function renderTiers() {
-    var list = document.getElementById("tier-list");
-    if (!content) return;
-    var tiers = content.tiers.slice().sort(function (a, b) {
-      // VIP (by quote) first, then highest price first
-      return (b.price || Infinity) - (a.price || Infinity);
+  function renderHero(c) {
+    var prices = c.tiers.map(function (t) { return t.price; }).filter(Boolean);
+    $("hero-offer").textContent = prices.length ? GD.tx("home.offer", { price: GD.money(Math.min.apply(null, prices)) }) : "";
+    var s = c.settings;
+    var spots = $("spots");
+    if (typeof s.spotsLeft === "number" && s.spotsPerMonth) {
+      spots.textContent = s.spotsLeft > 0
+        ? GD.tx("home.spots", { left: GD.num(s.spotsLeft), total: GD.num(s.spotsPerMonth) })
+        : GD.tx("home.spotsFull");
+      spots.classList.toggle("hidden", !spots.textContent);
+    }
+    var proof = pick(s.proofLine, s.proofLineAr);
+    $("trust").textContent = proof;
+    $("trust").classList.toggle("hidden", !proof);
+  }
+
+  function badge(en, ar) {
+    var b = pick(en, ar);
+    return b ? '<span class="badge">' + esc(b) + "</span>" : "";
+  }
+
+  function renderDesigns(c) {
+    var designs = (c.designs || []).slice().sort(function (a, b) {
+      function rank(d) { return /best seller/i.test(d.badge || "") ? 0 : d.shippingIncluded ? 1 : 2; }
+      return rank(a) - rank(b);
     });
-    list.innerHTML = tiers.map(function (tier) {
-      var badge = tier.badge ? GD.t(tier.badge, BADGES_AR[tier.badge.toLowerCase()] || tier.badge) : "";
-      var featured = /best seller/i.test(tier.badge || "");
-      return '<article class="card tier' + (featured ? " featured" : "") + '">' +
-        (badge ? '<span class="badge">' + GD.esc(badge) + "</span>" : "") +
-        "<h3>" + GD.esc(tier.name) + "</h3>" +
-        '<div class="price">' + GD.esc(priceText(tier)) + "</div>" +
-        "<p>" + GD.esc(GD.t(tier.descEn, tier.descAr)) + "</p>" +
-        '<a class="btn ' + (featured ? "btn-gold" : "btn-ghost") + '" href="order.html?tier=' + encodeURIComponent(tier.name) + '">' +
-        GD.esc(tier.price ? GD.t("Choose " + tier.name, "اختار " + tier.name) : GD.t("Ask for a quote", "اطلب سعر")) + "</a>" +
+    var dm = "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
+    $("design-list").innerHTML = designs.map(function (d) {
+      var img = GD.driveImage(d.photo, 800);
+      var price = d.price ? (d.shippingIncluded ? GD.money(d.price) : GD.tx("home.design.from", { price: GD.money(d.price) })) : "";
+      var link = d.price ? "order.html?design=" + encodeURIComponent(d.name) : dm;
+      return '<article class="card product' + (/best seller/i.test(d.badge || "") ? " featured" : "") + '">' +
+        badge(d.badge, d.badgeAr) +
+        (img ? '<div class="product-photo"><img loading="lazy" src="' + esc(img) + '" alt="' + esc(d.name + (d.inspiredBy ? ", " + d.inspiredBy : "")) + '"></div>' : "") +
+        "<h3>" + esc(d.name) + "</h3>" +
+        (d.inspiredBy ? '<p class="small muted">' + esc(d.inspiredBy) + "</p>" : "") +
+        '<p class="benefit">' + esc(pick(d.benefitEn, d.benefitAr)) + "</p>" +
+        (d.sizes ? '<p class="small muted">' + esc(GD.tx("home.design.sizes", { sizes: d.sizes })) + "</p>" : "") +
+        (price ? '<div class="price">' + esc(price) + "</div>" : "") +
+        '<a class="btn ' + (d.price ? "btn-gold" : "btn-ghost") + '" href="' + esc(link) + '"' + (d.price ? "" : ' target="_blank" rel="noopener"') + ">" +
+        esc(GD.tx(d.price ? "home.design.choose" : "home.design.ask")) + "</a>" +
         "</article>";
     }).join("");
   }
 
-  function renderSettings() {
-    var s = content.settings;
-    var spots = document.getElementById("spots");
-    if (typeof s.spotsLeft === "number" && s.spotsPerMonth) {
-      spots.innerHTML = s.spotsLeft > 0
-        ? '<span class="dot" aria-hidden="true"></span>' + GD.t(
-            "<strong>" + GD.num(s.spotsLeft) + "</strong> of " + GD.num(s.spotsPerMonth) + " spots left this month",
-            "فاضل <strong>" + GD.num(s.spotsLeft) + "</strong> من " + GD.num(s.spotsPerMonth) + " أماكن الشهر ده")
-        : GD.t("This month is full. Reserve a spot for next month.", "الشهر ده اتملى. احجز مكانك للشهر الجاي.");
-      spots.classList.remove("hidden");
-    }
-    // Use the sheet's wording for the current language; keep the built-in wording when the sheet has none.
-    var proof = GD.lang() === "ar" ? s.proofLineAr : s.proofLine;
-    var trust = document.getElementById("trust");
-    trust.innerHTML = proof ? '<span class="gold">' + GD.esc(proof) + "</span>" : original.trust;
-    var promise = GD.lang() === "ar" ? s.replyPromiseAr : s.replyPromise;
-    var reply = document.getElementById("reply-promise");
-    if (promise) reply.textContent = promise; else reply.innerHTML = original.reply;
-  }
-
-  function renderReviews() {
-    var reviews = content.reviews || [];
-    if (!reviews.length) return;
-    document.getElementById("review-list").innerHTML = reviews.map(function (r) {
-      return '<img loading="lazy" src="' + GD.esc(GD.driveImage(r.photo, 800)) + '" alt="' +
-        GD.esc(GD.t(r.altEn || "Customer review screenshot from Instagram", r.altAr || "صورة ريفيو من زبون على إنستجرام")) + '">';
+  function renderTiers(c) {
+    var tiers = c.tiers.slice().sort(function (a, b) { return (b.price || Infinity) - (a.price || Infinity); });
+    $("tier-list").innerHTML = tiers.map(function (t) {
+      var featured = /most chosen|best seller/i.test(t.badge || "");
+      return '<article class="card tier' + (featured ? " featured" : "") + '">' +
+        badge(t.badge, t.badgeAr) +
+        "<h3>" + esc(t.name) + "</h3>" +
+        '<p class="benefit">' + esc(pick(t.forEn, t.forAr)) + "</p>" +
+        '<div class="price">' + esc(t.price ? GD.money(t.price) : GD.tx("home.price.quote")) + "</div>" +
+        '<a class="btn ' + (featured ? "btn-gold" : "btn-ghost") + '" href="order.html?tier=' + encodeURIComponent(t.name) + '">' +
+        esc(t.price ? GD.tx("home.tier.choose", { name: t.name }) : GD.tx("home.tier.quote")) + "</a>" +
+        "</article>";
     }).join("");
   }
 
-  function renderAll() {
-    if (!content) return;
-    renderTiers();
-    renderSettings();
-    renderReviews();
+  function renderFaq() {
+    var html = "";
+    for (var n = 1; n < 40; n++) {
+      var q = GD.tx("home.faq." + n + ".q");
+      if (!q) break;
+      html += "<details><summary>" + esc(q) + "</summary><p>" + esc(GD.tx("home.faq." + n + ".a")) + "</p></details>";
+    }
+    $("faq-list").innerHTML = html;
   }
 
-  GD.mountTalking("meet-wrap", "meet-video", "meet", {
-    en: "Hi, I'm Meyer", ar: "أهلًا، أنا ماير",
-    altEn: "Meyer, the maker behind Guts Decor, in the workshop", altAr: "ماير، صانع Guts Decor، في الورشة"
+  GD.mountTalking("story-media-wrap", "meet-video", "meet", { titleKey: "home.story.title", altKey: "home.story.photoAlt" });
+
+  GD.onContent(function (c) {
+    renderMedia(c);
+    renderHero(c);
+    renderDesigns(c);
+    renderTiers(c);
+    renderFaq();
   });
 
-  GD.getContent().then(function (c) {
-    content = c;
-    GD.renderHero(document.getElementById("hero-media"), (c.videos || {}).hero);
-    renderAll();
-  }).catch(function () {
-    document.getElementById("tier-list").innerHTML =
-      '<p class="muted center">' + GD.t("Prices couldn't load right now. Please refresh, or message me on Instagram.",
-        "الأسعار مش عارفة تحمّل دلوقتي. جرّب تعمل ريفرش، أو ابعتلي على إنستجرام.") + "</p>";
+  GD.getContent().catch(function () {
+    $("design-list").innerHTML = '<p class="muted center">This couldn’t load right now. Please refresh, or message me on Instagram @guts_san_store.</p>';
   });
-
-  document.addEventListener("gd:lang", renderAll);
 })();

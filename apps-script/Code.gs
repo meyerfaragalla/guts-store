@@ -165,15 +165,26 @@ function catalog_() {
   var s = settings_();
   var tiers = readTable_('Tiers').filter(function (r) { return isYes_(r['Show on site']) && r['Tier']; }).map(function (r) {
     return {
-      name: r['Tier'], price: toNum_(r['Price (LE)']), badge: r['Badge'],
-      descEn: r["What's included (EN)"], descAr: r["What's included (AR)"], display: r['Price display']
+      name: r['Tier'], price: toNum_(r['Price (LE)']), badge: r['Badge'], badgeAr: r['Badge (AR)'],
+      descEn: r["What's included (EN)"], descAr: r["What's included (AR)"], display: r['Price display'],
+      payNow: isYes_(r['Pay now']), forEn: r["Who it's for (EN)"], forAr: r["Who it's for (AR)"],
+      features: [1, 2, 3].map(function (n) { return { en: r['Feature ' + n + ' (EN)'], ar: r['Feature ' + n + ' (AR)'] }; })
+        .filter(function (f) { return f.en || f.ar; })
     };
   });
   var designs = readTable_('Ready Designs').filter(function (r) { return isYes_(r['Show on site']) && r['Design']; }).map(function (r) {
-    return { name: r['Design'], inspiredBy: r['Character / series'], readyDays: toNum_(r['Ready in (days)']), photo: r['Photo (Drive link)'] };
+    return {
+      name: r['Design'], inspiredBy: r['Character / series'], readyDays: toNum_(r['Ready in (days)']), photo: r['Photo (Drive link)'],
+      payNow: isYes_(r['Pay now']), price: toNum_(r['Price (LE)']), sizes: filled_(r['Sizes']) ? r['Sizes'] : '',
+      benefitEn: r['Benefit line (EN)'], benefitAr: r['Benefit line (AR)'], badge: r['Badge (EN)'], badgeAr: r['Badge (AR)'],
+      shippingIncluded: isYes_(r['Shipping included'])
+    };
   });
   var addons = readTable_('Add-ons').filter(function (r) { return isYes_(r['Show on site']) && r['Add-on']; }).map(function (r) {
-    return { name: r['Add-on'], price: toNum_(r['Price (LE)']), priceText: r['Price (LE)'], photo: r['Photo (Drive link)'] };
+    return {
+      name: r['Add-on'], nameAr: r['Name (AR)'], price: toNum_(r['Price (LE)']), priceText: r['Price (LE)'], photo: r['Photo (Drive link)'],
+      benefitEn: r['Benefit line (EN)'], benefitAr: r['Benefit line (AR)'], bonusEn: r['Bonus / note'], bonusAr: r['Bonus / note (AR)']
+    };
   });
   return {
     s: s, tiers: tiers, designs: designs, addons: addons,
@@ -194,14 +205,22 @@ function publicContent_() {
   var rows = readTable_('Gallery').filter(function (r) { return isYes_(r['Show on site']) && r['Photo (Drive link)']; });
   var gallery = rows.filter(function (r) { return cats.indexOf(String(r['Category']).toLowerCase()) !== -1; }).map(function (r) {
     return { photo: r['Photo (Drive link)'], titleEn: r['Title (EN)'], titleAr: r['Title (AR)'], category: r['Category'],
-      inspiredBy: r['Inspired by'], ready: isYes_(r['Ready in 4 days']) };
+      inspiredBy: r['Inspired by'], ready: isYes_(r['Ready in 4 days']), captionEn: r['Caption (EN)'], captionAr: r['Caption (AR)'] };
   });
   var reviews = rows.filter(function (r) { return /^review$/i.test(r['Category']); }).map(function (r) {
     return { photo: r['Photo (Drive link)'], altEn: r['Title (EN)'], altAr: r['Title (AR)'] };
   });
   var spotsPerMonth = firstNum_(s['Spots per month'], 0);
 
-  var VIDEO_SPOTS = { 'home background loop': 'hero', "hi, i'm meyer": 'meet', 'payment explainer': 'payment', 'thank you': 'thanks' };
+  // Every customer-facing word, in English and Arabic, from the Text tab.
+  var text = {};
+  readTable_('Text').forEach(function (r) {
+    var key = r["Key (don't change)"];
+    if (key) text[key] = { en: r['English'], ar: r['Arabic'] };
+  });
+
+  var VIDEO_SPOTS = { 'home background loop': 'hero', "hi, i'm meyer": 'meet', 'payment explainer': 'payment', 'thank you': 'thanks',
+    'hands wrapping a handle': 'hands', 'reviews reel': 'reviews' };
   var videos = {};
   readTable_('Videos').forEach(function (r) {
     var key = VIDEO_SPOTS[String(r['Spot']).toLowerCase()];
@@ -225,17 +244,30 @@ function publicContent_() {
       shippingOutsideMin: c.shippingOutsideMin,
       deliveryDays: firstNum_(s['Standard delivery (days)'], 14),
       contactEmail: s['Order email'] || '',
+      // Same address, reversed and encoded, so it isn't readable as plain text in saved copies of this data.
+      contactEmailEnc: Utilities.base64Encode((s['Order email'] || '').split('').reverse().join('')),
+      instagram: String(s['Instagram handle'] || '').replace(/^@/, '').trim(),
+      whatsapp: String(s['WhatsApp number'] || '').replace(/[^\d]/g, ''),
+      express: isYes_(s['Express delivery on']),
       spotsPerMonth: spotsPerMonth,
       spotsLeft: spotsPerMonth ? Math.max(0, spotsPerMonth - confirmedThisMonth_()) : null
     },
+    text: text,
     tiers: c.tiers,
-    designs: c.designs.map(function (d) { return { name: d.name, inspiredBy: d.inspiredBy, readyDays: d.readyDays, photo: d.photo }; }),
-    addons: c.addons.map(function (a) { return { name: a.name, price: a.price, priceText: a.priceText }; }),
+    designs: c.designs,
+    addons: c.addons.map(function (a) {
+      return { name: a.name, nameAr: a.nameAr, price: a.price, priceText: a.priceText, photo: a.photo,
+        benefitEn: a.benefitEn, benefitAr: a.benefitAr, bonusEn: a.bonusEn, bonusAr: a.bonusAr };
+    }),
     gallery: gallery,
     reviews: reviews,
     videos: videos
   };
-  cache.put('content', JSON.stringify(out), CONTENT_CACHE_SECONDS);
+  try {
+    cache.put('content', JSON.stringify(out), CONTENT_CACHE_SECONDS);
+  } catch (err) {
+    // Google's cache holds at most 100 KB; when the Text tab grows past that, skip caching rather than fail.
+  }
   return out;
 }
 

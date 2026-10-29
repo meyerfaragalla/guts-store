@@ -1,0 +1,70 @@
+# Publishes the website to GitHub Pages, with a fresh copy of the public sheet data (assets/content.json).
+# Runs on every save to GitHub, and every 15 minutes so wording changes in the sheet appear without waiting.
+# Free: GitHub doesn't charge for this on public projects.
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  CONTENT_URL: https://script.google.com/macros/s/AKfycbxv8S5aSy0oY1L0XW3k7H8yIAo9inJjTwJZP8yNT1u89kX58q9LVh8IDtetbmSP/exec?action=content
+  LIVE_COPY: https://meyerfaragalla.github.io/guts-store/assets/content.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Save a copy of the public sheet data
+        id: snapshot
+        run: |
+          curl -sSL --max-time 90 "$CONTENT_URL" -o new.json || true
+          if jq -e '.ok == true' new.json > /dev/null 2>&1; then
+            jq -c . new.json > assets/content.json
+            echo "fresh=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "The sheet didn't answer; publishing without a fresh copy (pages then load straight from the sheet)."
+            echo "fresh=no" >> "$GITHUB_OUTPUT"
+          fi
+          rm -f new.json
+
+      - name: Skip the 15-minute refresh when nothing changed
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            curl -sSL --max-time 30 "$LIVE_COPY" -o live.json || true
+            same=no
+            if [ "${{ steps.snapshot.outputs.fresh }}" != "yes" ] || cmp -s live.json assets/content.json; then same=yes; fi
+            rm -f live.json
+            if [ "$same" = "yes" ]; then echo "publish=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          fi
+          echo "publish=yes" >> "$GITHUB_OUTPUT"
+
+      - if: steps.check.outputs.publish == 'yes'
+        uses: actions/configure-pages@v5
+
+      - if: steps.check.outputs.publish == 'yes'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - if: steps.check.outputs.publish == 'yes'
+        id: deploy
+        uses: actions/deploy-pages@v4
