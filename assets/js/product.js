@@ -44,7 +44,52 @@
     });
   }
 
+  // ---------- Full-screen photo viewer: tap a photo to see the whole piece, swipe between photos, tap again to zoom ----------
+  function openViewer(start) {
+    var list = S.photos(product, 2000);
+    if (!list.length) return;
+    var box = document.createElement("div");
+    box.className = "pv";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+    box.innerHTML = '<button type="button" class="pv-close" aria-label="' + esc(GD.tx("pp.close") || "Close") + '">&times;</button>' +
+      '<div class="pv-rail">' + list.map(function (src) { return '<div class="pv-slide"><img src="' + esc(src) + '" alt=""></div>'; }).join("") + "</div>" +
+      (list.length > 1 ? '<div class="pv-count" aria-live="polite"></div>' : "");
+    document.body.appendChild(box);
+    document.body.style.overflow = "hidden";
+    var rail = box.querySelector(".pv-rail"), count = box.querySelector(".pv-count");
+    function idx() { return Math.round(Math.abs(rail.scrollLeft) / Math.max(1, rail.clientWidth)); }
+    function showCount() { if (count) count.textContent = GD.num(idx() + 1) + " / " + GD.num(list.length); }
+    rail.children[start] && rail.children[start].scrollIntoView({ block: "nearest", inline: "center" });
+    showCount();
+    rail.addEventListener("scroll", showCount, { passive: true });
+    box.querySelectorAll(".pv-slide").forEach(function (sl) {
+      sl.addEventListener("click", function (e) {
+        var zoomed = sl.classList.toggle("zoomed");
+        rail.classList.toggle("locked", zoomed);
+        if (zoomed) {
+          var img = sl.querySelector("img"), r = img.getBoundingClientRect();
+          var fx = (e.clientX - r.left) / Math.max(1, r.width), fy = (e.clientY - r.top) / Math.max(1, r.height);
+          requestAnimationFrame(function () { sl.scrollLeft = fx * sl.scrollWidth - sl.clientWidth / 2; sl.scrollTop = fy * sl.scrollHeight - sl.clientHeight / 2; });
+        }
+      });
+    });
+    function close() { document.removeEventListener("keydown", onKey); box.remove(); document.body.style.overflow = ""; }
+    function onKey(e) {
+      if (e.key === "Escape") close();
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") rail.scrollBy({ left: (e.key === "ArrowRight" ? 1 : -1) * rail.clientWidth * (document.dir === "rtl" ? -1 : 1), behavior: "smooth" });
+    }
+    box.querySelector(".pv-close").addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+    box.querySelector(".pv-close").focus();
+  }
+
   function wirePhotoDots() {
+    $("pp-photos").addEventListener("click", function (e) {
+      var img = e.target.closest && e.target.closest(".pp-photo img");
+      if (!img) return;
+      openViewer(Array.prototype.indexOf.call($("pp-photos").children, img.parentNode));
+    });
     var rail = $("pp-photos");
     rail.addEventListener("scroll", function () {
       var i = Math.round(Math.abs(rail.scrollLeft) / Math.max(1, rail.clientWidth));

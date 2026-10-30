@@ -477,7 +477,19 @@ html[data-lang="ar"] .date-box label { letter-spacing: 0; font-size: 14px; }
 .pp-photos { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; background: var(--i-photo); }
 .pp-photos::-webkit-scrollbar { display: none; }
 .pp-photo { position: relative; flex: 0 0 100%; aspect-ratio: 1 / 1.1; scroll-snap-align: center; background: var(--i-photo); display: flex; align-items: center; justify-content: center; }
-.pp-photo img { width: 100%; height: 100%; object-fit: cover; }
+.pp-photo img { width: 100%; height: 100%; object-fit: contain; cursor: zoom-in; }
+/* Full-screen photo viewer */
+.pv { position: fixed; inset: 0; z-index: 1000; background: var(--purple); display: flex; flex-direction: column; }
+.pv-rail { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.pv-rail::-webkit-scrollbar { display: none; }
+.pv-rail.locked { overflow-x: hidden; }
+.pv-slide { flex: 0 0 100%; height: 100%; scroll-snap-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--ivory); cursor: zoom-in; }
+.pv-slide img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.pv-slide.zoomed { overflow: auto; display: block; cursor: zoom-out; }
+.pv-slide.zoomed img { max-width: none; max-height: none; width: 250%; }
+.pv-close { position: absolute; top: 12px; inset-inline-end: 12px; z-index: 2; width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--purple); color: var(--ivory); font-size: 30px; line-height: 1; cursor: pointer; }
+.pv-close:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.pv-count { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); padding: 6px 14px; background: var(--purple); color: var(--ivory); font-size: 12px; letter-spacing: 0.2em; }
 .pp-photo .ph-label { position: absolute; inset-inline-start: 14px; bottom: 12px; color: #574D5C; }
 .pp-dots { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
 .pp-dots button { width: 44px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; position: relative; }
