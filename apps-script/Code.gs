@@ -269,7 +269,7 @@ function publicContent_() {
       shippingOutsideMin: c.shippingOutsideMin,
       deliveryDays: firstNum_(s['Standard delivery (days)'], 14),
       // The business email, reversed and encoded, so it is never readable as plain text in this public data.
-      contactEmailEnc: Utilities.base64Encode((s['Order email'] || '').split('').reverse().join('')),
+      contactEmailEnc: Utilities.base64Encode((contactEmail_(s) || s['Order email'] || '').split('').reverse().join('')),
       instagram: String(s['Instagram handle'] || '').replace(/^@/, '').trim(),
       whatsapp: String(s['WhatsApp number'] || '').replace(/[^\d]/g, ''),
       express: isYes_(s['Express delivery on']),
@@ -525,12 +525,9 @@ function handleUpload_(d) {
 
   countEvent_('deposit:uploaded');
   var s = settings_();
-  MailApp.sendEmail({
-    to: s['Order email'],
-    subject: 'Payment screenshot uploaded: ' + code,
-    body: 'A payment screenshot was uploaded for ' + code + '.\n\nCheck it in your InstaPay app before changing the status.\n\n' +
-      'Screenshot: ' + link + '\nOrders sheet: ' + sh.getParent().getUrl()
-  });
+  ownerMail_(s, 'Payment screenshot uploaded: ' + code,
+    'A payment screenshot was uploaded for ' + code + '.\n\nCheck it in your InstaPay app before changing the status.\n\n' +
+      'Screenshot: ' + link + '\nOrders sheet: ' + sh.getParent().getUrl());
   return { ok: true };
 }
 
@@ -598,15 +595,27 @@ function onOrdersEdit(e) {
  */
 function sendTestEmail() {
   var s = settings_();
-  var ok = sendCustomer_(s, s['Order email'], 'en', 'received', {
+  // "Test email to" in Settings: an address outside Guts Decor (e.g. your personal Gmail) to see what a customer sees.
+  var to = filled_(s['Test email to']) ? s['Test email to'] : s['Order email'];
+  var ok = sendCustomer_(s, to, 'en', 'received', {
     code: 'GD-TEST', tier: 'Premium', design: 'Dragon Slayer', estimate: 4500, outside: false, waitlist: false
   });
-  Logger.log(ok ? 'Test email sent to ' + s['Order email'] + ' by the Guts Decor mailer.' :
+  Logger.log(ok ? 'Test email sent to ' + to + ' from ' + (senderEmail_(s) || 'the Guts Decor Gmail') + ', Reply-to ' + (contactEmail_(s) || 'none') + '.' :
     'Not sent: connect the mailer first (MAILER_URL and MAILER_SECRET in Project Settings → Script Properties). Nothing was sent to the customer.');
 }
 
+// The address customers write to (Email us button, Reply-to) and the one automatic emails come from.
+function contactEmail_(s) { return filled_(s['Contact email']) ? String(s['Contact email']).trim() : ''; }
+function senderEmail_(s) { return filled_(s['Sender email']) ? String(s['Sender email']).trim() : ''; }
+
 function warnMeyer_(s, code, msg) {
-  MailApp.sendEmail({ to: s['Order email'], subject: 'Action needed on ' + code, body: msg });
+  ownerMail_(s, 'Action needed on ' + code, msg);
+}
+
+// Emails to Meyer himself also go out from the business sender; if the mailer is down they still arrive (sent directly).
+function ownerMail_(s, subject, body) {
+  if (mailerSend_(s, s['Order email'], subject, body)) return;
+  MailApp.sendEmail({ to: s['Order email'], subject: subject, body: body });
 }
 
 // =====================================================================
@@ -617,13 +626,10 @@ function notifyMeyerNewOrder_(s, row, inCairoGiza) {
     var v = row[h] instanceof Date ? Utilities.formatDate(row[h], Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm') : String(row[h]).replace(/^'/, '');
     return h + ': ' + v;
   });
-  MailApp.sendEmail({
-    to: s['Order email'],
-    subject: (row['Status'] === 'Waitlist' ? '[Waitlist] ' : '') + 'New order request ' + row['Order code'] + ' (' + row['Tier'] + ')',
-    body: lines.join('\n') + (inCairoGiza ? '' : '\n\nOutside Cairo & Giza: shipping estimate is the minimum, check the real cost.') +
+  ownerMail_(s, (row['Status'] === 'Waitlist' ? '[Waitlist] ' : '') + 'New order request ' + row['Order code'] + ' (' + row['Tier'] + ')',
+    lines.join('\n') + (inCairoGiza ? '' : '\n\nOutside Cairo & Giza: shipping estimate is the minimum, check the real cost.') +
       '\n\nOrders sheet: ' + ordersSheet_().getParent().getUrl() +
-      '\n\nTo confirm: fill "Final price (you fill)" if needed, then set Status to "Confirmed". The customer gets your InstaPay details automatically.'
-  });
+      '\n\nTo confirm: fill "Final price (you fill)" if needed, then set Status to "Confirmed". The customer gets your InstaPay details automatically.');
 }
 
 /**
@@ -635,28 +641,29 @@ function sendCustomer_(s, to, lang, kind, info) {
   return deliver_(s, to, customerMessage_(s, lang, kind, info), info.code);
 }
 
-// Sends one customer email through the Guts Decor mailer (never from the personal account).
-function deliver_(s, to, msg, code) {
+// Hands one email to the Guts Decor mailer: From the Sender email (orders@), Reply-to the Contact email (meyer@).
+function mailerSend_(s, to, subject, body) {
   var props = PropertiesService.getScriptProperties();
   var url = props.getProperty('MAILER_URL');
   var secret = props.getProperty('MAILER_SECRET');
+  if (!url || !secret) return false;
   try {
-    if (Session.getEffectiveUser().getEmail().toLowerCase() === String(s['Order email']).toLowerCase()) {
-      MailApp.sendEmail({ to: to, subject: msg.subject, body: msg.body, name: 'Guts Decor' });
-      return true;
-    }
-    if (url && secret) {
-      var res = UrlFetchApp.fetch(url, {
-        method: 'post',
-        contentType: 'text/plain',
-        payload: JSON.stringify({ secret: secret, to: to, subject: msg.subject, body: msg.body }),
-        muteHttpExceptions: true
-      });
-      if (JSON.parse(res.getContentText()).ok) return true;
-    }
+    var res = UrlFetchApp.fetch(url, {
+      method: 'post',
+      contentType: 'text/plain',
+      payload: JSON.stringify({ secret: secret, to: to, subject: subject, body: body, from: senderEmail_(s), replyTo: contactEmail_(s) }),
+      muteHttpExceptions: true
+    });
+    return !!JSON.parse(res.getContentText()).ok;
   } catch (err) {
     console.error(err);
+    return false;
   }
+}
+
+// Sends one customer email through the Guts Decor mailer (never from the personal account).
+function deliver_(s, to, msg, code) {
+  if (mailerSend_(s, to, msg.subject, msg.body)) return true;
   warnMeyer_(s, code, 'The customer email "' + msg.subject + '" was NOT sent (the Guts Decor mailer is not connected or failed). ' +
     'Please send it yourself from ' + s['Order email'] + ':\n\nTo: ' + to + '\n\n' + msg.body);
   return false;
@@ -1063,18 +1070,15 @@ function handleCheckout_(d) {
   try { countEvents_(events); } catch (err) { console.error(err); }
 
   var s = c.s;
-  MailApp.sendEmail({
-    to: s['Order email'],
-    subject: (receipt ? '' : '[No screenshot yet] ') + 'New shop order ' + code + ' (' + itemsTotal.toLocaleString('en-US') + ' LE)',
-    body: 'Items:\n' + row['Items'] + '\n\nItems total: ' + itemsTotal + ' LE\nDeposit (' + c.depositPct + '%): ' + deposit + ' LE\n' +
+  ownerMail_(s, (receipt ? '' : '[No screenshot yet] ') + 'New shop order ' + code + ' (' + itemsTotal.toLocaleString('en-US') + ' LE)',
+    'Items:\n' + row['Items'] + '\n\nItems total: ' + itemsTotal + ' LE\nDeposit (' + c.depositPct + '%): ' + deposit + ' LE\n' +
       'Shipping estimate: ' + shipping + ' LE' + (inCairoGiza || allShipFree ? '' : ' (minimum, check the real cost)') + '\n\n' +
       ['Name', 'Email', 'Phone', 'Instagram', 'Governorate', 'Area', 'Street', 'Building', 'Floor', 'Apartment', 'Landmark',
         'Gift', 'Recipient', 'Occasion date', 'Notes', 'Found us via'].filter(function (h) { return row[h]; })
         .map(function (h) { return h + ': ' + String(row[h]).replace(/^'/, ''); }).join('\n') +
       '\n\nScreenshot: ' + (receipt || 'not uploaded yet') +
       '\n\nCheck the deposit in your InstaPay app, then set Status to "Deposit paid". If you can not take the order, refund within 24 hours.' +
-      '\nOrders sheet: ' + sh.getParent().getUrl()
-  });
+      '\nOrders sheet: ' + sh.getParent().getUrl());
   deliver_(s, email, shopEmail_(s, d.lang, code, priced, itemsTotal, deposit, shipping, !!receipt), code);
   return { ok: true, code: code, deposit: deposit, screenshot: !!receipt };
 }
