@@ -60,7 +60,7 @@
     }).join("");
     var tiers = c.tiers.slice().sort(function (a, b) { return (a.price || Infinity) - (b.price || Infinity); }).map(function (t) {
       var on = /most chosen|best seller/i.test(t.badge || "");
-      var href = t.price ? "product.html?id=t-" + slug(t.name) : "order.html?tier=" + encodeURIComponent(t.name);
+      var href = "level.html?l=" + slug(t.name);
       return '<a class="pill' + (on ? " on" : "") + '" href="' + esc(href) + '">' + esc(t.name) + "</a>";
     }).join("");
     $("pills").innerHTML =

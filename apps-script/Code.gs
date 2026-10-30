@@ -198,7 +198,9 @@ function catalog_() {
       showOnHome: isYes_(columnStarting_(r, 'Show on Home')),
       wasPrice: toNum_(columnStarting_(r, 'Crossed-out price')),
       matchingMount: columnStarting_(r, 'Matching mount'),
-      askHeight: isYes_(columnStarting_(r, 'Ask height'))
+      askHeight: isYes_(columnStarting_(r, 'Ask height')),
+      // Column T: which level page shows it (Classic / Premium / Collector's).
+      level: columnStarting_(r, 'Level')
     };
   });
   var addons = readTable_('Add-ons').filter(function (r) { return isYes_(r['Show on site']) && r['Add-on']; }).map(function (r) {

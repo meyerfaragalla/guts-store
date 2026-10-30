@@ -629,3 +629,16 @@ html[data-lang="ar"] .co-bar-bottom { font-family: var(--serif-ar); }
 html[data-lang="ar"] .th-code-label { letter-spacing: 0; font-size: 14px; }
 .th-save { margin: 0 auto 22px; font-size: 14px; }
 .th-intro .photo-card { margin-top: 40px; }
+
+/* Level page: all the swords of one level */
+.lv-intro { background: var(--purple); color: var(--ivory); padding: calc(var(--header-h) + 56px) 24px 64px; }
+.lv-intro .inner, .lv-custom .inner, .lv-others .inner { max-width: 720px; margin: 0 auto; }
+.lv-title { margin: 0; font-family: var(--serif, 'Cormorant Garamond', serif); font-weight: 400; font-size: clamp(48px, 13vw, 88px); line-height: 1; }
+.lv-for { margin: 24px 0 0; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 24px; line-height: 1.3; color: var(--p-muted); }
+.lv-desc { margin: 18px 0 0; max-width: 520px; font-size: 15px; line-height: 1.7; color: var(--p-soft); }
+html[data-lang="ar"] .lv-title, html[data-lang="ar"] .lv-for { font-family: 'Amiri', serif; font-style: normal; }
+.lv-empty { max-width: 720px; margin: 0 auto; padding: 24px; font-size: 15px; line-height: 1.7; color: var(--i-body); }
+.lv-custom { padding: 64px 24px 80px; border-top: 1px solid var(--i-line); }
+.lv-custom-body { margin: 14px 0 26px; max-width: 520px; font-size: 15px; line-height: 1.7; color: var(--i-body); }
+.lv-others { background: var(--purple); padding: 48px 24px 56px; }
+.lv-pills { display: flex; flex-wrap: wrap; gap: 8px; }
