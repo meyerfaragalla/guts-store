@@ -642,3 +642,14 @@ html[data-lang="ar"] .lv-title, html[data-lang="ar"] .lv-for { font-family: 'Ami
 .lv-custom-body { margin: 14px 0 26px; max-width: 520px; font-size: 15px; line-height: 1.7; color: var(--i-body); }
 .lv-others { background: var(--purple); padding: 48px 24px 56px; }
 .lv-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Gift page */
+.gf-date { margin-top: 36px; display: flex; flex-direction: column; gap: 10px; max-width: 340px; }
+.gf-date label { font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--p-muted); }
+html[data-lang="ar"] .gf-date label { letter-spacing: 0; font-size: 14px; }
+.gf-date input { min-height: 52px; padding: 0 14px; border: 1px solid var(--gold); border-radius: 0; background: transparent; color: var(--ivory); font: inherit; font-size: 16px; color-scheme: dark; }
+.gf-date-note { margin: 0; min-height: 1.5em; font-size: 14px; line-height: 1.5; color: var(--p-soft); }
+.p-card .when { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--i-muted); }
+.p-card .when.ok { color: #2F6B3A; }
+.p-card .when.late { color: #8A2D2D; }
+html[data-lang="ar"] .p-card .when { letter-spacing: 0; font-size: 13px; }

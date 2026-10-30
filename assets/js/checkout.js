@@ -212,6 +212,16 @@
   });
   $("governorate").addEventListener("change", renderSummary);
 
+  // Came from the gift page with a date: start as a gift with that date filled in.
+  (function () {
+    var d = "";
+    try { d = sessionStorage.getItem("gd-gift-date") || ""; } catch (e) {}
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    var r = document.querySelector('input[name="who"][value="gift"]');
+    if (r) { r.checked = true; $("gift-fields").classList.remove("hidden"); }
+    if (!$("occasionDate").value) $("occasionDate").value = d;
+  })();
+
   GD.mountTalking("pay-video-wrap", "pay-video", "payment", { titleKey: "pay.video.title", altKey: "pay.video.alt" });
 
   GD.onContent(function (c) {
