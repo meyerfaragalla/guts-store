@@ -332,6 +332,9 @@
   // Turns a Google Drive share link into an image address.
   function driveImage(link, width) {
     if (!link) return "";
+    // A cell can hold several photos separated by commas: a single image uses the first one.
+    link = String(link).split(/[\s,]+/).filter(Boolean)[0] || "";
+    if (!link) return "";
     var m = String(link).match(/\/d\/([\w-]{20,})/) || String(link).match(/[?&]id=([\w-]{20,})/);
     if (!m) return /^https:\/\//.test(link) ? link : "";
     return "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w" + (width || 1000);
