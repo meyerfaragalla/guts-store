@@ -126,6 +126,10 @@
     });
     var titleKey = document.documentElement.getAttribute("data-title-key");
     if (titleKey && tx(titleKey)) document.title = tx(titleKey);
+    // The Google description, in the visitor's language, from the Text tab.
+    var descKey = document.documentElement.getAttribute("data-desc-key");
+    var descTag = document.querySelector('meta[name="description"]');
+    if (descKey && descTag && tx(descKey)) descTag.setAttribute("content", tx(descKey));
   }
 
   function applyLang(l) {
@@ -194,11 +198,11 @@
   var brandHtml = '<a class="brand" href="index.html" aria-label="Guts Decor"><span class="gd-mark" aria-hidden="true">GD</span>' +
     '<span class="wordmark" aria-hidden="true">GUTS DECOR</span></a>';
 
-  // Menu links. Until the part C pages exist, links go to the matching Home section; Commissions opens the VIP request form (phase 4).
+  // Menu links. Commissions opens the VIP request form until its own page exists (phase 4).
   var MENU = [
-    ["menu.1", "index.html#swords"], ["menu.2", "index.html#designs"], ["menu.3", "index.html#centrepiece"],
-    ["menu.4", "index.html#paths", "gold"], ["menu.5", "order.html?tier=VIP"], ["menu.6", "gallery.html"],
-    ["menu.7", "index.html#how"], ["menu.8", "index.html#maker"]
+    ["menu.1", "swords.html"], ["menu.2", "designs.html"], ["menu.3", "display.html"],
+    ["menu.4", "gift.html", "gold"], ["menu.5", "order.html?tier=VIP"], ["menu.6", "gallery.html"],
+    ["menu.7", "how.html"], ["menu.8", "about.html"]
   ];
   var SWORD_SVG = '<svg viewBox="0 0 40 400" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linejoin="round" aria-hidden="true">' +
     '<path d="M19 6 L23.5 16 Q26.5 140 22.5 262 L17.5 262 Q20.5 140 19 6 Z"/><path d="M19.6 18 Q22.6 140 20 260"/><rect x="16.5" y="262" width="7" height="6" rx="1"/>' +

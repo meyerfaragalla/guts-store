@@ -282,7 +282,7 @@
     product = S.find(c, id);
     if (!product) {
       $("pp-name").textContent = "";
-      $("pp-benefit").innerHTML = esc(GD.tx("pp.notfound")) + ' <a class="link-u" href="index.html#designs">' + esc(GD.tx("cart.browse")) + "</a>";
+      $("pp-benefit").innerHTML = esc(GD.tx("pp.notfound")) + ' <a class="link-u" href="designs.html">' + esc(GD.tx("cart.browse")) + "</a>";
       ["pp-buttons", "pp-details-sec"].forEach(function (x) { $(x).classList.add("hidden"); });
       document.querySelector(".pp-qty").classList.add("hidden");
       return;

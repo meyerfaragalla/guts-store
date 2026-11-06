@@ -89,7 +89,22 @@
     return { lines: kept, removed: lines.length - kept.length };
   }
 
+  // Which level(s) a ready design belongs to. Uses the sheet's Level column; until that reaches the site,
+  // it matches the design's price to a level's price, and treats sets by their name.
+  function levelsOf(d, tiers) {
+    var out = [];
+    if (d.level) out.push(slug(d.level));
+    else {
+      var byPrice = (tiers || []).filter(function (t) { return t.price && t.price === d.price; })[0];
+      if (byPrice) out.push(slug(byPrice.name));
+      else out.push(/classic/i.test(d.name) ? "classic" : "premium");
+    }
+    if (d.classicPrice && out.indexOf("classic") === -1) out.push("classic"); // also sold as a Classic
+    return out;
+  }
+
   GD.shop = {
+    levelsOf: levelsOf,
     slug: slug, pick: pick, products: products, find: find, url: url, tier: tier, addon: addon, displayName: displayName,
     photos: photos, payNow: payNow, hasVersions: hasVersions, basePrice: basePrice, readyDays: readyDays, readyDate: readyDate,
     plaqueUpgrade: plaqueUpgrade, linePrice: linePrice, deposit: deposit, addToCart: addToCart, cleanCart: cleanCart

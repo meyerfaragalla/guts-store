@@ -12,19 +12,7 @@
 
   var wanted = new URLSearchParams(location.search).get("l") || "";
 
-  // Which level(s) a ready design belongs to. Uses the sheet's Level column; until that reaches the site,
-  // it matches the design's price to a level's price, and treats sets by their name.
-  function levelsOf(d, tiers) {
-    var out = [];
-    if (d.level) out.push(slug(d.level));
-    else {
-      var byPrice = tiers.filter(function (t) { return t.price && t.price === d.price; })[0];
-      if (byPrice) out.push(slug(byPrice.name));
-      else out.push(/classic/i.test(d.name) ? "classic" : "premium");
-    }
-    if (d.classicPrice && out.indexOf("classic") === -1) out.push("classic"); // also sold as a Classic
-    return out;
-  }
+  var levelsOf = GD.shop.levelsOf;
 
   function card(d, levelSlug) {
     var img = GD.driveImage(d.photo, 700);
@@ -54,9 +42,9 @@
     $("lv-for").textContent = pick(tier.forEn, tier.forAr);
     $("lv-desc").textContent = pick(tier.descEn, tier.descAr);
 
+    // Highest price first (Meyer's choice, 6 Nov).
     var list = (c.designs || []).filter(function (d) { return levelsOf(d, tiers).indexOf(ls) !== -1; }).sort(function (a, b) {
-      function rank(d) { return /best seller/i.test(d.badge || "") ? 0 : d.shippingIncluded ? 1 : 2; }
-      return rank(a) - rank(b);
+      return (b.price || 0) - (a.price || 0);
     });
     $("lv-grid-title").textContent = tx("level.swords.title", "Ready to make at this level");
     $("lv-grid").innerHTML = list.map(function (d) { return card(d, ls); }).join("");
@@ -77,6 +65,6 @@
     $("lv-others-title").textContent = tx("level.others", "Other levels");
     $("lv-others").innerHTML = tiers.filter(function (t) { return t !== tier; }).map(function (t) {
       return '<a class="pill" href="level.html?l=' + esc(slug(t.name)) + '">' + esc(t.name) + "</a>";
-    }).join("");
+    }).join("") + '<a class="pill" href="designs.html">' + esc(GD.tx("gallery.f.all") || "All") + "</a>";
   });
 })();

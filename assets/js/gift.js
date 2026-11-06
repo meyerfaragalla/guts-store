@@ -66,7 +66,7 @@
 
   GD.onContent(function (c) {
     content = c;
-    document.title = (GD.tx("gift.title") || "A gift made only for him") + " · Guts Decor";
+    if (!GD.tx("seo.gift.title")) document.title = (GD.tx("gift.title") || "A gift made only for him") + " · Guts Decor";
     $("gf-eyebrow").textContent = tx("gift.label", "It's a gift");
     $("gf-title").textContent = tx("gift.title", "A gift made only for him");
     $("gf-sub").textContent = tx("gift.sub", "Handmade for one person, with his name carved by hand, and ready before the big day.");
