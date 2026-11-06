@@ -111,13 +111,23 @@
   var PERSON_CM = 175;
   function isDragonSlayer(p) { return !!(p && p.d && p.d.askHeight); }
 
+  // Label under a figure: name wrapped to short lines (at commas or spaces), then the length, small enough not to touch its neighbours.
+  function sizeLabel(x, y0, name, sub, ink, soft) {
+    var words = String(name).replace(/([,،])\s*/g, "$1 ").split(" "), lines = [], cur = "";
+    words.forEach(function (w) { var t = cur ? cur + " " + w : w; if (t.length > 13 && cur) { lines.push(cur); cur = w; } else cur = t; });
+    if (cur) lines.push(cur);
+    var out = "";
+    lines.forEach(function (l, i) { out += '<text x="' + x + '" y="' + (y0 + i * 13) + '" text-anchor="middle" font-size="11" fill="' + ink + '">' + esc(l) + "</text>"; });
+    return out + '<text x="' + x + '" y="' + (y0 + lines.length * 13 + 2) + '" text-anchor="middle" font-size="10" fill="' + soft + '">' + esc(sub) + "</text>";
+  }
+
   // focus: "all" (Swords page), "sword" (a 120 cm piece) or "ds" (Dragon Slayer, with the chosen height if any)
   function sizeDrawing(focus, chosen) {
     var floor = 420, k = 2; // 2 px per cm
     var y = function (cm) { return floor - cm * k; };
     var ink = "#1E0B2E", soft = "#5E5466", gold = "#C9A44C";
     var showSword = focus !== "ds", showDs = focus !== "sword";
-    var px = 92, sx = showDs ? 190 : 210, dx = showSword ? 284 : 210;
+    var px = 80, sx = showDs ? 188 : 210, dx = showSword ? 292 : 210;
     var s = '<svg class="size-svg" viewBox="0 0 360 486" role="img" aria-labelledby="size-svg-t"><title id="size-svg-t">' +
       esc(GD.tx("size.alt") || "A 175 cm person next to the swords, drawn to scale") + "</title>";
     // Ruler every 50 cm
@@ -137,8 +147,7 @@
       " L" + (c + 1) + " " + (n + 170) + " L" + (c - 1) + " " + (n + 170) + " L" + (c - 3) + " " + floor + " L" + (c - 14) + " " + floor +
       " L" + (c - 16) + " " + (n + 150) + " L" + (c - 18) + " " + (n + 48) + " L" + (c - 22) + " " + (n + 150) + " L" + (c - 30) + " " + (n + 148) +
       " L" + (c - 26) + " " + (n + 20) + " Q" + (c - 24) + " " + (n + 8) + " " + (c - 6) + " " + (n + 6) + ' Z"/>';
-    s += '<text x="' + c + '" y="' + (floor + 22) + '" text-anchor="middle" font-size="13" fill="' + ink + '">' + esc(GD.tx("size.person") || "Average person") + "</text>" +
-      '<text x="' + c + '" y="' + (floor + 40) + '" text-anchor="middle" font-size="12" fill="' + soft + '">' + esc(GD.tx("pp.cm", { n: GD.num(PERSON_CM) }) || PERSON_CM + " cm") + "</text>";
+    s += sizeLabel(c, floor + 20, GD.tx("size.person") || "Average person", GD.tx("pp.cm", { n: GD.num(PERSON_CM) }) || PERSON_CM + " cm", ink, soft);
     // 120 cm sword, standing tip up
     if (showSword) {
       var x = sx, hilt = y(30), tip = y(SWORD_CM);
@@ -147,8 +156,7 @@
         '<path d="M' + (x - 5) + " " + (hilt - 2) + " Q" + (x - 2) + " " + ((hilt + tip) / 2) + " " + (x + 2) + " " + tip + " Q" + (x + 6) + " " + (tip + 30) + " " + (x + 5) + " " + (hilt - 2) +
         ' Z" fill="#fff" stroke="' + ink + '"/>' +
         '<line x1="' + (x + 16) + '" y1="' + tip + '" x2="' + (x + 16) + '" y2="' + floor + '" stroke="' + gold + '" stroke-dasharray="3 3"/>';
-      s += '<text x="' + x + '" y="' + (floor + 22) + '" text-anchor="middle" font-size="13" fill="' + ink + '">' + esc(GD.tx("size.sword") || "Katana") + "</text>" +
-        '<text x="' + x + '" y="' + (floor + 40) + '" text-anchor="middle" font-size="12" fill="' + soft + '">' + esc(GD.tx("pp.cm", { n: GD.num(SWORD_CM) }) || SWORD_CM + " cm") + "</text>";
+      s += sizeLabel(x, floor + 20, GD.tx("size.sword") || "Katana", GD.tx("pp.cm", { n: GD.num(SWORD_CM) }) || SWORD_CM + " cm", ink, soft);
     }
     // Dragon Slayer at its three heights (the chosen one, or the tallest, drawn solid)
     if (showDs) {
@@ -163,9 +171,7 @@
         s += '<line x1="' + (X + 20) + '" y1="' + y(v) + '" x2="' + (X + 30) + '" y2="' + y(v) + '" stroke="' + (on ? gold : soft) + '" stroke-width="' + (on ? 2 : 1) + '"/>' +
           '<text x="' + (X + 34) + '" y="' + (y(v) + 4) + '" font-size="11" fill="' + (on ? ink : soft) + '" font-weight="' + (on ? 600 : 400) + '" font-family="Montserrat, sans-serif">' + v + "</text>";
       });
-      s += '<text x="' + X + '" y="' + (floor + 22) + '" text-anchor="middle" font-size="13" fill="' + ink + '">Dragon Slayer</text>' +
-        '<text x="' + X + '" y="' + (floor + 40) + '" text-anchor="middle" font-size="12" fill="' + soft + '">' +
-        esc(GD.tx("pp.cm", { n: DS_HEIGHTS.map(GD.num).join(" / ") }) || DS_HEIGHTS.join(" / ") + " cm") + "</text>";
+      s += sizeLabel(X, floor + 20, "Dragon Slayer", GD.tx("pp.cm", { n: DS_HEIGHTS.map(GD.num).join(" / ") }) || DS_HEIGHTS.join(" / ") + " cm", ink, soft);
     }
     return s + "</svg>";
   }
