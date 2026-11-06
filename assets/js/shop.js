@@ -188,10 +188,104 @@
       ' Z" fill="#fff" stroke="' + ink + '"/>' +
       '<line x1="4" y1="' + floor + '" x2="116" y2="' + floor + '" stroke="' + ink + '"/></svg>';
   }
+  // ---------- Room scenes for display pieces (to scale, like the size drawing) ----------
+  // The piece being sold is drawn in gold; the sword, furniture and a 175 cm person in ink, so it's clear what you get.
+  var SC = { k: 1.5, floor: 384, ink: "#1E0B2E", soft: "#5E5466", gold: "#C9A44C", fill: "#E6DFD2" };
+  function sy(cm) { return SC.floor - cm * SC.k; }
+  function scPerson(c) {
+    var f = SC.k / 2, top = sy(PERSON_CM), hr = 11 * f, n = top + 2 * hr, F = SC.floor;
+    var o = function (v) { return v * f; };
+    return '<circle cx="' + c + '" cy="' + (top + hr) + '" r="' + hr + '" fill="' + SC.fill + '" stroke="' + SC.ink + '"/>' +
+      '<path fill="' + SC.fill + '" stroke="' + SC.ink + '" stroke-linejoin="round" d="M' + (c - o(6)) + " " + n + " L" + (c + o(6)) + " " + n + " L" + (c + o(6)) + " " + (n + o(6)) +
+      " Q" + (c + o(24)) + " " + (n + o(8)) + " " + (c + o(26)) + " " + (n + o(20)) + " L" + (c + o(30)) + " " + (n + o(148)) + " L" + (c + o(22)) + " " + (n + o(150)) +
+      " L" + (c + o(18)) + " " + (n + o(48)) + " L" + (c + o(16)) + " " + (n + o(150)) + " L" + (c + o(14)) + " " + F + " L" + (c + o(3)) + " " + F +
+      " L" + (c + o(1)) + " " + (n + o(170)) + " L" + (c - o(1)) + " " + (n + o(170)) + " L" + (c - o(3)) + " " + F + " L" + (c - o(14)) + " " + F +
+      " L" + (c - o(16)) + " " + (n + o(150)) + " L" + (c - o(18)) + " " + (n + o(48)) + " L" + (c - o(22)) + " " + (n + o(150)) + " L" + (c - o(30)) + " " + (n + o(148)) +
+      " L" + (c - o(26)) + " " + (n + o(20)) + " Q" + (c - o(24)) + " " + (n + o(8)) + " " + (c - o(6)) + " " + (n + o(6)) + ' Z"/>';
+  }
+  // A 120 cm katana lying flat, centred on (cx, cy), handle on the left.
+  function scKatanaH(cx, cy) {
+    var L = SWORD_CM * SC.k, x0 = cx - L / 2, g = x0 + 30 * SC.k, tip = cx + L / 2;
+    return '<rect x="' + x0 + '" y="' + (cy - 3) + '" width="' + (g - x0) + '" height="6" rx="2" fill="' + SC.ink + '"/>' +
+      '<path d="M' + g + " " + (cy - 3) + " Q" + ((g + tip) / 2) + " " + (cy - 5) + " " + tip + " " + (cy - 9) + " Q" + (tip - 25) + " " + (cy + 1) + " " + g + " " + (cy + 3) +
+      ' Z" fill="#fff" stroke="' + SC.ink + '"/>' +
+      '<ellipse cx="' + g + '" cy="' + cy + '" rx="2.5" ry="8" fill="' + SC.ink + '"/>';
+  }
+  // A sword standing tip up, its bottom at (x, bottom): a 120 cm katana, or Dragon Slayer at 190 cm.
+  function scSwordV(x, bottom, ds) {
+    var k = SC.k, len = (ds ? DS_HEIGHTS[DS_HEIGHTS.length - 1] : SWORD_CM) * k, top = bottom - len, grip = bottom - (ds ? 40 : 30) * k;
+    if (ds) return '<rect x="' + (x - 3) + '" y="' + grip + '" width="6" height="' + (bottom - grip) + '" rx="2" fill="' + SC.ink + '"/>' +
+      '<rect x="' + (x - 12) + '" y="' + (grip - 3) + '" width="24" height="4" fill="' + SC.ink + '"/>' +
+      '<path d="M' + (x - 10) + " " + (grip - 3) + " L" + (x - 10) + " " + (top + 6) + " L" + (x - 5) + " " + top + " L" + (x + 10) + " " + top + " L" + (x + 10) + " " + (grip - 3) +
+      ' Z" fill="#fff" stroke="' + SC.ink + '"/>';
+    return '<rect x="' + (x - 3) + '" y="' + grip + '" width="6" height="' + (bottom - grip) + '" rx="2" fill="' + SC.ink + '"/>' +
+      '<ellipse cx="' + x + '" cy="' + grip + '" rx="8" ry="2.5" fill="' + SC.ink + '"/>' +
+      '<path d="M' + (x - 3) + " " + grip + " Q" + (x - 5) + " " + ((grip + top) / 2) + " " + (x - 9) + " " + top + " Q" + (x + 1) + " " + (top + 25) + " " + (x + 3) + " " + grip +
+      ' Z" fill="#fff" stroke="' + SC.ink + '"/>';
+  }
+  function scSofa(x0, x1) {
+    var seat = sy(45), back = sy(85), arm = sy(62), F = SC.floor;
+    return '<path d="M' + x0 + " " + F + " L" + x0 + " " + arm + " L" + (x0 + 14) + " " + arm + " L" + (x0 + 14) + " " + back + " L" + (x1 - 14) + " " + back + " L" + (x1 - 14) + " " + arm +
+      " L" + x1 + " " + arm + " L" + x1 + " " + F + ' Z" fill="' + SC.fill + '" stroke="' + SC.ink + '" stroke-linejoin="round"/>' +
+      '<line x1="' + (x0 + 14) + '" y1="' + seat + '" x2="' + (x1 - 14) + '" y2="' + seat + '" stroke="' + SC.ink + '"/>';
+  }
+  function sceneKind(name) {
+    var n = String(name || "").toLowerCase(), m = n.match(/\((\d)\s*swords?\)/);
+    if (/dragon slayer/.test(n) && /stand/.test(n)) return { kind: "ds" };
+    if (/vertical/.test(n)) return { kind: "upright" };
+    if (/desk|table/.test(n)) return { kind: "desk" };
+    if (/oval/.test(n)) return { kind: "oval" };
+    if (/plaque/.test(n)) return { kind: "plaque" };
+    if (/mount|stand/.test(n)) return { kind: "wall", count: m ? Number(m[1]) : 1 };
+    return null;
+  }
+  function scene(name) {
+    var s = sceneKind(name);
+    if (!s) return "";
+    var k = SC.k, F = SC.floor, cx = 228, g = SC.gold, ink = SC.ink, body = "";
+    body += '<rect x="0" y="0" width="360" height="' + F + '" fill="#F8F4EC"/>' +
+      '<line x1="0" y1="' + F + '" x2="360" y2="' + F + '" stroke="' + ink + '" stroke-width="1.2"/>' + scPerson(52);
+    if (s.kind === "wall" || s.kind === "oval" || s.kind === "plaque") {
+      body += scSofa(126, 330);
+      var count = s.kind === "wall" ? s.count : 1, gap = 24, top = sy(150) - (count - 1) * gap / 2;
+      if (s.kind === "oval") body += '<ellipse cx="' + cx + '" cy="' + sy(150) + '" rx="' + (70 * k) + '" ry="' + (26 * k) + '" fill="' + g + '" stroke="' + ink + '" stroke-opacity=".5"/>';
+      if (s.kind === "plaque") body += '<path d="M' + (cx - 74 * k) + " " + sy(176) + " L" + (cx + 64 * k) + " " + sy(176) + " L" + (cx + 74 * k) + " " + sy(166) + " L" + (cx + 74 * k) + " " + sy(124) +
+        " L" + (cx - 64 * k) + " " + sy(124) + " L" + (cx - 74 * k) + " " + sy(134) + ' Z" fill="' + g + '" stroke="' + ink + '" stroke-opacity=".5"/>';
+      if (s.kind === "wall") {
+        var t = top - 12, b = top + (count - 1) * gap + 14;
+        [cx - 62, cx + 40].forEach(function (x) { body += '<rect x="' + x + '" y="' + t + '" width="9" height="' + (b - t) + '" rx="2" fill="' + g + '"/>'; });
+      }
+      for (var i = 0; i < count; i++) body += scKatanaH(cx, top + i * gap);
+      if (s.kind === "wall") [cx - 62, cx + 40].forEach(function (x) {
+        for (var j = 0; j < count; j++) body += '<rect x="' + (x - 1) + '" y="' + (top + j * gap + 3) + '" width="11" height="4" fill="' + g + '"/>';
+      });
+    } else if (s.kind === "desk") {
+      var top2 = sy(75), x0 = 120, x1 = 336;
+      body += '<rect x="' + x0 + '" y="' + top2 + '" width="' + (x1 - x0) + '" height="6" fill="' + SC.fill + '" stroke="' + ink + '"/>' +
+        '<line x1="' + (x0 + 10) + '" y1="' + (top2 + 6) + '" x2="' + (x0 + 10) + '" y2="' + F + '" stroke="' + ink + '" stroke-width="3"/>' +
+        '<line x1="' + (x1 - 10) + '" y1="' + (top2 + 6) + '" x2="' + (x1 - 10) + '" y2="' + F + '" stroke="' + ink + '" stroke-width="3"/>';
+      var rest = top2 - 16;
+      [cx - 58, cx + 42].forEach(function (x) {
+        body += '<path d="M' + (x - 8) + " " + top2 + " L" + (x - 4) + " " + (rest - 4) + " L" + (x + 4) + " " + (rest - 4) + " L" + (x + 8) + " " + top2 + ' Z" fill="' + g + '"/>';
+      });
+      body += '<rect x="' + (cx - 68) + '" y="' + (top2 - 3) + '" width="120" height="3" fill="' + g + '"/>' + scKatanaH(cx, rest - 6);
+    } else {
+      // Sword stands upside down: handle up, blade tip resting in a cup on the base, leaning on the upright post (Meyer, 6 Nov).
+      var ds = s.kind === "ds", baseW = (ds ? 60 : 36) * k, baseH = 8 * k, rest = F - baseH;
+      var len = (ds ? DS_HEIGHTS[DS_HEIGHTS.length - 1] : SWORD_CM) * k, lean = 6, tan = Math.tan(lean * Math.PI / 180);
+      var px = cx - 14, postH = len * 0.62, postX = px + postH * tan + (ds ? 15 : 5);
+      body += '<rect x="' + (cx - baseW / 2 - 14) + '" y="' + rest + '" width="' + baseW + '" height="' + baseH + '" fill="' + g + '"/>' +
+        '<path d="M' + (px - 7) + " " + rest + " L" + (px - 5) + " " + (rest - 7) + " L" + (px + 5) + " " + (rest - 7) + " L" + (px + 7) + " " + rest + ' Z" fill="' + g + '"/>' +
+        '<rect x="' + postX + '" y="' + (rest - postH) + '" width="6" height="' + postH + '" fill="' + g + '"/>' +
+        '<rect x="' + (postX - 4) + '" y="' + (rest - postH) + '" width="10" height="5" fill="' + g + '"/>' +
+        '<g transform="rotate(' + lean + " " + px + " " + (rest - 4) + ") rotate(180 " + px + " " + (rest - 4 - len / 2) + ')">' + scSwordV(px, rest - 4, ds) + "</g>";
+    }
+    return '<svg class="scene-svg" viewBox="0 0 360 400" role="img" aria-label="' + esc(GD.tx("scene.alt") || "Drawing of the piece in a room, to scale, next to a 175 cm person") + '">' + body + "</svg>";
+  }
   function esc(s) { return GD.esc(s); }
 
   GD.shop = {
-    levelsOf: levelsOf, sizeDrawing: sizeDrawing, heightMini: heightMini, isDragonSlayer: isDragonSlayer, dsHeights: DS_HEIGHTS,
+    levelsOf: levelsOf, sizeDrawing: sizeDrawing, heightMini: heightMini, scene: scene, isDragonSlayer: isDragonSlayer, dsHeights: DS_HEIGHTS,
     slug: slug, pick: pick, products: products, find: find, url: url, tier: tier, addon: addon, displayName: displayName,
     photos: photos, payNow: payNow, hasVersions: hasVersions, basePrice: basePrice, readyDays: readyDays, readyDate: readyDate,
     plaqueUpgrade: plaqueUpgrade, linePrice: linePrice, deposit: deposit, addToCart: addToCart, cleanCart: cleanCart

@@ -34,7 +34,8 @@
     var alt = S.displayName(product);
     $("pp-photos").innerHTML = list.length
       ? list.map(function (src, i) { return '<div class="pp-photo"><img src="' + esc(src) + '" alt="' + esc(alt + (list.length > 1 ? " (" + (i + 1) + ")" : "")) + '"' + (i ? ' loading="lazy"' : "") + "></div>"; }).join("")
-      : '<div class="pp-photo empty">' + (GD.tx("ph.card") ? '<span class="ph-label">' + esc(GD.tx("ph.card")) + "</span>" : "") + "</div>";
+      : '<div class="pp-photo empty">' + ((product.type === "addon" && S.scene(product.d.name)) ||
+        (GD.tx("ph.card") ? '<span class="ph-label">' + esc(GD.tx("ph.card")) + "</span>" : "")) + "</div>";
     var dots = $("pp-dots");
     dots.innerHTML = list.length > 1 ? list.map(function (_, i) {
       return '<button type="button" aria-label="' + esc(GD.tx("pp.photo", { n: GD.num(i + 1), total: GD.num(list.length) })) + '"' + (i ? "" : ' aria-current="true"') + "></button>";
@@ -209,6 +210,10 @@
     var sec = $("pp-size-sec");
     var isSword = product && product.type !== "addon";
     sec.classList.toggle("hidden", !isSword);
+    // Mounts, stands and plaques: a to-scale room scene instead.
+    var pic = !isSword && product ? S.scene(product.d.name) : "";
+    $("pp-scene-sec").classList.toggle("hidden", !pic);
+    $("pp-scene-box").innerHTML = pic;
     if (!isSword) return;
     var ds = S.isDragonSlayer(product);
     $("pp-size-body").textContent = GD.tx(ds ? "size.body.ds" : "size.body.sword");

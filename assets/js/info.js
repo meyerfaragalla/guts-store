@@ -84,7 +84,7 @@
       var img = GD.driveImage(a.photo, 700);
       var name = pick(a.name, a.nameAr), benefit = pick(a.benefitEn, a.benefitAr), bonus = pick(a.bonusEn, a.bonusAr);
       return '<a class="p-card" href="product.html?id=a-' + esc(slug(a.name)) + '" data-track="display-card:' + esc(a.name) + '">' +
-        '<span class="ph">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(name) + '">' : phLabel()) + "</span>" +
+        '<span class="ph' + (img ? "" : " scene-ph") + '">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(name) + '">' : (GD.shop.scene(a.name) || phLabel())) + "</span>" +
         '<span class="info"><span class="name">' + esc(name) + '</span><span class="price">' + esc(GD.money(a.price)) + "</span>" +
         (bonus ? '<span class="bonus">' + esc(bonus) + "</span>" : "") +
         (benefit ? '<span class="benefit">' + esc(benefit) + "</span>" : "") + "</span></a>";
