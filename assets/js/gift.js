@@ -29,7 +29,7 @@
         : '<span class="when late">' + esc(tx("gift.tooLate", "Needs {days} days, message me to check", { days: GD.num(days) })) + "</span>";
     return '<a class="p-card" href="product.html?id=d-' + esc(slug(d.name)) + '" data-track="gift-card:' + esc(d.name) + '">' +
       '<span class="ph">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(d.name) + '">' : phLabel("ph.card")) + "</span>" +
-      '<span class="info"><span class="name">' + esc(d.name + (d.inspiredBy && !isSet ? ", " + d.inspiredBy.split(",")[0] : "")) + "</span>" +
+      '<span class="info"><span class="name">' + esc(d.name + (d.inspiredBy && !isSet && d.inspiredBy.split(",")[0] !== d.name ? ", " + d.inspiredBy.split(",")[0] : "")) + "</span>" +
       '<span class="price">' + (d.wasPrice ? '<s class="was">' + esc(GD.money(d.wasPrice)) + "</s> " : "") + esc(price) + "</span>" + when +
       (pick(d.benefitEn, d.benefitAr) ? '<span class="benefit">' + esc(pick(d.benefitEn, d.benefitAr)) + "</span>" : "") +
       "</span></a>";

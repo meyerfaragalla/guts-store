@@ -121,8 +121,15 @@
     return out + '<text x="' + x + '" y="' + (y0 + lines.length * 13 + 2) + '" text-anchor="middle" font-size="10" fill="' + soft + '">' + esc(sub) + "</text>";
   }
 
-  // focus: "all" (Swords page), "sword" (a 120 cm piece) or "ds" (Dragon Slayer, with the chosen height if any)
-  function sizeDrawing(focus, chosen) {
+  // A sword's own length in cm, read from its Sizes cell ("90 cm long"); 120 cm when the cell is empty.
+  function swordCm(p) {
+    var m = String((p && p.d && p.d.sizes) || "").match(/(\d{2,3})\s*cm/i);
+    return m ? Number(m[1]) : SWORD_CM;
+  }
+
+  // focus: "all" (Swords page), "sword" (one piece: its own length and name) or "ds" (Dragon Slayer, with the chosen height if any)
+  function sizeDrawing(focus, chosen, own) {
+    var ownCm = own && own.cm ? own.cm : SWORD_CM, ownName = own && own.name;
     var floor = 420, k = 2; // 2 px per cm
     var y = function (cm) { return floor - cm * k; };
     var ink = "#1E0B2E", soft = "#5E5466", gold = "#C9A44C";
@@ -148,15 +155,15 @@
       " L" + (c - 16) + " " + (n + 150) + " L" + (c - 18) + " " + (n + 48) + " L" + (c - 22) + " " + (n + 150) + " L" + (c - 30) + " " + (n + 148) +
       " L" + (c - 26) + " " + (n + 20) + " Q" + (c - 24) + " " + (n + 8) + " " + (c - 6) + " " + (n + 6) + ' Z"/>';
     s += sizeLabel(c, floor + 20, GD.tx("size.person") || "Average person", GD.tx("pp.cm", { n: GD.num(PERSON_CM) }) || PERSON_CM + " cm", ink, soft);
-    // 120 cm sword, standing tip up
+    // The sword (120 cm, or this piece's own length), standing tip up
     if (showSword) {
-      var x = sx, hilt = y(30), tip = y(SWORD_CM);
+      var x = sx, hilt = y(30), tip = y(ownCm);
       s += '<rect x="' + (x - 3.5) + '" y="' + hilt + '" width="7" height="' + (floor - hilt) + '" rx="2" fill="' + ink + '"/>' +
         '<ellipse cx="' + x + '" cy="' + hilt + '" rx="11" ry="3" fill="' + gold + '"/>' +
         '<path d="M' + (x - 5) + " " + (hilt - 2) + " Q" + (x - 2) + " " + ((hilt + tip) / 2) + " " + (x + 2) + " " + tip + " Q" + (x + 6) + " " + (tip + 30) + " " + (x + 5) + " " + (hilt - 2) +
         ' Z" fill="#fff" stroke="' + ink + '"/>' +
         '<line x1="' + (x + 16) + '" y1="' + tip + '" x2="' + (x + 16) + '" y2="' + floor + '" stroke="' + gold + '" stroke-dasharray="3 3"/>';
-      s += sizeLabel(x, floor + 20, GD.tx("size.sword") || "Katana", GD.tx("pp.cm", { n: GD.num(SWORD_CM) }) || SWORD_CM + " cm", ink, soft);
+      s += sizeLabel(x, floor + 20, ownName || GD.tx("size.sword") || "Katana", GD.tx("pp.cm", { n: GD.num(ownCm) }) || ownCm + " cm", ink, soft);
     }
     // Dragon Slayer at its three heights (the chosen one, or the tallest, drawn solid)
     if (showDs) {
@@ -397,7 +404,7 @@
   function esc(s) { return GD.esc(s); }
 
   GD.shop = {
-    levelsOf: levelsOf, sizeDrawing: sizeDrawing, heightMini: heightMini, scene: scene, roomViewer: roomViewer, sceneKind: sceneKind, isDragonSlayer: isDragonSlayer, dsHeights: DS_HEIGHTS,
+    levelsOf: levelsOf, sizeDrawing: sizeDrawing, swordCm: swordCm, heightMini: heightMini, scene: scene, roomViewer: roomViewer, sceneKind: sceneKind, isDragonSlayer: isDragonSlayer, dsHeights: DS_HEIGHTS,
     slug: slug, pick: pick, products: products, find: find, url: url, tier: tier, addon: addon, displayName: displayName,
     photos: photos, payNow: payNow, hasVersions: hasVersions, basePrice: basePrice, readyDays: readyDays, readyDate: readyDate,
     plaqueUpgrade: plaqueUpgrade, linePrice: linePrice, deposit: deposit, addToCart: addToCart, cleanCart: cleanCart

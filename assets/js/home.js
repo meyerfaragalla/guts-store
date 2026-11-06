@@ -88,7 +88,7 @@
       var corner = !isSet && d.badge ? '<span class="tag">' + esc(pick(d.badge, d.badgeAr)) + "</span>" : "";
       return '<a class="p-card" href="' + esc(designLink(c, d)) + '" data-track="card:' + esc(d.name) + '">' + corner +
         '<span class="ph">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(d.name + (d.inspiredBy ? ", " + d.inspiredBy : "")) + '">' : phLabel("ph.card")) + "</span>" +
-        '<span class="info"><span class="name">' + esc(d.name + (d.inspiredBy && !isSet ? ", " + d.inspiredBy.split(",")[0] : "")) + "</span>" +
+        '<span class="info"><span class="name">' + esc(d.name + (d.inspiredBy && !isSet && d.inspiredBy.split(",")[0] !== d.name ? ", " + d.inspiredBy.split(",")[0] : "")) + "</span>" +
         '<span class="price">' + (d.wasPrice ? '<s class="was">' + esc(GD.money(d.wasPrice)) + "</s> " : "") + esc(price) + "</span>" +
         (pick(d.benefitEn, d.benefitAr) ? '<span class="benefit">' + esc(pick(d.benefitEn, d.benefitAr)) + "</span>" : "") +
         "</span></a>";

@@ -240,8 +240,10 @@
     if (showScene) S.roomViewer($("pp-scene-box"), sceneName); else $("pp-scene-box").innerHTML = "";
     if (!isSword) return;
     var ds = S.isDragonSlayer(product);
-    $("pp-size-body").textContent = GD.tx(ds ? "size.body.ds" : "size.body.sword");
-    $("pp-size-box").innerHTML = S.sizeDrawing(ds ? "ds" : "sword", state.height);
+    // Each sword is drawn at its own length (Sizes column, e.g. Talon's sword 90 cm) and labelled with its own name.
+    var cm = S.swordCm(product), own = { cm: cm, name: product.type === "design" ? product.d.name : "" };
+    $("pp-size-body").textContent = GD.tx(ds ? "size.body.ds" : "size.body.sword", { n: GD.num(cm) });
+    $("pp-size-box").innerHTML = S.sizeDrawing(ds ? "ds" : "sword", state.height, own);
   }
 
   // ---------- Details and reviews ----------

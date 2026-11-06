@@ -25,7 +25,7 @@
     var benefit = pick(d.benefitEn, d.benefitAr);
     return '<a class="p-card' + (full ? " full" : "") + '" href="product.html?id=d-' + esc(slug(d.name)) + '" data-track="designs-card:' + esc(d.name) + '">' + corner +
       '<span class="ph">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(d.name + (d.inspiredBy ? ", " + d.inspiredBy : "")) + '">' : phLabel()) + "</span>" +
-      '<span class="info"><span class="name">' + esc(d.name + (d.inspiredBy && !isSet ? ", " + d.inspiredBy.split(",")[0] : "")) + "</span>" +
+      '<span class="info"><span class="name">' + esc(d.name + (d.inspiredBy && !isSet && d.inspiredBy.split(",")[0] !== d.name ? ", " + d.inspiredBy.split(",")[0] : "")) + "</span>" +
       '<span class="price">' + (d.wasPrice ? '<s class="was">' + esc(GD.money(d.wasPrice)) + "</s> " : "") + esc(price) + "</span>" +
       (benefit ? '<span class="benefit">' + esc(benefit) + "</span>" : "") + "</span></a>";
   }
