@@ -106,7 +106,9 @@
     $("workshop").innerHTML = src ? '<img loading="lazy" src="' + esc(src) + '" alt="' + esc(GD.tx("about.photoAlt")) + '">' : phLabel();
   }
 
-  var renderers = { swords: renderSwords, designs: renderDesigns, display: renderDisplay, about: renderAbout };
+  function renderSizeAll() { $("size-box").innerHTML = GD.shop.sizeDrawing("all"); }
+
+  var renderers = { swords: function (c) { renderSwords(c); renderSizeAll(); }, designs: renderDesigns, display: renderDisplay, about: renderAbout };
   if (renderers[page]) GD.onContent(renderers[page]);
 
   GD.getContent().catch(function () {

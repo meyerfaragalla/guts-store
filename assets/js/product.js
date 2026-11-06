@@ -152,9 +152,14 @@
   function renderOptions() {
     var p = product, html = "";
     if (p.d.askHeight) {
-      var opts = ['<option value="">' + esc(GD.tx("pp.height.choose")) + "</option>"];
-      for (var h = 160; h <= 190; h += 5) opts.push('<option value="' + h + '"' + (String(h) === state.height ? " selected" : "") + ">" + esc(GD.tx("pp.cm", { n: GD.num(h) })) + "</option>");
-      html += field("opt-height", GD.tx("pp.height"), GD.tx("pp.height.hint"), '<select id="opt-height" aria-describedby="opt-height-hint">' + opts.join("") + "</select>");
+      // Two heights, chosen by tapping a small to-scale drawing of each (Meyer, 6 Nov).
+      var cards = S.dsHeights.map(function (h, i) {
+        var on = String(h) === state.height;
+        return '<label class="ht-card"><input type="radio" name="opt-height" value="' + h + '"' + (i === 0 ? ' id="opt-height"' : "") + (on ? " checked" : "") + ">" +
+          S.heightMini(h) + '<span class="ht-cm">' + esc(GD.tx("pp.cm", { n: GD.num(h) })) + "</span></label>";
+      }).join("");
+      html += '<fieldset class="field pp-field ht-pick" aria-describedby="opt-height-hint"><legend>' + esc(GD.tx("pp.height")) + "</legend>" +
+        '<div class="ht-cards">' + cards + '</div><p class="hint" id="opt-height-hint">' + esc(GD.tx("pp.height.hint")) + "</p></fieldset>";
     }
     if (p.type === "tier") {
       html += field("opt-sword", GD.tx("pp.sword"), GD.tx("pp.sword.hint"),
@@ -180,7 +185,10 @@
         "</div></div>";
     } else disp.innerHTML = "";
 
-    [["opt-height", "height"], ["opt-sword", "sword"], ["opt-blade", "blade"], ["opt-carve", "carve"]].forEach(function (pair) {
+    document.querySelectorAll('input[name="opt-height"]').forEach(function (r) {
+      r.addEventListener("change", function () { state.height = r.value; renderSize(); });
+    });
+    [["opt-sword", "sword"], ["opt-blade", "blade"], ["opt-carve", "carve"]].forEach(function (pair) {
       var el = $(pair[0]);
       if (el) el.addEventListener("input", function () { state[pair[1]] = el.value; });
       if (el && el.tagName === "SELECT") el.addEventListener("change", function () { state[pair[1]] = el.value; });
@@ -194,6 +202,17 @@
       if (mount.checked) $("opt-carve").focus();
       renderPrice();
     });
+  }
+
+  // ---------- Size drawing (swords only, not mounts or plaques) ----------
+  function renderSize() {
+    var sec = $("pp-size-sec");
+    var isSword = product && product.type !== "addon";
+    sec.classList.toggle("hidden", !isSword);
+    if (!isSword) return;
+    var ds = S.isDragonSlayer(product);
+    $("pp-size-body").textContent = GD.tx(ds ? "size.body.ds" : "size.body.sword");
+    $("pp-size-box").innerHTML = S.sizeDrawing(ds ? "ds" : "sword", state.height);
   }
 
   // ---------- Details and reviews ----------
@@ -294,6 +313,7 @@
     renderPrice();
     renderButtons();
     renderDetails();
+    renderSize();
     renderReviews();
   });
 })();
