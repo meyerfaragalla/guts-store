@@ -683,3 +683,13 @@ html[data-lang="ar"] .p-card .when { letter-spacing: 0; font-size: 13px; }
 .pp-photo.empty .scene-svg { width: 92%; max-width: 480px; }
 .pp-mount-scene { margin: 10px 0 14px; padding: 10px 6px 4px; background: #F8F4EC; border: 1px solid var(--i-line); }
 .pp-mount-scene .scene-svg { max-width: 340px; }
+
+/* Room illustrations with room tabs (Living room / Bedroom / Office), drawn in shop.js */
+.room-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.room-tab { flex: 1; min-height: 44px; padding: 0 8px; border: 1px solid var(--i-line); border-radius: 999px; background: transparent; color: var(--i-ink); font: 500 11px var(--sans); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+html[data-lang="ar"] .room-tab { font-family: var(--sans-ar); font-size: 13px; letter-spacing: 0; text-transform: none; }
+.room-tab[aria-selected="true"] { background: var(--purple); border-color: var(--purple); color: var(--ivory); }
+.room-tab:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.room-pic .scene-svg { max-width: 420px; }
+.room-cap { margin: 6px 0 0; text-align: center; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--i-muted); }
+html[data-lang="ar"] .room-cap { letter-spacing: 0; font-size: 12px; text-transform: none; }

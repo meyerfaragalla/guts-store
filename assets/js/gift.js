@@ -38,7 +38,7 @@
   function mountCard(a) {
     var img = GD.driveImage(a.photo, 700);
     return '<a class="p-card" href="product.html?id=a-' + esc(slug(a.name)) + '" data-track="gift-mount:' + esc(a.name) + '">' +
-      '<span class="ph">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(pick(a.name, a.nameAr)) + '">' : phLabel("ph.card")) + "</span>" +
+      '<span class="ph' + (img ? '' : ' scene-ph') + '">' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="' + esc(pick(a.name, a.nameAr)) + '">' : (GD.shop.scene(a.name) || phLabel("ph.card"))) + "</span>" +
       '<span class="info"><span class="name">' + esc(pick(a.name, a.nameAr)) + "</span>" +
       '<span class="price">' + esc(GD.money(a.price)) + "</span>" +
       (pick(a.bonusEn, a.bonusAr) ? '<span class="benefit">' + esc(pick(a.bonusEn, a.bonusAr)) + "</span>" : "") +

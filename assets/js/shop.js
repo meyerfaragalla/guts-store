@@ -240,54 +240,153 @@
     if (/mount|stand/.test(n)) return { kind: "wall", count: m ? Number(m[1]) : 1 };
     return null;
   }
-  // h: Dragon Slayer height chosen on its page (165 or 190); the tallest when not chosen yet.
-  function scene(name, h) {
-    var s = sceneKind(name);
-    if (!s) return "";
-    var k = SC.k, F = SC.floor, cx = 228, g = SC.gold, ink = SC.ink, body = "";
-    body += '<rect x="0" y="0" width="360" height="' + F + '" fill="#F8F4EC"/>' +
-      '<line x1="0" y1="' + F + '" x2="360" y2="' + F + '" stroke="' + ink + '" stroke-width="1.2"/>' + scPerson(52);
-    if (s.kind === "wall" || s.kind === "oval" || s.kind === "plaque") {
-      body += scSofa(126, 330);
-      var count = s.kind === "wall" ? s.count : 1, gap = 24, top = sy(150) - (count - 1) * gap / 2;
-      if (s.kind === "oval") body += '<ellipse cx="' + cx + '" cy="' + sy(150) + '" rx="' + (70 * k) + '" ry="' + (26 * k) + '" fill="' + g + '" stroke="' + ink + '" stroke-opacity=".5"/>';
-      if (s.kind === "plaque") body += '<path d="M' + (cx - 74 * k) + " " + sy(176) + " L" + (cx + 64 * k) + " " + sy(176) + " L" + (cx + 74 * k) + " " + sy(166) + " L" + (cx + 74 * k) + " " + sy(124) +
+  // ---------- Room illustrations: ROOMS (furniture) x PIECES (what is sold), drawn to scale ----------
+  // To add a room: add an entry to ROOMS (its furniture for wall pieces, for a surface piece and for a floor piece),
+  // add its id to ROOM_ORDER and add a "room.<id>" row (EN/AR) in the Text tab.
+  // To add a display piece: teach sceneKind() its name and add a drawing to PIECES.
+  // Brand colours only: purple ink, ivory tints, gold for the piece being sold.
+  var ROOM_ORDER = ["living", "bedroom", "office"];
+  var WALL_BG = "#F8F4EC", LIGHT = "#FBF8F2";
+  function ln(x1, y1, x2, y2, w, op) {
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + SC.ink + '"' + (w ? ' stroke-width="' + w + '"' : "") + (op ? ' stroke-opacity="' + op + '"' : "") + "/>";
+  }
+  function bx(x, y, w, h, fill, extra) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + (fill || SC.fill) + '" stroke="' + SC.ink + '"' + (extra || "") + "/>";
+  }
+  function shade(x, topCm) { // lamp shade
+    var t = sy(topCm);
+    return '<path d="M' + (x - 13) + " " + (t + 22) + " L" + (x - 7) + " " + t + " L" + (x + 7) + " " + t + " L" + (x + 13) + " " + (t + 22) + ' Z" fill="' + SC.fill + '" stroke="' + SC.ink + '"/>';
+  }
+  function floorLamp(x) { return shade(x, 150) + ln(x, sy(150) + 22, x, SC.floor, 2) + ln(x - 12, SC.floor, x + 12, SC.floor, 3); }
+  function windowFrame() { return bx(14, sy(205), 70, 60, LIGHT, ' stroke-opacity=".4"') + ln(49, sy(205), 49, sy(205) + 60, 0, ".4"); }
+
+  var ROOMS = {
+    living: {
+      wall: function () { return scSofa(126, 330) + floorLamp(351); },
+      surface: { top: 80, draw: function () { // sideboard
+        var t = sy(80), F = SC.floor;
+        return bx(122, t, 220, F - t - 8) + ln(195, t, 195, F - 8, 0, ".5") + ln(268, t, 268, F - 8, 0, ".5") + ln(130, F - 8, 130, F, 3) + ln(334, F - 8, 334, F, 3);
+      } },
+      floor: function () { return floorLamp(318); }
+    },
+    bedroom: {
+      wall: function () { // bed seen from the front: headboard, mattress, two pillows
+        var head = sy(110), mat = sy(55), F = SC.floor;
+        return windowFrame() + bx(126, head, 204, F - head) + bx(120, mat, 216, F - mat - 10, LIGHT) +
+          '<rect x="140" y="' + (mat - 14) + '" width="70" height="16" rx="8" fill="' + LIGHT + '" stroke="' + SC.ink + '"/>' +
+          '<rect x="246" y="' + (mat - 14) + '" width="70" height="16" rx="8" fill="' + LIGHT + '" stroke="' + SC.ink + '"/>' +
+          ln(124, F - 10, 124, F, 3) + ln(332, F - 10, 332, F, 3);
+      },
+      surface: { top: 85, draw: function () { // dresser with drawers
+        var t = sy(85), F = SC.floor, h = F - t - 6;
+        return windowFrame() + bx(130, t, 200, h) + ln(130, t + h / 3, 330, t + h / 3, 0, ".5") + ln(130, t + 2 * h / 3, 330, t + 2 * h / 3, 0, ".5");
+      } },
+      floor: function () { // nightstand with a lamp
+        var t = sy(55);
+        return windowFrame() + bx(296, t, 50, SC.floor - t) + shade(321, 85) + ln(321, sy(85) + 22, 321, t, 2);
+      }
+    },
+    office: {
+      wall: function () { // desk with a screen, and a chair
+        var t = sy(75), F = SC.floor;
+        return bx(126, t, 210, 6) + ln(136, t + 6, 136, F, 3) + ln(326, t + 6, 326, F, 3) +
+          bx(262, sy(118), 58, 34, LIGHT) + ln(291, sy(118) + 34, 291, t, 3) +
+          '<path d="M150 ' + sy(95) + " L190 " + sy(95) + " L186 " + sy(50) + " L154 " + sy(50) + ' Z" fill="' + SC.fill + '" stroke="' + SC.ink + '"/>' +
+          ln(170, sy(50), 170, F - 4, 3) + ln(154, F - 2, 186, F - 2, 3);
+      },
+      surface: { top: 75, draw: function () { // desk with a desk lamp
+        var t = sy(75), F = SC.floor;
+        return bx(120, t, 216, 6) + ln(130, t + 6, 130, F, 3) + ln(326, t + 6, 326, F, 3) + shade(330, 120) + ln(330, sy(120) + 22, 330, t, 2);
+      } },
+      floor: function () { // bookshelf
+        var t = sy(180), F = SC.floor, out = bx(286, t, 60, F - t);
+        for (var i = 1; i < 4; i++) out += ln(286, t + i * (F - t) / 4, 346, t + i * (F - t) / 4);
+        return out;
+      }
+    }
+  };
+  function roomId(room) { return ROOMS[room] ? room : "living"; }
+
+  var PIECES = {
+    // On the wall: n katanas on a gold rack, or one katana on a gold oval or shaped plaque.
+    wall: function (s, cx) {
+      var k = SC.k, g = SC.gold, ink = SC.ink, out = "", count = s.kind === "wall" ? s.count : 1, gap = 24, top = sy(150) - (count - 1) * gap / 2;
+      if (s.kind === "oval") out += '<ellipse cx="' + cx + '" cy="' + sy(150) + '" rx="' + (70 * k) + '" ry="' + (26 * k) + '" fill="' + g + '" stroke="' + ink + '" stroke-opacity=".5"/>';
+      if (s.kind === "plaque") out += '<path d="M' + (cx - 74 * k) + " " + sy(176) + " L" + (cx + 64 * k) + " " + sy(176) + " L" + (cx + 74 * k) + " " + sy(166) + " L" + (cx + 74 * k) + " " + sy(124) +
         " L" + (cx - 64 * k) + " " + sy(124) + " L" + (cx - 74 * k) + " " + sy(134) + ' Z" fill="' + g + '" stroke="' + ink + '" stroke-opacity=".5"/>';
       if (s.kind === "wall") {
         var t = top - 12, b = top + (count - 1) * gap + 14;
-        [cx - 62, cx + 40].forEach(function (x) { body += '<rect x="' + x + '" y="' + t + '" width="9" height="' + (b - t) + '" rx="2" fill="' + g + '"/>'; });
+        [cx - 62, cx + 40].forEach(function (x) { out += '<rect x="' + x + '" y="' + t + '" width="9" height="' + (b - t) + '" rx="2" fill="' + g + '"/>'; });
       }
-      for (var i = 0; i < count; i++) body += scKatanaH(cx, top + i * gap);
+      for (var i = 0; i < count; i++) out += scKatanaH(cx, top + i * gap);
       if (s.kind === "wall") [cx - 62, cx + 40].forEach(function (x) {
-        for (var j = 0; j < count; j++) body += '<rect x="' + (x - 1) + '" y="' + (top + j * gap + 3) + '" width="11" height="4" fill="' + g + '"/>';
+        for (var j = 0; j < count; j++) out += '<rect x="' + (x - 1) + '" y="' + (top + j * gap + 3) + '" width="11" height="4" fill="' + g + '"/>';
       });
-    } else if (s.kind === "desk") {
-      var top2 = sy(75), x0 = 120, x1 = 336;
-      body += '<rect x="' + x0 + '" y="' + top2 + '" width="' + (x1 - x0) + '" height="6" fill="' + SC.fill + '" stroke="' + ink + '"/>' +
-        '<line x1="' + (x0 + 10) + '" y1="' + (top2 + 6) + '" x2="' + (x0 + 10) + '" y2="' + F + '" stroke="' + ink + '" stroke-width="3"/>' +
-        '<line x1="' + (x1 - 10) + '" y1="' + (top2 + 6) + '" x2="' + (x1 - 10) + '" y2="' + F + '" stroke="' + ink + '" stroke-width="3"/>';
-      var rest = top2 - 16;
+      return out;
+    },
+    // A katana lying on a gold desk stand, on the room's surface (desk, sideboard, dresser).
+    desk: function (s, cx, topCm) {
+      var top2 = sy(topCm), rest = top2 - 16, g = SC.gold, out = "";
       [cx - 58, cx + 42].forEach(function (x) {
-        body += '<path d="M' + (x - 8) + " " + top2 + " L" + (x - 4) + " " + (rest - 4) + " L" + (x + 4) + " " + (rest - 4) + " L" + (x + 8) + " " + top2 + ' Z" fill="' + g + '"/>';
+        out += '<path d="M' + (x - 8) + " " + top2 + " L" + (x - 4) + " " + (rest - 4) + " L" + (x + 4) + " " + (rest - 4) + " L" + (x + 8) + " " + top2 + ' Z" fill="' + g + '"/>';
       });
-      body += '<rect x="' + (cx - 68) + '" y="' + (top2 - 3) + '" width="120" height="3" fill="' + g + '"/>' + scKatanaH(cx, rest - 6);
-    } else {
-      // Sword stands upside down: handle up, blade tip resting in a cup on the base, leaning on the upright post (Meyer, 6 Nov).
-      var ds = s.kind === "ds", baseW = (ds ? 60 : 36) * k, baseH = 8 * k, rest = F - baseH;
+      return out + '<rect x="' + (cx - 68) + '" y="' + (top2 - 3) + '" width="120" height="3" fill="' + g + '"/>' + scKatanaH(cx, rest - 6);
+    },
+    // A sword standing upside down on the floor: handle up, tip in a cup on the base, leaning on the post (Meyer, 6 Nov).
+    upright: function (s, cx, h) {
+      var k = SC.k, F = SC.floor, g = SC.gold, ds = s.kind === "ds", baseW = (ds ? 60 : 36) * k, baseH = 8 * k, rest = F - baseH;
       var len = (ds ? dsCm(h) : SWORD_CM) * k, lean = 6, tan = Math.tan(lean * Math.PI / 180);
       var px = cx - 14, postH = len * 0.62, postX = px + postH * tan + (ds ? 15 : 5);
-      body += '<rect x="' + (cx - baseW / 2 - 14) + '" y="' + rest + '" width="' + baseW + '" height="' + baseH + '" fill="' + g + '"/>' +
+      return '<rect x="' + (cx - baseW / 2 - 14) + '" y="' + rest + '" width="' + baseW + '" height="' + baseH + '" fill="' + g + '"/>' +
         '<path d="M' + (px - 7) + " " + rest + " L" + (px - 5) + " " + (rest - 7) + " L" + (px + 5) + " " + (rest - 7) + " L" + (px + 7) + " " + rest + ' Z" fill="' + g + '"/>' +
         '<rect x="' + postX + '" y="' + (rest - postH) + '" width="6" height="' + postH + '" fill="' + g + '"/>' +
         '<rect x="' + (postX - 4) + '" y="' + (rest - postH) + '" width="10" height="5" fill="' + g + '"/>' +
         '<g transform="rotate(' + lean + " " + px + " " + (rest - 4) + ") rotate(180 " + px + " " + (rest - 4 - len / 2) + ')">' + scSwordV(px, rest - 4, ds, h) + "</g>";
     }
+  };
+
+  // name: the add-on's name (e.g. "Mount / stand (3 swords)"); h: Dragon Slayer height (165/190); room: living | bedroom | office.
+  function scene(name, h, room) {
+    var s = sceneKind(name);
+    if (!s) return "";
+    var r = ROOMS[roomId(room)], cx = 228, body = '<rect x="0" y="0" width="360" height="' + SC.floor + '" fill="' + WALL_BG + '"/>';
+    if (s.kind === "desk") body += r.surface.draw() + PIECES.desk(s, cx, r.surface.top);
+    else if (s.kind === "upright" || s.kind === "ds") body += r.floor() + PIECES.upright(s, cx - 20, h);
+    else body += r.wall() + PIECES.wall(s, cx);
+    body += ln(0, SC.floor, 360, SC.floor, 1.2) + scPerson(52);
     return '<svg class="scene-svg" viewBox="0 0 360 400" role="img" aria-label="' + esc(GD.tx("scene.alt") || "Drawing of the piece in a room, to scale, next to a 175 cm person") + '">' + body + "</svg>";
   }
+
+  // Room tabs (Living room / Bedroom / Office) above the illustration, with a small "Illustration" caption.
+  // getHeight: optional function giving the Dragon Slayer height to draw. The last room picked is remembered on the page.
+  var lastRoom = "living";
+  function roomViewer(el, name, getHeight) {
+    if (!el) return;
+    if (!sceneKind(name)) { el.innerHTML = ""; return; }
+    var room = lastRoom;
+    function draw() {
+      el.innerHTML = '<div class="room-tabs" role="tablist">' + ROOM_ORDER.map(function (id) {
+        return '<button type="button" role="tab" class="room-tab" data-room="' + id + '" aria-selected="' + (id === room) + '">' + esc(GD.tx("room." + id) || id) + "</button>";
+      }).join("") + '</div><div class="room-pic" role="tabpanel">' + scene(name, getHeight ? getHeight() : "", room) + "</div>" +
+        '<p class="room-cap">' + esc(GD.tx("room.caption") || "Illustration") + "</p>";
+    }
+    el.onclick = function (e) {
+      var b = e.target.closest && e.target.closest("[data-room]");
+      if (!b) return;
+      e.preventDefault();
+      room = lastRoom = b.getAttribute("data-room");
+      draw();
+      var t = el.querySelector('[data-room="' + room + '"]');
+      if (t) t.focus({ preventScroll: true });
+    };
+    el.refresh = draw;
+    draw();
+  }
+
   function esc(s) { return GD.esc(s); }
 
   GD.shop = {
-    levelsOf: levelsOf, sizeDrawing: sizeDrawing, heightMini: heightMini, scene: scene, isDragonSlayer: isDragonSlayer, dsHeights: DS_HEIGHTS,
+    levelsOf: levelsOf, sizeDrawing: sizeDrawing, heightMini: heightMini, scene: scene, roomViewer: roomViewer, sceneKind: sceneKind, isDragonSlayer: isDragonSlayer, dsHeights: DS_HEIGHTS,
     slug: slug, pick: pick, products: products, find: find, url: url, tier: tier, addon: addon, displayName: displayName,
     photos: photos, payNow: payNow, hasVersions: hasVersions, basePrice: basePrice, readyDays: readyDays, readyDate: readyDate,
     plaqueUpgrade: plaqueUpgrade, linePrice: linePrice, deposit: deposit, addToCart: addToCart, cleanCart: cleanCart

@@ -196,9 +196,11 @@
         '<label class="check pp-check" for="opt-mount"><input type="checkbox" id="opt-mount"' + (state.mount ? " checked" : "") + "><span>" + esc(label) +
         ' <span class="plus">+' + esc(money(m.price)) + "</span></span></label>" +
         '<div class="' + (state.mount ? "" : "hidden") + '" id="carve-wrap">' +
-        '<div class="pp-mount-scene" id="pp-mount-scene">' + S.scene(m.name, state.height) + "</div>" +
+        '<div class="pp-mount-scene" id="pp-mount-scene"></div>' +
         field("opt-carve", GD.tx("pp.carve"), GD.tx("pp.carve.hint"), '<input type="text" id="opt-carve" maxlength="10" autocomplete="off" aria-describedby="opt-carve-hint" value="' + esc(state.carve) + '">') +
         "</div></div>";
+      // The matching room illustration, with Living room / Bedroom / Office tabs.
+      S.roomViewer($("pp-mount-scene"), m.name, function () { return state.height; });
     } else disp.innerHTML = "";
 
     document.querySelectorAll('input[name="opt-height"]').forEach(function (r) {
@@ -206,7 +208,7 @@
         state.height = r.value;
         renderSize();
         var ms = $("pp-mount-scene"), mm = mountFor(product);
-        if (ms && mm) ms.innerHTML = S.scene(mm.name, state.height); // the stand drawing follows the chosen height
+        if (ms && mm && ms.refresh) ms.refresh(); // the stand drawing follows the chosen height
       });
     });
     [["opt-sword", "sword"], ["opt-blade", "blade"], ["opt-carve", "carve"]].forEach(function (pair) {
@@ -230,10 +232,12 @@
     var sec = $("pp-size-sec");
     var isSword = product && product.type !== "addon";
     sec.classList.toggle("hidden", !isSword);
-    // Mounts, stands and plaques: a to-scale room scene instead.
-    var pic = !isSword && product ? S.scene(product.d.name) : "";
-    $("pp-scene-sec").classList.toggle("hidden", !pic);
-    $("pp-scene-box").innerHTML = pic;
+    // Mounts, stands and plaques get a room illustration with room tabs; so do the Zoro sets (they come on a 3-sword mount).
+    var set = product && product.type === "design" && /three swords/i.test(product.d.name);
+    var sceneName = !product ? "" : !isSword ? product.d.name : set ? "Mount / stand (3 swords)" : "";
+    var showScene = !!(sceneName && S.sceneKind(sceneName));
+    $("pp-scene-sec").classList.toggle("hidden", !showScene);
+    if (showScene) S.roomViewer($("pp-scene-box"), sceneName); else $("pp-scene-box").innerHTML = "";
     if (!isSword) return;
     var ds = S.isDragonSlayer(product);
     $("pp-size-body").textContent = GD.tx(ds ? "size.body.ds" : "size.body.sword");
