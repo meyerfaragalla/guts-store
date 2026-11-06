@@ -182,12 +182,18 @@
         '<label class="check pp-check" for="opt-mount"><input type="checkbox" id="opt-mount"' + (state.mount ? " checked" : "") + "><span>" + esc(label) +
         ' <span class="plus">+' + esc(money(m.price)) + "</span></span></label>" +
         '<div class="' + (state.mount ? "" : "hidden") + '" id="carve-wrap">' +
+        '<div class="pp-mount-scene" id="pp-mount-scene">' + S.scene(m.name, state.height) + "</div>" +
         field("opt-carve", GD.tx("pp.carve"), GD.tx("pp.carve.hint"), '<input type="text" id="opt-carve" maxlength="10" autocomplete="off" aria-describedby="opt-carve-hint" value="' + esc(state.carve) + '">') +
         "</div></div>";
     } else disp.innerHTML = "";
 
     document.querySelectorAll('input[name="opt-height"]').forEach(function (r) {
-      r.addEventListener("change", function () { state.height = r.value; renderSize(); });
+      r.addEventListener("change", function () {
+        state.height = r.value;
+        renderSize();
+        var ms = $("pp-mount-scene"), mm = mountFor(product);
+        if (ms && mm) ms.innerHTML = S.scene(mm.name, state.height); // the stand drawing follows the chosen height
+      });
     });
     [["opt-sword", "sword"], ["opt-blade", "blade"], ["opt-carve", "carve"]].forEach(function (pair) {
       var el = $(pair[0]);

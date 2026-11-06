@@ -679,3 +679,5 @@ html[data-lang="ar"] .p-card .when { letter-spacing: 0; font-size: 13px; }
 .p-card .ph.scene-ph { background: #F8F4EC; }
 .p-card .ph.scene-ph .scene-svg { width: 100%; height: 100%; max-width: none; }
 .pp-photo.empty .scene-svg { width: 92%; max-width: 480px; }
+.pp-mount-scene { margin: 10px 0 14px; padding: 10px 6px 4px; background: #F8F4EC; border: 1px solid var(--i-line); }
+.pp-mount-scene .scene-svg { max-width: 340px; }

@@ -212,8 +212,9 @@
       '<ellipse cx="' + g + '" cy="' + cy + '" rx="2.5" ry="8" fill="' + SC.ink + '"/>';
   }
   // A sword standing tip up, its bottom at (x, bottom): a 120 cm katana, or Dragon Slayer at 190 cm.
-  function scSwordV(x, bottom, ds) {
-    var k = SC.k, len = (ds ? DS_HEIGHTS[DS_HEIGHTS.length - 1] : SWORD_CM) * k, top = bottom - len, grip = bottom - (ds ? 40 : 30) * k;
+  function dsCm(h) { return DS_HEIGHTS.indexOf(Number(h)) !== -1 ? Number(h) : DS_HEIGHTS[DS_HEIGHTS.length - 1]; }
+  function scSwordV(x, bottom, ds, h) {
+    var k = SC.k, len = (ds ? dsCm(h) : SWORD_CM) * k, top = bottom - len, grip = bottom - (ds ? 40 : 30) * k;
     if (ds) return '<rect x="' + (x - 3) + '" y="' + grip + '" width="6" height="' + (bottom - grip) + '" rx="2" fill="' + SC.ink + '"/>' +
       '<rect x="' + (x - 12) + '" y="' + (grip - 3) + '" width="24" height="4" fill="' + SC.ink + '"/>' +
       '<path d="M' + (x - 10) + " " + (grip - 3) + " L" + (x - 10) + " " + (top + 6) + " L" + (x - 5) + " " + top + " L" + (x + 10) + " " + top + " L" + (x + 10) + " " + (grip - 3) +
@@ -239,7 +240,8 @@
     if (/mount|stand/.test(n)) return { kind: "wall", count: m ? Number(m[1]) : 1 };
     return null;
   }
-  function scene(name) {
+  // h: Dragon Slayer height chosen on its page (165 or 190); the tallest when not chosen yet.
+  function scene(name, h) {
     var s = sceneKind(name);
     if (!s) return "";
     var k = SC.k, F = SC.floor, cx = 228, g = SC.gold, ink = SC.ink, body = "";
@@ -272,13 +274,13 @@
     } else {
       // Sword stands upside down: handle up, blade tip resting in a cup on the base, leaning on the upright post (Meyer, 6 Nov).
       var ds = s.kind === "ds", baseW = (ds ? 60 : 36) * k, baseH = 8 * k, rest = F - baseH;
-      var len = (ds ? DS_HEIGHTS[DS_HEIGHTS.length - 1] : SWORD_CM) * k, lean = 6, tan = Math.tan(lean * Math.PI / 180);
+      var len = (ds ? dsCm(h) : SWORD_CM) * k, lean = 6, tan = Math.tan(lean * Math.PI / 180);
       var px = cx - 14, postH = len * 0.62, postX = px + postH * tan + (ds ? 15 : 5);
       body += '<rect x="' + (cx - baseW / 2 - 14) + '" y="' + rest + '" width="' + baseW + '" height="' + baseH + '" fill="' + g + '"/>' +
         '<path d="M' + (px - 7) + " " + rest + " L" + (px - 5) + " " + (rest - 7) + " L" + (px + 5) + " " + (rest - 7) + " L" + (px + 7) + " " + rest + ' Z" fill="' + g + '"/>' +
         '<rect x="' + postX + '" y="' + (rest - postH) + '" width="6" height="' + postH + '" fill="' + g + '"/>' +
         '<rect x="' + (postX - 4) + '" y="' + (rest - postH) + '" width="10" height="5" fill="' + g + '"/>' +
-        '<g transform="rotate(' + lean + " " + px + " " + (rest - 4) + ") rotate(180 " + px + " " + (rest - 4 - len / 2) + ')">' + scSwordV(px, rest - 4, ds) + "</g>";
+        '<g transform="rotate(' + lean + " " + px + " " + (rest - 4) + ") rotate(180 " + px + " " + (rest - 4 - len / 2) + ')">' + scSwordV(px, rest - 4, ds, h) + "</g>";
     }
     return '<svg class="scene-svg" viewBox="0 0 360 400" role="img" aria-label="' + esc(GD.tx("scene.alt") || "Drawing of the piece in a room, to scale, next to a 175 cm person") + '">' + body + "</svg>";
   }
