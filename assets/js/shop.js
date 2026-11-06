@@ -317,7 +317,12 @@
     // On the wall: n katanas on a gold rack, or one katana on a gold oval or shaped plaque.
     wall: function (s, cx) {
       var k = SC.k, g = SC.gold, ink = SC.ink, out = "", count = s.kind === "wall" ? s.count : 1, gap = 24, top = sy(150) - (count - 1) * gap / 2;
-      if (s.kind === "oval") out += '<ellipse cx="' + cx + '" cy="' + sy(150) + '" rx="' + (70 * k) + '" ry="' + (26 * k) + '" fill="' + g + '" stroke="' + ink + '" stroke-opacity=".5"/>';
+      if (s.kind === "oval") {
+        // Oval plaque (Meyer, 6 Nov): hangs upright, 30% of the sword's length (36 cm for 120 cm), sword hanging vertically on it, handle up.
+        var mid = sy(172), len = SWORD_CM * k, ovalH = 0.30 * SWORD_CM * k; // high enough for the tip to clear a bed's headboard
+        return '<ellipse cx="' + cx + '" cy="' + mid + '" rx="' + (ovalH * 0.36) + '" ry="' + (ovalH / 2) + '" fill="' + g + '" stroke="' + ink + '" stroke-opacity=".5"/>' +
+          '<g transform="rotate(180 ' + cx + " " + mid + ')">' + scSwordV(cx, mid + len / 2, false) + "</g>";
+      }
       if (s.kind === "plaque") out += '<path d="M' + (cx - 74 * k) + " " + sy(176) + " L" + (cx + 64 * k) + " " + sy(176) + " L" + (cx + 74 * k) + " " + sy(166) + " L" + (cx + 74 * k) + " " + sy(124) +
         " L" + (cx - 64 * k) + " " + sy(124) + " L" + (cx - 74 * k) + " " + sy(134) + ' Z" fill="' + g + '" stroke="' + ink + '" stroke-opacity=".5"/>';
       if (s.kind === "wall") {
