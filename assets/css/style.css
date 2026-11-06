@@ -556,6 +556,8 @@ html[data-lang="ar"] .qty-label { letter-spacing: 0; font-size: 14px; }
 .n-list.on-purple .bd { color: var(--p-soft); font-size: 16px; }
 .pp-reviews { display: grid; gap: 3px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 36px; }
 .pp-reviews img { width: 100%; height: auto; }
+.pp-reviews .rv-open { display: block; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.pp-reviews .rv-open:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* Sticky Add to cart bar (phones) */
 .sticky-buy { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: var(--purple); border-top: 1px solid var(--p-line); }

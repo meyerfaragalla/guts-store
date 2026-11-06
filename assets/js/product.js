@@ -46,8 +46,9 @@
   }
 
   // ---------- Full-screen photo viewer: tap a photo to see the whole piece, swipe between photos, tap again to zoom ----------
-  function openViewer(start) {
-    var list = S.photos(product, 2000);
+  // Used for the product photos and the review screenshots. The phone's Back button closes it and leaves
+  // the page exactly where it was (the viewer adds one history step instead of leaving the page).
+  function openViewer(list, start, opener) {
     if (!list.length) return;
     var box = document.createElement("div");
     box.className = "pv";
@@ -75,21 +76,34 @@
         }
       });
     });
-    function close() { document.removeEventListener("keydown", onKey); box.remove(); document.body.style.overflow = ""; }
+    var done = false;
+    function teardown() {
+      if (done) return;
+      done = true;
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("popstate", teardown);
+      box.remove();
+      document.body.style.overflow = "";
+      if (opener && opener.focus) opener.focus({ preventScroll: true });
+    }
+    // X button and Escape go "back" too, so the extra history step never piles up.
+    function close() { if (history.state && history.state.gdViewer) history.back(); else teardown(); }
     function onKey(e) {
       if (e.key === "Escape") close();
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") rail.scrollBy({ left: (e.key === "ArrowRight" ? 1 : -1) * rail.clientWidth * (document.dir === "rtl" ? -1 : 1), behavior: "smooth" });
     }
+    try { history.pushState({ gdViewer: true }, ""); } catch (e) { /* ignore */ }
+    window.addEventListener("popstate", teardown);
     box.querySelector(".pv-close").addEventListener("click", close);
     document.addEventListener("keydown", onKey);
-    box.querySelector(".pv-close").focus();
+    box.querySelector(".pv-close").focus({ preventScroll: true });
   }
 
   function wirePhotoDots() {
     $("pp-photos").addEventListener("click", function (e) {
       var img = e.target.closest && e.target.closest(".pp-photo img");
       if (!img) return;
-      openViewer(Array.prototype.indexOf.call($("pp-photos").children, img.parentNode));
+      openViewer(S.photos(product, 2000), Array.prototype.indexOf.call($("pp-photos").children, img.parentNode), img);
     });
     var rail = $("pp-photos");
     rail.addEventListener("scroll", function () {
@@ -243,11 +257,23 @@
     $("pp-details-sec").classList.toggle("hidden", !items.length);
   }
 
+  // Tap a review screenshot: full screen, swipe between reviews.
+  var reviewList = [];
+  $("pp-reviews").addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest(".rv-open");
+    if (b) openViewer(reviewList, Number(b.getAttribute("data-i")), b);
+  });
+
   function renderReviews() {
-    var name = product.name;
-    var list = (content.reviews || []).filter(function (r) { return !r.product || r.product === name; });
-    $("pp-reviews").innerHTML = list.map(function (r) {
-      return '<img loading="lazy" src="' + esc(GD.driveImage(r.photo, 800)) + '" alt="' + esc(S.pick(r.altEn, r.altAr) || GD.tx("pp.reviews")) + '">';
+    // Every sword page shows ALL reviews (Meyer, 6 Nov: most swords get one review, so customers should see them all).
+    // This sword's own reviews come first. Mounts, stands and plaques keep only their own.
+    var name = product.name, all = content.reviews || [];
+    var list = product.type === "addon"
+      ? all.filter(function (r) { return r.product === name; })
+      : all.filter(function (r) { return r.product === name; }).concat(all.filter(function (r) { return r.product !== name; }));
+    reviewList = list.map(function (r) { return GD.driveImage(r.photo, 2000); });
+    $("pp-reviews").innerHTML = list.map(function (r, i) {
+      return '<button type="button" class="rv-open" data-i="' + i + '"><img loading="lazy" src="' + esc(GD.driveImage(r.photo, 800)) + '" alt="' + esc(S.pick(r.altEn, r.altAr) || GD.tx("pp.reviews")) + '"></button>';
     }).join("");
     $("pp-reviews-sec").classList.toggle("hidden", !list.length);
   }
