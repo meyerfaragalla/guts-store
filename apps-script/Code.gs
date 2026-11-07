@@ -24,7 +24,7 @@ var CONTENT_CACHE_SECONDS = 60;
 var STATUSES = ['New', 'Waitlist', 'Deposit uploaded', 'Deposit screenshot missing', 'Confirmed', 'Deposit paid', 'In progress',
   'Balance due', 'Balance paid', 'Shipped', 'Delivered', 'Cancelled'];
 // Extra columns for shop orders (added to the Orders sheet automatically if missing).
-var SHOP_COLUMNS = ['Type', 'Items', 'Instagram', 'Items total', 'Shipping estimate', 'Reminder'];
+var SHOP_COLUMNS = ['Type', 'Items', 'Instagram', 'Items total', 'Shipping estimate', 'Reminder', 'Source link', 'Delivered on', 'Review asked'];
 var ORDER_COLUMNS = [
   'Order code', 'Received', 'Status', 'Name', 'Email', 'Phone', 'Governorate', 'Area', 'Street', 'Building', 'Floor',
   'Apartment', 'Landmark', 'Gift', 'Recipient', 'Occasion date', 'Tier', 'Premium gift', 'Design', 'Add-ons',
@@ -35,6 +35,8 @@ var GOVERNORATES = ['Cairo', 'Giza', 'Alexandria', 'Qalyubia', 'Sharqia', 'Dakah
   'Kafr El Sheikh', 'Damietta', 'Port Said', 'Ismailia', 'Suez', 'Faiyum', 'Beni Suef', 'Minya', 'Asyut', 'Sohag', 'Qena',
   'Luxor', 'Aswan', 'Red Sea', 'New Valley', 'Matrouh', 'North Sinai', 'South Sinai'];
 var FOUND_VIA = ['Instagram', 'A friend', 'The quiz', 'Google', 'Other'];
+// Answers to "How did you find me?" on the shop checkout (Kennedy: know which marketing brings orders).
+var FOUND_SHOP = ['Instagram Reel', 'Instagram Story', 'Instagram post', 'Instagram ad', 'TikTok', 'Google', 'A friend', 'Other'];
 var PREMIUM_GIFTS = ['Desk stand', 'Wall mount'];
 var IMAGE_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'image/heif': 'heif' };
 
@@ -584,6 +586,12 @@ function onOrdersEdit(e) {
     sh.getRange(r, m['Balance'] + 1).setValue(balance);
     info.amount = balance;
     if (sendCustomer_(s, to, info.lang, 'balance', info)) logEmail('Balance due');
+  } else if (status === 'Delivered') {
+    // The review + referral email goes out by itself a few days later (see askForReviews_).
+    if (m['Delivered on'] !== undefined) {
+      var dcell = sh.getRange(r, m['Delivered on'] + 1);
+      if (!dcell.getValue()) dcell.setValue(new Date());
+    }
   } else if (status === 'Cancelled') {
     CacheService.getScriptCache().remove('content');
   }
@@ -1012,7 +1020,8 @@ function handleCheckout_(d) {
     ['area', 'street', 'building', 'floor', 'apartment'].every(function (k) { return String(d[k] || '').trim() && String(d[k]).length <= 120; }),
     String(d.landmark || '').length <= 120,
     String(d.notes || '').length <= 500,
-    !d.foundVia || ['Instagram post', 'Instagram ad', 'A friend', 'Other'].indexOf(d.foundVia) !== -1,
+    !d.foundVia || FOUND_SHOP.indexOf(d.foundVia) !== -1,
+    !d.src || /^[a-z0-9._\-]{1,40}$/i.test(String(d.src)),
     d.terms === true
   ];
   if (checks.indexOf(false) !== -1) return { ok: false, error: 'invalid' };
@@ -1050,7 +1059,7 @@ function handleCheckout_(d) {
       'Governorate': d.governorate, 'Area': clean_(d.area, 120), 'Street': clean_(d.street, 120),
       'Building': clean_(d.building, 30), 'Floor': clean_(d.floor, 20), 'Apartment': clean_(d.apartment, 20),
       'Landmark': clean_(d.landmark, 120), 'Gift': d.isGift ? 'Yes' : 'No', 'Recipient': d.isGift ? clean_(d.recipient, 80) : '',
-      'Occasion date': d.occasionDate || '', 'Notes': clean_(d.notes, 500), 'Found us via': d.foundVia || '',
+      'Occasion date': d.occasionDate || '', 'Notes': clean_(d.notes, 500), 'Found us via': d.foundVia || '', 'Source link': d.src ? clean_(String(d.src).toLowerCase(), 40) : '',
       'Language': d.lang === 'ar' ? 'ar' : 'en',
       'Items total': itemsTotal, 'Shipping estimate': shipping, 'Estimated total': itemsTotal + shipping,
       'Deposit': deposit, 'Payment receipts': receipt || ''
@@ -1074,7 +1083,7 @@ function handleCheckout_(d) {
     'Items:\n' + row['Items'] + '\n\nItems total: ' + itemsTotal + ' LE\nDeposit (' + c.depositPct + '%): ' + deposit + ' LE\n' +
       'Shipping estimate: ' + shipping + ' LE' + (inCairoGiza || allShipFree ? '' : ' (minimum, check the real cost)') + '\n\n' +
       ['Name', 'Email', 'Phone', 'Instagram', 'Governorate', 'Area', 'Street', 'Building', 'Floor', 'Apartment', 'Landmark',
-        'Gift', 'Recipient', 'Occasion date', 'Notes', 'Found us via'].filter(function (h) { return row[h]; })
+        'Gift', 'Recipient', 'Occasion date', 'Notes', 'Found us via', 'Source link'].filter(function (h) { return row[h]; })
         .map(function (h) { return h + ': ' + String(row[h]).replace(/^'/, ''); }).join('\n') +
       '\n\nScreenshot: ' + (receipt || 'not uploaded yet') +
       '\n\nCheck the deposit in your InstaPay app, then set Status to "Deposit paid". If you can not take the order, refund within 24 hours.' +
@@ -1160,6 +1169,7 @@ function forgetCart_(email) {
 
 // Every hour: one reminder to carts older than 24 hours; carts older than 7 days are deleted.
 function sendReminders() {
+  try { askForReviews_(); } catch (err) { console.error(err); }
   var sh = cartsSheet_();
   if (sh.getLastRow() < 2) return;
   var s = settings_();
@@ -1186,4 +1196,154 @@ function sendReminders() {
     ].filter(String).join('\n\n');
     if (deliver_(s, String(data[i][0]), { subject: tx_('email.reminder.subject', lang), body: body }, 'cart reminder')) countEvent_('reminder:sent');
   }
+}
+
+
+// =====================================================================
+// Growth: reviews, referrals, leads and the monthly report (added 7 Nov 2026)
+// Advisors: Hormozi + Schwartz (proof), Blount (follow-up, referrals), Kennedy (measure), Drucker (monthly review).
+// Run setupGrowth() once from the editor after pasting this code.
+// =====================================================================
+var REVIEW_AFTER_DAYS = 3;
+var LEADS_TAB = 'Leads';
+var LEAD_COLUMNS = ['Added', 'Name / Instagram', 'Wants', 'For (me / gift)', 'Occasion date', 'Stage', 'Next step', 'Next step date', 'Source', 'Notes'];
+var LEAD_STAGES = ['New', 'Talking', 'Sent link', 'Waiting on them', 'Ordered', 'Not now', 'Lost'];
+
+function setupGrowth() {
+  var sh = ordersSheet_();
+  ensureShopColumns_(sh);
+  leadsSheet_();
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    var f = t.getHandlerFunction();
+    if (f === 'leadsDigest' || f === 'monthlyReport') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('leadsDigest').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(9).create();
+  ScriptApp.newTrigger('leadsDigest').timeBased().onWeekDay(ScriptApp.WeekDay.THURSDAY).atHour(9).create();
+  ScriptApp.newTrigger('monthlyReport').timeBased().onMonthDay(1).atHour(9).create();
+  Logger.log('Growth ready: review emails after delivery, Leads tab, follow-up list (Mon + Thu) and the monthly report (1st of the month).');
+}
+
+function leadsSheet_() {
+  var ss = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('ORDERS_ID'));
+  var sh = ss.getSheetByName(LEADS_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(LEADS_TAB);
+    sh.getRange(1, 1, 1, LEAD_COLUMNS.length).setValues([LEAD_COLUMNS]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+    sh.getRange(2, 6, sh.getMaxRows() - 1, 1).setDataValidation(
+      SpreadsheetApp.newDataValidation().requireValueInList(LEAD_STAGES, true).build());
+    sh.getRange(2, 1, sh.getMaxRows() - 1, 1).setNumberFormat('yyyy-mm-dd');
+    sh.getRange(2, 8, sh.getMaxRows() - 1, 1).setNumberFormat('yyyy-mm-dd');
+  }
+  return sh;
+}
+
+// A few days after an order is marked Delivered: one email asking for a photo review and who else would love one.
+function askForReviews_() {
+  var sh = ordersSheet_();
+  if (sh.getLastRow() < 2) return;
+  var m = colMap_(sh);
+  if (m['Delivered on'] === undefined || m['Review asked'] === undefined) return;
+  var s = settings_();
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+  var now = Date.now();
+  data.forEach(function (row, i) {
+    var when = row[m['Delivered on']];
+    if (!(when instanceof Date) || row[m['Review asked']] || row[m['Status']] !== 'Delivered') return;
+    if (now - when.getTime() < REVIEW_AFTER_DAYS * 86400000) return;
+    var to = String(row[m['Email']]).replace(/^'/, '').trim();
+    if (!to) return;
+    sh.getRange(i + 2, m['Review asked'] + 1).setValue(new Date()); // marked first: never twice
+    var code = row[m['Order code']];
+    var lang = row[m['Language']] === 'ar' ? 'ar' : 'en';
+    var link = SITE_URL + '?src=friend-' + String(code).toLowerCase();
+    if (deliver_(s, to, reviewMessage_(lang, row[m['Gift']] === 'Yes', link), code)) countEvent_('review:asked');
+  });
+}
+
+// Words come from the Text tab (email.review.*); the built-in wording is only a fallback.
+function reviewMessage_(lang, gift, link) {
+  var t = function (key, en, ar, vars) {
+    var v = tx_(key, lang, vars);
+    if (v) return v;
+    v = lang === 'ar' ? ar : en;
+    return v.replace(/\{(\w+)\}/g, function (mm, k) { return vars && vars.hasOwnProperty(k) ? vars[k] : mm; });
+  };
+  var body = [
+    t('email.hi', 'Hi,', 'أهلًا،'),
+    gift ? t('email.review.gift', 'I hope he loved his gift. Could you send me a photo of it in its new home, and a line about what he thought? Just reply to this email or message me on Instagram.',
+                                  'أتمنى الهدية تكون عجبته. ممكن تبعتلي صورة ليها في مكانها الجديد وكلمتين عن رأيه؟ رد على الإيميل ده أو ابعتلي على إنستجرام.')
+         : t('email.review.body', 'I hope you love your piece. Could you send me a photo of it on your wall, and a line about what you think? Just reply to this email or message me on Instagram. It helps other fans trust a small workshop like mine.',
+                                  'أتمنى القطعة تكون عجبتك. ممكن تبعتلي صورة ليها على الحيطة وكلمتين عن رأيك؟ رد على الإيميل ده أو ابعتلي على إنستجرام. ده بيساعد فانز تانيين يثقوا في ورشة صغيرة زي ورشتي.'),
+    t('email.review.friend', 'Do you know someone who would love one too? Send them this link: {link}',
+                             'تعرف حد هيحب واحد زيه؟ ابعتله اللينك ده: {link}', { link: link }),
+    t('email.sign', '\nMeyer\nGuts Decor', '\nماير\nGuts Decor')
+  ].join('\n\n');
+  return { subject: t('email.review.subject', 'How does it look on the wall?', 'شكلها إيه على الحيطة؟'), body: body };
+}
+
+// Mondays and Thursdays: Meyer gets the list of people to follow up with (Blount: follow up, technique 11).
+function leadsDigest() {
+  var sh = leadsSheet_();
+  if (sh.getLastRow() < 2) return;
+  var tz = Session.getScriptTimeZone();
+  var today = new Date(); today.setHours(23, 59, 59, 0);
+  var rows = sh.getRange(2, 1, sh.getLastRow() - 1, LEAD_COLUMNS.length).getValues().filter(function (r) {
+    var stage = String(r[5]);
+    if (!r[1] || stage === 'Ordered' || stage === 'Lost') return false;
+    var due = r[7] instanceof Date ? r[7] : null;
+    return !due || due <= today;
+  });
+  if (!rows.length) return;
+  var lines = rows.map(function (r) {
+    return '- ' + r[1] + ' | wants: ' + (r[2] || '?') + ' | ' + (r[3] || '') +
+      (r[4] ? ' | date: ' + (r[4] instanceof Date ? Utilities.formatDate(r[4], tz, 'yyyy-MM-dd') : r[4]) : '') +
+      ' | stage: ' + (r[5] || 'New') + ' | next: ' + (r[6] || 'decide the next step');
+  });
+  ownerMail_(settings_(), 'Follow up today: ' + rows.length + ' people',
+    'These people are waiting for your next message:\n\n' + lines.join('\n') +
+    '\n\nTips (from the business doc): start with "What\'s your experience with...?", give value before price, and always end with a next step ("When would be a good time...?"). ' +
+    'Silent for a while? Try "I guess you haven\'t had the chance to..."\n\nDM templates: Drive > Guts Decor > Marketing Department > "DM reply templates".\nLeads tab: ' + sh.getParent().getUrl());
+}
+
+// 1st of each month: last month in numbers, for the monthly review (Drucker, Kennedy). Counts only, no customer names.
+function monthlyReport() {
+  var sh = ordersSheet_();
+  var s = settings_();
+  var tz = Session.getScriptTimeZone();
+  var now = new Date();
+  var last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  var key = Utilities.formatDate(last, tz, 'yyyy-MM');
+  var m = colMap_(sh);
+  var data = sh.getLastRow() < 2 ? [] : sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+  var month = data.filter(function (r) { var d = r[m['Received']]; return d instanceof Date && Utilities.formatDate(d, tz, 'yyyy-MM') === key; });
+  var paidStatuses = ['Deposit paid', 'In progress', 'Balance due', 'Balance paid', 'Shipped', 'Delivered'];
+  var count = function (list, col) {
+    var o = {};
+    list.forEach(function (r) { var v = m[col] === undefined ? '' : String(r[m[col]] || '').trim() || '(blank)'; o[v] = (o[v] || 0) + 1; });
+    return Object.keys(o).sort(function (a, b) { return o[b] - o[a]; }).map(function (k) { return '  ' + k + ': ' + o[k]; }).join('\n') || '  (none)';
+  };
+  var paid = month.filter(function (r) { return paidStatuses.indexOf(r[m['Status']]) !== -1; });
+  var revenue = paid.reduce(function (sum, r) { return sum + (Number(r[m['Final price (you fill)']]) || Number(r[m['Estimated total']]) || 0); }, 0);
+  var items = {};
+  paid.forEach(function (r) {
+    var txt = (m['Items'] !== undefined && r[m['Items']]) || r[m['Design']] || r[m['Tier']] || '';
+    String(txt).split('\n').forEach(function (it) { it = it.trim(); if (it) items[it] = (items[it] || 0) + 1; });
+  });
+  var itemLines = Object.keys(items).sort(function (a, b) { return items[b] - items[a]; }).slice(0, 10)
+    .map(function (k) { return '  ' + k + ': ' + items[k]; }).join('\n') || '  (none)';
+  var leads = leadsSheet_();
+  var leadRows = leads.getLastRow() < 2 ? [] : leads.getRange(2, 1, leads.getLastRow() - 1, LEAD_COLUMNS.length).getValues()
+    .filter(function (r) { return r[0] instanceof Date && Utilities.formatDate(r[0], tz, 'yyyy-MM') === key; });
+  var won = leadRows.filter(function (r) { return r[5] === 'Ordered'; }).length;
+  ownerMail_(s, 'Guts Decor: ' + key + ' in numbers',
+    'Orders received: ' + month.length + '\nPaid orders (deposit or more): ' + paid.length +
+    '\nValue of paid orders: ' + revenue.toLocaleString('en-US') + ' LE (before costs)\n\n' +
+    'By status:\n' + count(month, 'Status') + '\n\nGift or for themselves:\n' + count(month, 'Gift') +
+    '\n\nHow they found us (checkout answer):\n' + count(month, 'Found us via') + '\n\nTagged link they came from:\n' + count(month, 'Source link') +
+    '\n\nMost ordered (paid):\n' + itemLines +
+    '\n\nInstagram DMs (Leads tab): ' + leadRows.length + ' new, ' + won + ' ordered' +
+    (leadRows.length ? ' (' + Math.round(won * 100 / leadRows.length) + '%)' : '') +
+    '\n\nProfit is not in this email: costs live in Product Pricing, which this system never reads.' +
+    '\nNext: Claude uses these numbers in the monthly review of "Guts Decor — How We Run the Business".');
 }

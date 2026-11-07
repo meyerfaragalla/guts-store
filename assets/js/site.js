@@ -386,8 +386,28 @@
   });
   if (page) track("visit:" + page);
 
+  // ---------- Where a visitor came from (Kennedy: measure which marketing sells) ----------
+  // A tagged link like gutsdecor.com/?src=ig-bio or ?src=friend-gd-ab12 is counted once (Stats tab)
+  // and remembered in this browser for 30 days, so the order can say which link it came from. Nothing about the person.
+  var SRC_KEY = "gd_src";
+  (function rememberSource() {
+    try {
+      var q = new URLSearchParams(location.search);
+      var v = String(q.get("src") || q.get("utm_source") || "").toLowerCase().replace(/[^a-z0-9._\-]+/g, "-").slice(0, 40);
+      if (!v) return;
+      localStorage.setItem(SRC_KEY, JSON.stringify({ v: v, t: Date.now() }));
+      track("src:" + v);
+    } catch (e) { /* private window or storage blocked: fine */ }
+  })();
+  function source() {
+    try {
+      var s = JSON.parse(localStorage.getItem(SRC_KEY) || "null");
+      return s && s.v && Date.now() - s.t < 30 * 86400000 ? s.v : "";
+    } catch (e) { return ""; }
+  }
+
   window.GD = {
-    track: track, cart: { get: cartGet, set: cartSet, count: cartCount },
+    track: track, source: source, cart: { get: cartGet, set: cartSet, count: cartCount },
     lang: lang, t: t, tx: tx, num: num, money: money, esc: esc,
     getContent: getContent, onContent: onContent, applyText: applyText, dmHtml: dmHtml,
     post: post, get: get, driveImage: driveImage, swordSvg: SWORD_SVG,

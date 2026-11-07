@@ -156,6 +156,21 @@
     }
     $("sb-name").textContent = S.displayName(p);
     $("sb-price").textContent = money(total);
+    renderBundle(total);
+  }
+
+  // Hormozi: show the whole package and what it's worth in one place, so the free carving is felt, not just listed.
+  function renderBundle(total) {
+    var el = $("pp-bundle"), m = mountFor(product);
+    if (!el) return;
+    var hit = m && m.bonusEn ? String(m.bonusEn).match(/worth\s+([\d,]+)/i) : null;
+    var worth = hit ? Number(hit[1].replace(/,/g, "")) * (state.qty || 1) : 0;
+    if (!state.mount || !worth) { el.textContent = ""; el.classList.add("hidden"); return; }
+    var vars = { value: money(total + worth), price: money(total), free: money(worth) };
+    el.textContent = GD.tx("pp.bundle", vars) ||
+      GD.t("The complete display is worth " + vars.value + ". You pay " + vars.price + ": the carved name (" + vars.free + ") is free.",
+           "العرض الكامل قيمته " + vars.value + ". انت بتدفع " + vars.price + ": الاسم المحفور (" + vars.free + ") ببلاش.");
+    el.classList.remove("hidden");
   }
 
   // ---------- Options ----------
@@ -196,6 +211,7 @@
         '<label class="check pp-check" for="opt-mount"><input type="checkbox" id="opt-mount"' + (state.mount ? " checked" : "") + "><span>" + esc(label) +
         ' <span class="plus">+' + esc(money(m.price)) + "</span></span></label>" +
         '<div class="' + (state.mount ? "" : "hidden") + '" id="carve-wrap">' +
+        '<p class="pp-bundle" id="pp-bundle"></p>' +
         '<div class="pp-mount-scene" id="pp-mount-scene"></div>' +
         field("opt-carve", GD.tx("pp.carve"), GD.tx("pp.carve.hint"), '<input type="text" id="opt-carve" maxlength="10" autocomplete="off" aria-describedby="opt-carve-hint" value="' + esc(state.carve) + '">') +
         "</div></div>";

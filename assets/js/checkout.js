@@ -21,7 +21,10 @@
     ["Aswan", "أسوان"], ["Red Sea", "البحر الأحمر"], ["New Valley", "الوادي الجديد"], ["Matrouh", "مطروح"],
     ["North Sinai", "شمال سيناء"], ["South Sinai", "جنوب سيناء"]
   ];
-  var FOUND = [["Instagram post", "co.found.post"], ["Instagram ad", "co.found.ad"], ["A friend", "co.found.friend"], ["Other", "co.found.other"]];
+  // Kennedy: know which marketing brings orders. Values must match FOUND_SHOP in apps-script/Code.gs.
+  var FOUND = [["Instagram Reel", "co.found.reel"], ["Instagram Story", "co.found.story"], ["Instagram post", "co.found.post"],
+    ["Instagram ad", "co.found.ad"], ["TikTok", "co.found.tiktok"], ["Google", "co.found.google"],
+    ["A friend", "co.found.friend"], ["Other", "co.found.other"]];
   var TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
   function $(x) { return document.getElementById(x); }
@@ -82,7 +85,7 @@
     gov.value = keep;
     var f = $("foundVia"), keepF = f.value;
     f.innerHTML = '<option value="">' + esc(GD.tx("co.choose")) + "</option>" + FOUND.map(function (o) {
-      return '<option value="' + o[0] + '">' + esc(GD.tx(o[1])) + "</option>";
+      return '<option value="' + o[0] + '">' + esc(GD.tx(o[1]) || o[0]) + "</option>";
     }).join("");
     f.value = keepF;
   }
@@ -172,7 +175,7 @@
       name: val("name"), email: val("email"), email2: val("email2"), phone: val("phone"), instagram: val("instagram"),
       isGift: isGift(), recipient: isGift() ? val("recipient") : "", occasionDate: isGift() ? $("occasionDate").value : "",
       governorate: $("governorate").value, area: val("area"), street: val("street"), building: val("building"),
-      floor: val("floor"), apartment: val("apartment"), landmark: val("landmark"), notes: val("notes"), foundVia: $("foundVia").value,
+      floor: val("floor"), apartment: val("apartment"), landmark: val("landmark"), notes: val("notes"), foundVia: $("foundVia").value, src: GD.source(),
       terms: $("terms").checked, website: $("website").value, elapsed: Date.now() - startedAt
     };
     var file = $("receipt").files[0];

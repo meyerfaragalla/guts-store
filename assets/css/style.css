@@ -534,6 +534,8 @@ html[data-lang="ar"] .pp-field label { letter-spacing: 0; font-size: 14px; }
 .pp-check { padding: 14px; border: 1px solid var(--i-line); background: var(--i-card); margin: 0; }
 .pp-check:has(input:checked) { border-color: var(--purple); }
 .pp-check .plus { white-space: nowrap; color: var(--i-muted); }
+.pp-bundle { margin: 0 0 10px; padding: 10px 14px; border-left: 3px solid var(--gold, #C9A44C); background: var(--i-card); color: var(--i-ink); font-size: 15px; line-height: 1.5; }
+html[data-lang="ar"] .pp-bundle { border-left: 0; border-right: 3px solid var(--gold, #C9A44C); }
 .pp-check input { accent-color: var(--purple); }
 .pp-complete { display: flex; flex-direction: column; gap: 10px; }
 .pp-complete .eyebrow { margin: 6px 0 0; }
