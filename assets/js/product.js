@@ -168,8 +168,8 @@
     if (!state.mount || !worth) { el.textContent = ""; el.classList.add("hidden"); return; }
     var vars = { value: money(total + worth), price: money(total), free: money(worth) };
     el.textContent = GD.tx("pp.bundle", vars) ||
-      GD.t("The complete display is worth " + vars.value + ". You pay " + vars.price + ": the carved name (" + vars.free + ") is free.",
-           "العرض الكامل قيمته " + vars.value + ". انت بتدفع " + vars.price + ": الاسم المحفور (" + vars.free + ") ببلاش.");
+      GD.t("The Complete Wall Display is worth " + vars.value + ". You pay " + vars.price + ": the carved name (" + vars.free + ") is free.",
+           "عرض الحيطة الكامل قيمته " + vars.value + ". انت بتدفع " + vars.price + ": الاسم المحفور (" + vars.free + ") ببلاش.");
     el.classList.remove("hidden");
   }
 

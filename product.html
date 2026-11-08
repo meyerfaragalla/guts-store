@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261107a">
+<link rel="stylesheet" href="assets/css/style.css?v=20261107c">
 </head>
 <body data-page="product">
 <header id="site-header"></header>
@@ -45,6 +45,13 @@
         </div>
         <div class="pp-added hidden" id="pp-added" role="status"><span data-t="pp.added"></span> <a class="link-u" href="cart.html" data-t="pp.viewCart"></a></div>
         <div class="pp-quote hidden" id="pp-quote"></div>
+        <!-- "See it on your wall" (Hormozi attraction offer, Miller transitional call to action); wall.js opens it -->
+        <div class="pp-mockup">
+          <p class="pp-mockup-t" data-t="pp.mockup.title"></p>
+          <p class="pp-mockup-b" data-t="pp.mockup.body"></p>
+          <button type="button" class="btn btn-gold pp-wall-btn" data-wall data-t="pp.wall.btn"></button>
+          <a class="link-u" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-track="tap:mockup" data-t="pp.mockup.btn"></a>
+        </div>
       </form>
     </div>
   </section>
@@ -100,8 +107,9 @@
 </div>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261107a"></script>
-<script src="assets/js/shop.js?v=20261107a"></script>
-<script src="assets/js/product.js?v=20261107a"></script>
+<script src="assets/js/site.js?v=20261107c"></script>
+<script src="assets/js/shop.js?v=20261107c"></script>
+<script src="assets/js/product.js?v=20261107c"></script>
+<script src="assets/js/wall.js?v=20261107c"></script>
 </body>
 </html>

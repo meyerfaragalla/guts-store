@@ -536,6 +536,11 @@ html[data-lang="ar"] .pp-field label { letter-spacing: 0; font-size: 14px; }
 .pp-check .plus { white-space: nowrap; color: var(--i-muted); }
 .pp-bundle { margin: 0 0 10px; padding: 10px 14px; border-left: 3px solid var(--gold, #C9A44C); background: var(--i-card); color: var(--i-ink); font-size: 15px; line-height: 1.5; }
 html[data-lang="ar"] .pp-bundle { border-left: 0; border-right: 3px solid var(--gold, #C9A44C); }
+/* Free personal mock-up box (product page) and section (home) */
+.pp-mockup { margin-top: 18px; padding: 14px 16px; border: 1px dashed var(--gold, #C9A44C); background: var(--i-card); color: var(--i-ink); }
+.pp-mockup p { margin: 0 0 6px; line-height: 1.5; }
+.pp-mockup-t { font-weight: 700; }
+.mockup-sec .mockup-body { margin: 18px 0 26px; font-size: 18px; line-height: 1.6; max-width: 34em; }
 .pp-check input { accent-color: var(--purple); }
 .pp-complete { display: flex; flex-direction: column; gap: 10px; }
 .pp-complete .eyebrow { margin: 6px 0 0; }
@@ -695,3 +700,26 @@ html[data-lang="ar"] .room-tab { font-family: var(--sans-ar); font-size: 13px; l
 .room-pic .scene-svg { max-width: 420px; }
 .room-cap { margin: 6px 0 0; text-align: center; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--i-muted); }
 html[data-lang="ar"] .room-cap { letter-spacing: 0; font-size: 12px; text-transform: none; }
+/* "See it on your wall" tool (wall.js) */
+.pp-wall-btn { width: 100%; margin: 6px 0 10px; }
+body.wall-open { overflow: hidden; }
+.wall-modal { position: fixed; inset: 0; z-index: 200; background: rgba(12, 5, 20, .82); display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 16px; }
+.wall-modal.hidden { display: none; }
+.wall-box { background: var(--ivory, #F3EDE2); color: var(--i-ink, #1E0B2E); width: 100%; max-width: 560px; padding: 18px 16px 22px; border-top: 3px solid var(--gold, #C9A44C); }
+.wall-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wall-head h2 { font-size: 28px; margin: 0; }
+.wall-x { width: 44px; height: 44px; border: 0; background: none; font-size: 30px; line-height: 1; cursor: pointer; color: inherit; }
+.wall-start p { line-height: 1.6; }
+.wall-pick { display: inline-flex; margin: 8px 0 12px; cursor: pointer; }
+.wall-private, .wall-note, .wall-hint { font-size: 13px; color: var(--i-muted, #6b5d74); }
+#wall-canvas { display: block; width: 100%; max-height: 62vh; object-fit: contain; touch-action: none; background: #000; cursor: grab; }
+.wall-controls { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.wall-ctl { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.wall-ctl select, .wall-ctl input[type="text"] { height: 44px; padding: 0 10px; border: 1px solid rgba(30, 11, 46, .32); background: #fff; font: inherit; color: inherit; }
+.wall-ctl input[type="range"] { width: 100%; accent-color: var(--purple, #1E0B2E); }
+.wall-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.wall-small { padding: 10px 14px; color: var(--i-ink, #1E0B2E); }
+.wall-check input { accent-color: var(--purple, #1E0B2E); }
+.wall-actions { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 14px; }
+.wall-actions .btn-ghost { color: var(--i-ink, #1E0B2E); }
+.wall-again { cursor: pointer; }
