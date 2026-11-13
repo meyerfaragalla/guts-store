@@ -130,9 +130,25 @@
     return tx("gen.money", { n: num(n) }) || (lang() === "ar" ? num(n) + " جنيه" : num(n) + " LE");
   }
 
+  // Text-tab words with simple marks: **bold** and [link words](page.html or https://...). Everything else stays plain text.
+  function mdHtml(s) {
+    return esc(s)
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, label, href) {
+        var h = href.replace(/&amp;/g, "&");
+        if (!/^(https:\/\/|[\w-]+\.html(#[\w-]*)?$)/.test(h)) return m;
+        return '<a href="' + esc(h) + '"' + (/^https:/.test(h) ? ' target="_blank" rel="noopener"' : "") + ">" + label + "</a>";
+      })
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  }
+
   function applyText(root) {
     if (!content) return;
     (root || document).querySelectorAll("[data-t]").forEach(function (el) { el.textContent = tx(el.getAttribute("data-t")); });
+    // Long pages (Privacy, Terms, Refund): if a row is missing, the words already in the page stay.
+    (root || document).querySelectorAll("[data-t-md]").forEach(function (el) {
+      var s = tx(el.getAttribute("data-t-md"));
+      if (s) el.innerHTML = mdHtml(s);
+    });
     (root || document).querySelectorAll("[data-t-alt]").forEach(function (el) { el.setAttribute("alt", tx(el.getAttribute("data-t-alt"))); });
     (root || document).querySelectorAll("[data-t-aria]").forEach(function (el) { el.setAttribute("aria-label", tx(el.getAttribute("data-t-aria"))); });
     // Headlines written in the sheet as "line|line|*italic line*", optionally stepped (data-steps="0,22,6").
@@ -568,7 +584,7 @@
 
   window.GD = {
     track: track, source: source, cart: { get: cartGet, set: cartSet, count: cartCount },
-    lang: lang, t: t, tx: tx, num: num, money: money, esc: esc,
+    lang: lang, t: t, tx: tx, num: num, money: money, esc: esc, mdHtml: mdHtml,
     getContent: getContent, onContent: onContent, applyText: applyText, dmHtml: dmHtml,
     ig: igHandle, igDm: igDm, dm: dm, customPills: customPills, customCards: customCards, copy: copyText, toast: toast, previewing: function () { return previewing; },
     post: post, get: get, driveImage: driveImage, swordSvg: SWORD_SVG,

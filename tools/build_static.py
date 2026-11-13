@@ -9,6 +9,7 @@ It copies the site into an output folder and, using assets/content.json (the pub
   - puts the catalog (every sword, the levels, the display pieces) into the HTML of the catalog pages;
   - sets each page's Google title and description from the Text tab, adds share previews, the Organization data
     and the Search Console code (Settings);
+  - writes the current English of the Privacy, Terms and Refund pages (Text tab) into their HTML;
   - rewrites sitemap.xml.
 The added text sits in a hidden block (data-static) that the page's JavaScript removes once it has drawn the real page,
 so customers see no difference.
@@ -36,6 +37,28 @@ SITEMAP_PAGES = ["", "swords.html", "designs.html", "display.html", "gift.html",
 
 def esc(s):
     return html.escape(str(s if s is not None else ""), quote=True)
+
+
+def md_html(s):
+    """Same marks as site.js mdHtml: **bold** and [words](page.html or https://...)."""
+    s = esc(s)
+
+    def link(m):
+        label, href = m.group(1), html.unescape(m.group(2))
+        if not re.match(r"^(https://|[\w-]+\.html(#[\w-]*)?$)", href):
+            return m.group(0)
+        ext = ' target="_blank" rel="noopener"' if href.startswith("https://") else ""
+        return '<a href="%s"%s>%s</a>' % (esc(href), ext, label)
+    s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", link, s)
+    return re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", s)
+
+
+def fill_md(page, site):
+    """Privacy, Terms, Refund: put the sheet's current English into the page, so Google reads what customers read."""
+    def one(m):
+        words = site.t(m.group(3))
+        return m.group(1) + (md_html(words) if words else m.group(4)) + m.group(5)
+    return re.sub(r'(<(h1|h2|p|li)\b[^>]*\bdata-t-md="([^"]+)"[^>]*>)(.*?)(</\2>)', one, page, flags=re.S)
 
 
 def slug(s):
@@ -287,6 +310,8 @@ def build(src, out):
             block = site.list_block("Display pieces", addons)
         elif name == "about.html":
             extra.append(ld_tag(site.org_ld()))
+        if "data-t-md=" in page:
+            page = fill_md(page, site)
         page = set_head(page, title or None, desc or None, extra="\n".join(e for e in extra if e))
         page = after_main(page, block)
         with open(path, "w", encoding="utf-8", newline="\n") as f:

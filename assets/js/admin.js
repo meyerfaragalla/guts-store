@@ -109,6 +109,9 @@
     { id: "product", name: "Product pages", page: "product", text: [/^pp\./, /^size\./, /^scene\./, /^room\./, /^wall\./, /^ship\.short\./, /^ship\.more$/] },
     { id: "about", name: "About", page: "about", text: [/^about2\./, /^about\./], photos: function (spot) { return spot === "About photo"; } },
     { id: "shipping", name: "Shipping & Returns", page: "shipping", text: [/^ship\./] },
+    { id: "privacy", name: "Privacy", text: [/^privacy\./], legal: true },
+    { id: "terms", name: "Terms", text: [/^terms\./], legal: true },
+    { id: "refund", name: "Refund", text: [/^refund\./], legal: true },
     { id: "builder", name: "Builder", tables: ["Builder Options"], settings: ["3D builder on", "3D builder link"], text: [/^builder\./, /^dm\.builder$/] },
     { id: "checkout", name: "Checkout", text: [/^co\./, /^cart\./, /^th\./, /^email\./, /^dm\.(?!order\.)/] },
     { id: "other", name: "Other pages", text: [/./] },
@@ -207,7 +210,7 @@
     var win = window.open("", "_blank");
     save().then(function (ok) {
       if (!ok) { if (win) win.close(); return; }
-      var page = { home: "index.html", catalog: "swords.html", product: "designs.html", about: "about.html", shipping: "shipping.html", checkout: "cart.html" }[current] || "index.html";
+      var page = { home: "index.html", catalog: "swords.html", product: "designs.html", about: "about.html", shipping: "shipping.html", privacy: "privacy.html", terms: "terms.html", refund: "refund.html", checkout: "cart.html" }[current] || "index.html";
       var url = page + "#preview=" + token;
       if (win) win.location.href = url; else location.href = url;
     });
@@ -398,6 +401,8 @@
     var shown = rows.filter(function (r) { return !f || (r.key + " " + r.where + " " + r.en + " " + r.ar).toLowerCase().indexOf(f) !== -1; });
     return '<section class="adm-card"><h2>Words on ' + (tab.id === "settings" ? "the order message" : "these pages") + "</h2>" +
       (tab.id === "settings" ? '<p class="adm-help">The message customers copy and send you on Instagram after ordering. Keep {code} where it is.</p>' : "") +
+      (tab.legal ? '<p class="adm-help">Every heading, paragraph and point of this page, in page order. To make words bold, put two stars on each side: **like this**. ' +
+        'A link is written [the words](privacy.html) or [@guts.decor](https://www.instagram.com/guts.decor/). Remember to change the “Last updated” date when you change the policy.</p>' : "") +
       '<input type="search" class="adm-search" id="text-search" placeholder="Search the words…" value="' + esc(textFilter) + '">' +
       '<div class="adm-texts">' + shown.slice(0, 120).map(function (r) {
         var p = pending["text:" + r.key];
