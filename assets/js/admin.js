@@ -39,6 +39,25 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function hideMsg() { $("msg").classList.add("hidden"); }
+  // Yes/No questions inside the page (the browser's own pop-up boxes can be switched off by the browser, and then buttons seem dead).
+  function ask(question, yes, no) {
+    return new Promise(function (resolve) {
+      var box = $("ask");
+      box.querySelector(".adm-ask-q").textContent = question;
+      var ok = $("ask-yes"), cancel = $("ask-no");
+      ok.textContent = yes || "Yes"; cancel.textContent = no || "Cancel";
+      box.classList.remove("hidden");
+      ok.focus();
+      function done(v) {
+        box.classList.add("hidden");
+        ok.onclick = cancel.onclick = box.onkeydown = null;
+        resolve(v);
+      }
+      ok.onclick = function () { done(true); };
+      cancel.onclick = function () { done(false); };
+      box.onkeydown = function (e) { if (e.key === "Escape") done(false); };
+    });
+  }
   function problem(res) {
     if (res && res.messages) return showMsg(res.messages);
     showMsg("That didn't work. Check your internet and try again.");
@@ -200,9 +219,11 @@
   }
   $("save-btn").addEventListener("click", save);
   $("discard-btn").addEventListener("click", function () {
-    if (!confirm("Undo all unsaved changes?")) return;
-    pending = {};
-    render();
+    ask("Undo all unsaved changes?", "Undo them", "Keep them").then(function (yes) {
+      if (!yes) return;
+      pending = {};
+      render();
+    });
   });
 
   $("preview-btn").addEventListener("click", function () {
@@ -219,7 +240,9 @@
   $("publish-btn").addEventListener("click", function () {
     save().then(function (ok) {
       if (!ok) return;
-      if (!confirm("Publish now? Your saved draft becomes the live website. A copy of this version is kept, so you can go back to it.")) return;
+      return ask("Publish now? Your saved draft becomes the live website. A copy of this version is kept, so you can go back to it.", "Publish", "Not now");
+    }).then(function (yes) {
+      if (!yes) return;
       var btn = $("publish-btn");
       busy(btn, true, "Publishing…");
       call("adminPublish").then(function (res) {
@@ -471,9 +494,11 @@
         if (!res || !res.ok) return problem(res);
         var links = area.value.split(/[\s,]+/).filter(Boolean);
         // A cell with several photos keeps them (the new one is added); otherwise it is replaced.
-        area.value = links.length > 1 || (links.length && confirm("Keep the photos already there and add this one?\n\nOK = add it. Cancel = replace them.")) ? links.concat(res.link).join(", ") : res.link;
-        area.dispatchEvent(new Event("input", { bubbles: true }));
-        box.querySelector(".adm-thumbs").outerHTML = thumbs(area.value);
+        (links.length === 1 ? ask("Keep the photo already there and add this one?", "Add it", "Replace it") : Promise.resolve(links.length > 1)).then(function (add) {
+          area.value = add ? links.concat(res.link).join(", ") : res.link;
+          area.dispatchEvent(new Event("input", { bubbles: true }));
+          box.querySelector(".adm-thumbs").outerHTML = thumbs(area.value);
+        });
       }).catch(function () { label.firstChild.textContent = "Upload photo"; showMsg("Upload failed: no connection."); });
     };
     r.readAsDataURL(f);
@@ -510,10 +535,12 @@
       var move = el.closest("[data-move]");
       if (move || el.closest("[data-delete]")) {
         if (count()) return showMsg("Save or undo your changes first, then try again.");
-        if (el.closest("[data-delete]") && !confirm("Delete “" + key + "” for good?\n\nTip: “Hide” keeps it in the sheet. A deleted row comes back only by restoring an older version.")) return;
-        call("adminRow", { tab: tab, row: row, key: key, op: move ? move.getAttribute("data-move") : "delete" }).then(function (res) {
-          if (!res || !res.ok) return problem(res);
-          load();
+        (move ? Promise.resolve(true) : ask("Delete “" + key + "” for good? Tip: “Hide” keeps it in the sheet. A deleted row comes back only by restoring an older version.", "Delete", "Keep it")).then(function (yes) {
+          if (!yes) return;
+          call("adminRow", { tab: tab, row: row, key: key, op: move ? move.getAttribute("data-move") : "delete" }).then(function (res) {
+            if (!res || !res.ok) return problem(res);
+            load();
+          });
         });
         return;
       }
@@ -576,13 +603,15 @@
     var sel = e.target.closest && e.target.closest("[data-order]");
     if (!sel) return;
     var code = sel.getAttribute("data-order"), status = sel.value;
-    if (!confirm("Set " + code + " to “" + status + "”?")) { sel.value = sel.getAttribute("data-was"); return; }
-    sel.disabled = true;
-    call("adminStatus", { code: code, status: status }).then(function (res) {
-      sel.disabled = false;
-      if (!res || !res.ok) { sel.value = sel.getAttribute("data-was"); return problem(res); }
-      sel.setAttribute("data-was", status);
-      showMsg(code + " is now “" + status + "”.", true);
+    ask("Set " + code + " to “" + status + "”?", "Yes, set it", "Cancel").then(function (yes) {
+      if (!yes) { sel.value = sel.getAttribute("data-was"); return; }
+      sel.disabled = true;
+      call("adminStatus", { code: code, status: status }).then(function (res) {
+        sel.disabled = false;
+        if (!res || !res.ok) { sel.value = sel.getAttribute("data-was"); return problem(res); }
+        sel.setAttribute("data-was", status);
+        showMsg(code + " is now “" + status + "”.", true);
+      });
     });
   });
 
@@ -603,13 +632,15 @@
     var b = e.target.closest && e.target.closest("[data-restore]");
     if (!b) return;
     if (count()) return showMsg("Save or undo your changes first.");
-    if (!confirm("Restore the version from " + b.getAttribute("data-name") + "?\n\nThe website and the sheet go back to how they were then.")) return;
-    busy(b, true, "Restoring…");
-    call("adminRestore", { id: b.getAttribute("data-restore") }).then(function (res) {
-      busy(b, false);
-      if (!res || !res.ok) return problem(res);
-      showMsg("Restored the version from " + res.when + ". It's live now.", true);
-      load().then(renderVersions);
+    ask("Restore the version from " + b.getAttribute("data-name") + "? The website and the sheet go back to how they were then.", "Restore", "Cancel").then(function (yes) {
+      if (!yes) return;
+      busy(b, true, "Restoring…");
+      call("adminRestore", { id: b.getAttribute("data-restore") }).then(function (res) {
+        busy(b, false);
+        if (!res || !res.ok) return problem(res);
+        showMsg("Restored the version from " + res.when + ". It's live now.", true);
+        load().then(renderVersions);
+      });
     });
   });
 

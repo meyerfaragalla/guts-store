@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/admin.css?v=20261113d">
+<link rel="stylesheet" href="assets/css/admin.css?v=20261113e">
 </head>
 <body class="adm">
 <!-- Admin page: changes go into the Website Content sheet as a draft. Nothing is live until Publish. -->
@@ -41,6 +41,15 @@
   </div>
   <div class="adm-msg hidden" id="msg" role="alert"></div>
   <main class="adm-main" id="main"></main>
+  <div class="adm-ask hidden" id="ask" role="alertdialog" aria-modal="true" aria-labelledby="ask-q">
+    <div class="adm-ask-box">
+      <p class="adm-ask-q" id="ask-q"></p>
+      <div class="adm-ask-btns">
+        <button type="button" class="adm-btn" id="ask-no">Cancel</button>
+        <button type="button" class="adm-btn gold" id="ask-yes">Yes</button>
+      </div>
+    </div>
+  </div>
   <div class="adm-save hidden" id="savebar">
     <span id="save-count"></span>
     <button type="button" class="adm-btn" id="discard-btn">Undo changes</button>
@@ -49,6 +58,6 @@
 </div>
 
 <script src="assets/js/site.js?v=20261113d"></script>
-<script src="assets/js/admin.js?v=20261113d"></script>
+<script src="assets/js/admin.js?v=20261113e"></script>
 </body>
 </html>

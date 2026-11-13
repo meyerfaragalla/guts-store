@@ -129,6 +129,12 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; margin: 0; }
 .adm-save span { flex: 1 1 auto; font-size: 13px; }
 .adm-save .adm-btn:not(.gold) { border-color: rgba(243, 237, 226, .5); color: var(--ivory); }
 
+/* Yes/No question (inside the page, so the browser can't block it) */
+.adm-ask { position: fixed; inset: 0; z-index: 50; background: rgba(30, 11, 46, .6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.adm-ask-box { background: var(--card); border-top: 3px solid var(--gold); max-width: 420px; width: 100%; padding: 20px 18px 16px; }
+.adm-ask-q { margin: 0 0 18px; font-size: 15px; }
+.adm-ask-btns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
 @media (min-width: 720px) {
   .adm-main { padding-top: 24px; }
   .adm-card { padding: 22px 24px; }
