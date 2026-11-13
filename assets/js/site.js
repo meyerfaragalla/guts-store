@@ -56,7 +56,27 @@
     listeners.forEach(function (fn) { fn(content); });
   }
 
-  var firstContent = new Promise(function (resolve, reject) {
+  // ---------- Preview (from the admin page): unpublished changes, only in this tab ----------
+  var PREVIEW_KEY = "gd-preview-token";
+  (function () {
+    var m = location.hash.match(/preview=([A-Za-z0-9]{20,64})/);
+    try {
+      if (m) { sessionStorage.setItem(PREVIEW_KEY, m[1]); history.replaceState(null, "", location.pathname + location.search); }
+    } catch (e) { /* storage blocked: no preview */ }
+  })();
+  function previewToken() { try { return sessionStorage.getItem(PREVIEW_KEY) || ""; } catch (e) { return ""; } }
+  var previewing = !!previewToken();
+
+  var firstContent = previewing ? new Promise(function (resolve, reject) {
+    fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "adminDraft", token: previewToken() }) })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.ok) { setContent(data); resolve(data); return; }
+        try { sessionStorage.removeItem(PREVIEW_KEY); } catch (e) { /* ignore */ }
+        location.reload();
+      }).catch(reject);
+  }) : new Promise(function (resolve, reject) {
     var cached = readCache();
     if (cached && cached.ok) { setContent(cached); resolve(cached); }
 
@@ -150,19 +170,110 @@
   }
 
   // ---------- Contact buttons ----------
-  // Instagram DM button (plus WhatsApp only when Settings has a business number), with the reply promise under it.
-  function dmHtml() {
+  // The Instagram username lives in the sheet's Settings tab (admin page > Settings), never in the code.
+  function igHandle() {
     var s = (content && content.settings) || {};
-    var handle = s.instagram || "guts_san_store";
+    return String(s.instagram || "guts.decor").replace(/^@/, "");
+  }
+  function igDm() { return "https://ig.me/m/" + encodeURIComponent(igHandle()); }
+  function igProfile() { return "https://www.instagram.com/" + encodeURIComponent(igHandle()) + "/"; }
+  // WhatsApp shows only when Settings has a store number AND its switch is on.
+  function waNumber() {
+    var s = (content && content.settings) || {};
+    return s.whatsapp && s.whatsappOn !== false ? s.whatsapp : "";
+  }
+
+  // Instagram DM button (plus WhatsApp when switched on), with the reply promise under it.
+  function dmHtml() {
     var html = '<div class="dm"><div class="dm-buttons">' +
-      '<a class="btn btn-gold" href="https://ig.me/m/' + encodeURIComponent(handle) + '" target="_blank" rel="noopener">' +
+      '<a class="btn btn-gold" href="' + igDm() + '" target="_blank" rel="noopener">' +
       igIcon() + "<span>" + esc(tx("ig.button")) + "</span></a>";
-    if (s.whatsapp) {
-      html += '<a class="btn btn-ghost" href="https://wa.me/' + encodeURIComponent(s.whatsapp) + '" target="_blank" rel="noopener">' +
+    if (waNumber()) {
+      html += '<a class="btn btn-ghost" href="https://wa.me/' + encodeURIComponent(waNumber()) + '" target="_blank" rel="noopener">' +
         esc(tx("wa.button")) + "</a>";
     }
     return html + '</div><p class="dm-note">' + esc(tx("ig.reply")) + "</p></div>";
   }
+
+  // Every Instagram link written in a page follows the username in Settings.
+  function fixIgLinks() {
+    document.querySelectorAll('a[href*="ig.me/m/"]').forEach(function (a) { a.href = igDm(); });
+    document.querySelectorAll('a[href*="instagram.com/"]').forEach(function (a) { a.href = igProfile(); });
+    document.querySelectorAll("[data-ig-name]").forEach(function (el) { el.textContent = "@" + igHandle(); });
+  }
+
+  // ---------- Copy a message, then open the Instagram chat ----------
+  function copyText(text) {
+    var done = false;
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+      done = document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (e) { /* fall through */ }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return done; });
+    }
+    return Promise.resolve(done);
+  }
+  function toast(msg) {
+    var el = document.getElementById("gd-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "gd-toast"; el.className = "toast"; el.setAttribute("role", "status");
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add("on");
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove("on"); }, 3200);
+  }
+  // Copies the message, says "Copied! Paste it in the chat", then opens the Instagram chat.
+  function dm(text, trackName) {
+    if (trackName) track(trackName);
+    sendQueue();
+    return copyText(text).then(function (ok) {
+      toast(ok ? tx("dm.copied") || "Copied! Paste it in the chat" : tx("dm.copyFail") || "Opening Instagram…");
+      setTimeout(function () { window.location.href = igDm(); }, ok ? 1300 : 600);
+      return ok;
+    });
+  }
+  // ---------- The two ways besides a level: Build your own katana, Custom commission ----------
+  // The 3D builder link is used only once it's switched on in Settings; until then the button opens a DM.
+  function builderHref() {
+    var s = (content && content.settings) || {};
+    return s.builderOn && /^https?:\/\/|^[\w\-\/]+\.html/.test(s.builderUrl || "") ? s.builderUrl : "";
+  }
+  function builderBtn(cls, label) {
+    var href = builderHref();
+    return href ? '<a class="' + cls + '" href="' + esc(href) + '" data-track="tap:builder">' + label + "</a>"
+      : '<button type="button" class="' + cls + '" data-dm-msg="dm.builder" data-track="tap:builder">' + label + "</button>";
+  }
+  function commissionBtn(cls, label) {
+    return '<button type="button" class="' + cls + '" data-dm-msg="dm.commission" data-track="tap:commission">' + label + "</button>";
+  }
+  function customPills() {
+    return builderBtn("pill pill-btn", esc(tx("custom.build.t"))) + commissionBtn("pill pill-btn", esc(tx("custom.comm.short")));
+  }
+  function customCards() {
+    return '<div class="custom-opts">' +
+      '<div class="custom-opt"><h3>' + esc(tx("custom.build.t")) + "</h3><p>" + esc(tx("custom.build.d")) + "</p>" +
+      builderBtn("btn btn-gold", esc(tx("custom.build.btn"))) + "</div>" +
+      '<div class="custom-opt"><h3>' + esc(tx("custom.comm.t")) + "</h3><p>" + esc(tx("custom.comm.d")) + "</p>" +
+      commissionBtn("btn btn-ghost", igIcon() + "<span>" + esc(tx("custom.comm.btn")) + "</span>") + "</div></div>";
+  }
+  function renderCustom() {
+    document.querySelectorAll("[data-custom-opts]").forEach(function (el) { el.innerHTML = customCards(); });
+  }
+
+  // A button written as <button data-dm-msg="text key"> copies that Text-tab message and opens the chat.
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-dm-msg]");
+    if (!b) return;
+    e.preventDefault();
+    dm(tx(b.getAttribute("data-dm-msg")));
+  });
 
   function igIcon() {
     return '<svg class="ig-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">' +
@@ -188,20 +299,19 @@
     if (!btn) return;
     var email = contactEmail();
     if (email) window.location.href = "mailto:" + email + "?subject=Guts%20Decor";
-    else window.open("https://www.instagram.com/guts_san_store/", "_blank", "noopener");
+    else window.open(igProfile(), "_blank", "noopener");
   });
 
   // ---------- Header & footer ----------
   var page = document.body.getAttribute("data-page") || "";
 
-  var IG_URL = "https://www.instagram.com/guts_san_store/";
   var brandHtml = '<a class="brand" href="index.html" aria-label="Guts Decor"><span class="gd-mark" aria-hidden="true">GD</span>' +
     '<span class="wordmark" aria-hidden="true">GUTS DECOR</span></a>';
 
-  // Menu links. Commissions opens the VIP request form until its own page exists (phase 4).
+  // Menu links. Commissions opens the "Build your own katana / Custom commission" choices on the Swords page.
   var MENU = [
     ["menu.1", "swords.html"], ["menu.2", "designs.html"], ["menu.3", "display.html"],
-    ["menu.4", "gift.html", "gold"], ["menu.5", "order.html?tier=VIP"], ["menu.6", "gallery.html"],
+    ["menu.4", "gift.html", "gold"], ["menu.5", "swords.html#custom"], ["menu.6", "gallery.html"],
     ["menu.7", "how.html"], ["menu.8", "about.html"]
   ];
   var SWORD_SVG = '<svg viewBox="0 0 40 400" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linejoin="round" aria-hidden="true">' +
@@ -286,10 +396,10 @@
     var s = (content && content.settings) || {};
     var links = document.getElementById("menu-links");
     if (links) {
-      links.innerHTML = '<a href="https://www.instagram.com/' + encodeURIComponent(s.instagram || "guts_san_store") + '/" target="_blank" rel="noopener">' +
-        esc(tx("footer.instagram")) + "</a>" +
-        (s.whatsapp ? '<a href="https://wa.me/' + encodeURIComponent(s.whatsapp) + '" target="_blank" rel="noopener">WhatsApp</a>' : "");
+      links.innerHTML = '<a href="' + igProfile() + '" target="_blank" rel="noopener">' + esc(tx("footer.instagram")) + "</a>" +
+        (waNumber() ? '<a href="https://wa.me/' + encodeURIComponent(waNumber()) + '" target="_blank" rel="noopener">WhatsApp</a>' : "");
     }
+    fixIgLinks();
     document.querySelectorAll("[data-set-lang]").forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-set-lang") === lang()));
     });
@@ -300,10 +410,11 @@
     footer.className = "site-footer";
     footer.innerHTML =
       '<div class="inner">' + brandHtml.replace('class="brand"', 'class="brand" style="pointer-events:auto"') +
-      '<div class="links"><a href="' + IG_URL + '" target="_blank" rel="noopener" data-t="footer.instagram"></a>' +
+      '<div class="links"><a href="https://www.instagram.com/guts.decor/" target="_blank" rel="noopener" data-t="footer.instagram"></a>' +
       '<button type="button" class="link-btn" data-email-btn data-t="footer.email"></button>' +
+      '<a href="about.html" data-t="footer.aboutUs"></a><a href="shipping.html" data-t="footer.shipping"></a>' +
       '<a href="privacy.html" data-t="footer.privacy"></a><a href="terms.html" data-t="footer.terms"></a>' +
-      '<a href="refund.html" data-t="footer.refunds"></a><a href="pay.html" data-t="footer.pay"></a></div>' +
+      '<a href="refund.html" data-t="footer.refunds"></a></div>' +
       '<p class="made" data-t="footer.made"></p>' +
       '<p class="fine" data-t="footer.fanart"></p><p class="fine" data-t="footer.adults"></p>' +
       '<p class="fine">&copy; ' + new Date().getFullYear() + " Guts Decor</p></div>";
@@ -329,7 +440,56 @@
   window.addEventListener("storage", function (e) { if (e.key === CART_KEY) renderCartCount(); });
   renderCartCount();
 
+  // ---------- Page sections: on/off and order, set on the admin page (Sections tab) ----------
+  function applySections(c) {
+    var rows = (c.sections || []).filter(function (r) { return r.page === page; });
+    if (!rows.length) return;
+    var by = {};
+    rows.forEach(function (r) { by[r.id] = r; });
+    var els = Array.prototype.slice.call(document.querySelectorAll("[data-sec]"));
+    els.forEach(function (el) {
+      var r = by[el.getAttribute("data-sec")];
+      el.classList.toggle("sec-off", !!r && r.show === false);
+    });
+    // Reorder sections that share a parent, keeping their places on the page.
+    var groups = [];
+    els.forEach(function (el) {
+      var g = groups.filter(function (x) { return x.parent === el.parentNode; })[0];
+      if (!g) groups.push(g = { parent: el.parentNode, els: [] });
+      g.els.push(el);
+    });
+    groups.forEach(function (g) {
+      var order = function (el) { var r = by[el.getAttribute("data-sec")]; return r && r.order != null ? Number(r.order) : 999; };
+      var sorted = g.els.slice().sort(function (a, b) { return order(a) - order(b) || g.els.indexOf(a) - g.els.indexOf(b); });
+      if (sorted.every(function (el, i) { return el === g.els[i]; })) return;
+      var marks = g.els.map(function (el) { var m = document.createComment("sec"); el.parentNode.insertBefore(m, el); return m; });
+      marks.forEach(function (m, i) { m.parentNode.replaceChild(sorted[i], m); });
+    });
+  }
+
+  // The plain copy written into the page for Google (data-static) goes once the real page is drawn.
+  function dropStatic() {
+    document.querySelectorAll("[data-static]").forEach(function (el) { el.parentNode.removeChild(el); });
+  }
+
+  function previewBanner() {
+    if (!previewing || document.getElementById("gd-preview")) return;
+    var b = document.createElement("div");
+    b.id = "gd-preview"; b.className = "preview-bar";
+    b.innerHTML = "<span>" + esc(tx("admin.preview.bar") || "Preview: these changes are not live yet.") + '</span><button type="button">' +
+      esc(tx("admin.preview.exit") || "Exit preview") + "</button>";
+    b.querySelector("button").addEventListener("click", function () {
+      try { sessionStorage.removeItem(PREVIEW_KEY); } catch (e) { /* ignore */ }
+      location.reload();
+    });
+    document.body.appendChild(b);
+  }
+
+  onContent(applySections);
+  onContent(function () { setTimeout(dropStatic, 0); });
+  onContent(previewBanner);
   onContent(renderDm);
+  onContent(renderCustom);
   onContent(renderMenuExtras);
   onContent(renderCartCount);
 
@@ -375,7 +535,7 @@
   }
   function track(name) {
     var e = String(name).toLowerCase().replace(/[^a-z0-9:._'\-]+/g, "-").slice(0, 60);
-    if (!e || /^(localhost|127\.)/.test(location.hostname)) return; // don't count tests on this computer
+    if (!e || previewing || /^(localhost|127\.)/.test(location.hostname)) return; // don't count tests on this computer or previews
     queue.push(e);
     if (!timer) timer = setTimeout(sendQueue, 1000);
   }
@@ -410,6 +570,7 @@
     track: track, source: source, cart: { get: cartGet, set: cartSet, count: cartCount },
     lang: lang, t: t, tx: tx, num: num, money: money, esc: esc,
     getContent: getContent, onContent: onContent, applyText: applyText, dmHtml: dmHtml,
+    ig: igHandle, igDm: igDm, dm: dm, customPills: customPills, customCards: customCards, copy: copyText, toast: toast, previewing: function () { return previewing; },
     post: post, get: get, driveImage: driveImage, swordSvg: SWORD_SVG,
     configured: function () { return !!API_URL; }
   };

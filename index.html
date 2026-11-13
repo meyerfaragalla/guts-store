@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261107c">
+<link rel="stylesheet" href="assets/css/style.css?v=20261113a">
 </head>
 <body data-page="home">
 <header id="site-header"></header>
@@ -40,7 +40,7 @@
   </section>
 
   <!-- 2. Big headline over the hands video -->
-  <section class="ivory h-headline" id="headline" aria-labelledby="hero-title">
+  <section class="ivory h-headline" id="headline" data-sec="headline" aria-labelledby="hero-title">
     <div class="tags"><span data-t="home.tag.left"></span><span data-t="home.tag.right"></span></div>
     <div class="stage">
       <div class="media-box" id="hands-box"><span class="ph-label" data-t="ph.hands"></span></div>
@@ -51,7 +51,7 @@
   </section>
 
   <!-- 3. It's a gift / It's for me, right under the top video -->
-  <section class="ivory rail-sec tight" id="paths" aria-labelledby="paths-title">
+  <section class="ivory rail-sec tight" id="paths" data-sec="paths" aria-labelledby="paths-title">
     <h2 id="paths-title" data-t="home.paths.title"></h2>
     <div class="rail" id="paths-rail">
       <a class="rail-card" href="gift.html" data-photo="card-it-s-a-gift" data-track="tap:gift"><span class="tag" data-t="home.gift.title"></span></a>
@@ -61,7 +61,7 @@
   </section>
 
   <!-- 4. The maker -->
-  <section class="p-sec" id="maker" aria-labelledby="maker-title">
+  <section class="p-sec" id="maker" data-sec="maker" aria-labelledby="maker-title">
     <div class="inner">
       <p class="eyebrow" data-t="home.story.title"></p>
       <h2 class="stepped" id="maker-title" data-rich="home.maker.headline" data-steps="0,22,6,0,34"></h2>
@@ -75,27 +75,28 @@
   </section>
 
   <!-- 5. Ready designs (Hermès grid) -->
-  <section class="ivory grid-sec" id="designs" aria-labelledby="designs-title" style="padding-top:80px">
+  <section class="ivory grid-sec" id="designs" data-sec="designs" aria-labelledby="designs-title" style="padding-top:80px">
     <div class="grid-head">
       <div><p class="eyebrow" data-t="home.designs.label"></p><h2 id="designs-title" data-t="home.designs.title"></h2></div>
       <a class="link-u" href="designs.html" data-t="home.designs.all"></a>
     </div>
     <div class="p-grid" id="design-grid"></div>
+    <div class="center see-all"><a class="btn btn-gold" href="designs.html" data-track="tap:see-all" data-t="home.designs.seeAll"></a></div>
   </section>
 
   <!-- 6. Make it a centrepiece -->
-  <section class="ivory rail-sec tight" id="centrepiece" aria-labelledby="centre-title">
+  <section class="ivory rail-sec tight" id="centrepiece" data-sec="centrepiece" aria-labelledby="centre-title">
     <h2 id="centre-title" data-t="home.centre.title"></h2>
     <div class="rail" id="centre-rail">
       <a class="rail-card" href="display.html" data-photo="card-display-pieces" data-track="tap:display"><span class="tag" data-t="home.centre.display.title"></span></a>
-      <a class="rail-card" href="order.html?tier=VIP" data-photo="card-commissions" data-track="tap:commissions"><span class="tag" data-t="home.centre.comm.title"></span></a>
+      <a class="rail-card" href="https://ig.me/m/guts.decor" data-dm-msg="dm.commission" data-photo="card-commissions" data-track="tap:commissions"><span class="tag" data-t="home.centre.comm.title"></span></a>
     </div>
     <div class="rail-bar" aria-hidden="true"><span></span></div>
     <p class="rail-note" data-t="home.centre.bonus"></p>
   </section>
 
   <!-- 7. How ordering works -->
-  <section class="p-sec" id="how" aria-labelledby="how-title">
+  <section class="p-sec" id="how" data-sec="how" aria-labelledby="how-title">
     <div class="inner">
       <p class="eyebrow" data-t="home.how.label"></p>
       <h2 class="head-2" id="how-title" data-rich="home.how.headline"></h2>
@@ -119,7 +120,7 @@
   </section>
 
   <!-- 8. Guarantees -->
-  <section class="ivory i-sec" aria-labelledby="guarantee-title">
+  <section class="ivory i-sec" id="guarantees" data-sec="guarantees" aria-labelledby="guarantee-title">
     <div class="inner">
       <p class="eyebrow" data-t="home.guarantee.label"></p>
       <h2 class="head-2" id="guarantee-title" data-rich="home.guarantee.title"></h2>
@@ -133,18 +134,18 @@
   </section>
 
   <!-- 8b. Free personal mock-up (Hormozi lead magnet, Miller transitional call to action, Meyer's "see it in your space") -->
-  <section class="p-sec mockup-sec" aria-labelledby="mockup-title">
+  <section class="p-sec mockup-sec" id="mockup" data-sec="mockup" aria-labelledby="mockup-title">
     <div class="inner">
       <p class="eyebrow" data-t="home.mockup.label"></p>
       <h2 class="head-2" id="mockup-title" data-rich="home.mockup.title"></h2>
       <p class="mockup-body" data-t="home.mockup.body"></p>
       <button type="button" class="btn btn-gold" data-wall data-t="pp.wall.btn"></button>
-      <div class="ig-link"><a href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-track="tap:mockup" data-t="home.mockup.btn"></a></div>
+      <div class="ig-link"><a href="https://ig.me/m/guts.decor" target="_blank" rel="noopener" data-track="tap:mockup" data-t="home.mockup.btn"></a></div>
     </div>
   </section>
 
   <!-- 9. Reviews reel (hidden while the Videos tab has no reel) -->
-  <section class="p-sec center hidden" id="reviews" aria-labelledby="reviews-title">
+  <section class="p-sec center hidden" id="reviews" data-sec="reviews" aria-labelledby="reviews-title">
     <div class="inner">
       <h2 class="italic-title" id="reviews-title" data-t="home.reviews.title"></h2>
       <div class="reel" id="reviews-reel"></div>
@@ -157,15 +158,15 @@
     <h2 id="final-title" data-t="home.final.title"></h2>
     <p data-t="home.final.body"></p>
     <a class="btn btn-gold" href="order.html" data-track="cta:home" data-t="home.final.order"></a>
-    <div class="ig-link"><a id="final-ig" data-track="tap:ig" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-t="home.final.ig"></a></div>
+    <div class="ig-link"><a id="final-ig" data-track="tap:ig" href="https://ig.me/m/guts.decor" target="_blank" rel="noopener" data-t="home.final.ig"></a></div>
   </section>
 
 </main>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261107c"></script>
-<script src="assets/js/videos.js?v=20261107c"></script>
-<script src="assets/js/home.js?v=20261107c"></script>
-<script src="assets/js/wall.js?v=20261107c"></script>
+<script src="assets/js/site.js?v=20261113a"></script>
+<script src="assets/js/videos.js?v=20261113a"></script>
+<script src="assets/js/home.js?v=20261113a"></script>
+<script src="assets/js/wall.js?v=20261113a"></script>
 </body>
 </html>

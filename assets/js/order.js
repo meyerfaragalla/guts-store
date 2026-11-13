@@ -219,7 +219,9 @@
     };
     GD.post(payload).then(function (res) {
       if (res && res.ok && res.code) {
-        location.href = "thanks.html?code=" + encodeURIComponent(res.code);
+        // Saved as "Started (waiting for DM)": the thank-you page asks them to send this message on Instagram.
+        try { sessionStorage.setItem("gd-order-msg", JSON.stringify({ code: res.code, msg: res.message || "" })); } catch (e) { /* ignore */ }
+        location.href = "thanks.html?code=" + encodeURIComponent(res.code) + "&dm=1";
         return;
       }
       throw new Error((res && res.error) || "unknown");
@@ -247,8 +249,8 @@
     renderOptions();
   }).catch(function () {
     var el = $("load-error");
-    el.textContent = GD.t("The order form couldn't load right now. Please refresh the page, or message me on Instagram @guts_san_store.",
-      "فورم الطلب مش عارف يحمّل دلوقتي. اعمل ريفرش للصفحة، أو ابعتلي على إنستجرام @guts_san_store.");
+    el.textContent = GD.t("The order form couldn't load right now. Please refresh the page, or message me on Instagram @guts.decor.",
+      "فورم الطلب مش عارف يحمّل دلوقتي. اعمل ريفرش للصفحة، أو ابعتلي على إنستجرام @guts.decor.");
     el.classList.remove("hidden");
     $("submit-btn").disabled = true;
   });

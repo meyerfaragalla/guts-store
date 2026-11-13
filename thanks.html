@@ -12,66 +12,94 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261107c">
+<link rel="stylesheet" href="assets/css/style.css?v=20261113a">
 </head>
 <body data-page="thanks">
 <header id="site-header"></header>
 
 <main id="main" class="page">
+  <!-- The order is saved as "Started (waiting for DM)". One last step: send it in an Instagram chat. -->
   <section class="intro th-intro" aria-labelledby="th-title">
     <div class="inner center">
-      <p class="eyebrow" data-t="th.label"></p>
-      <h1 class="stepped italic-title" id="th-title" data-t="th.headline"></h1>
-      <p class="body-copy th-lead" id="th-lead"></p>
+      <p class="eyebrow" data-t="th.dm.label"></p>
+      <h1 class="stepped italic-title" id="th-title" data-t="th.dm.headline"></h1>
       <p class="th-code-label" data-t="th.code"></p>
       <div class="code-box" id="code">GD-····</div>
-      <p class="body-copy th-save" data-t="th.save"></p>
-      <a class="btn btn-gold hidden" id="th-upload" href="pay.html" data-t="th.upload"></a>
-      <div class="photo-card tall hidden" id="thanks-video-wrap"><div class="video-spot" id="thanks-video"></div></div>
+      <p class="body-copy th-lead" data-t="th.dm.lead"></p>
+      <button type="button" class="btn btn-gold th-send" id="th-send" data-track="tap:send-order"></button>
+      <p class="th-copied hidden" id="th-copied" role="status" data-t="dm.copied"></p>
+
+      <div class="th-msg-box" id="th-msg-wrap">
+        <p class="th-msg-label" data-t="th.dm.summary"></p>
+        <pre class="th-msg" id="th-msg" dir="auto"></pre>
+        <button type="button" class="btn btn-ghost th-copy" id="th-copy" data-t="th.dm.copy"></button>
+      </div>
     </div>
   </section>
 
   <section class="ivory i-sec" aria-labelledby="th-next-title">
     <div class="inner">
-      <p class="eyebrow" id="th-next-title" data-t="th.next.label"></p>
-      <ul class="n-list">
-        <li><span class="no">01</span><span class="txt"><span class="tt" data-t="th.next.1.t"></span><span class="bd" data-t="th.next.1.d"></span></span></li>
-        <li><span class="no">02</span><span class="txt"><span class="tt" data-t="th.next.2.t"></span><span class="bd" data-t="th.next.2.d"></span></span></li>
-        <li><span class="no">03</span><span class="txt"><span class="tt" data-t="th.next.3.t"></span><span class="bd" id="th-date"></span></span></li>
-        <li><span class="no">04</span><span class="txt"><span class="tt" data-t="th.next.4.t"></span><span class="bd" data-t="th.next.4.d"></span></span></li>
-        <li><span class="no">05</span><span class="txt"><span class="tt" data-t="th.next.5.t"></span><span class="bd" data-t="th.next.5.d"></span></span></li>
-      </ul>
+      <h2 class="head-2" id="th-next-title" data-t="ship.how.title"></h2>
+      <ol class="steps3">
+        <li><span class="no">1</span><span class="txt" data-t="ship.step.1"></span></li>
+        <li class="star"><span class="no">2</span><span class="txt"><strong data-t="ship.step.2"></strong><span class="star-note" data-t="ship.step.2.note"></span></span></li>
+        <li><span class="no">3</span><span class="txt" data-t="ship.step.3"></span></li>
+      </ol>
+      <p class="th-ready" id="th-date"></p>
+      <div class="after-link"><a class="link-u" href="shipping.html" data-t="ship.more"></a></div>
     </div>
   </section>
 
   <section class="final">
-    <div class="ig-link"><a id="th-ig" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-track="tap:ig" data-t="th.ig"></a></div>
+    <div class="photo-card tall hidden" id="thanks-video-wrap"><div class="video-spot" id="thanks-video"></div></div>
     <div class="after-link"><a class="link-u" href="index.html" data-t="th.shop"></a></div>
   </section>
 </main>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261107c"></script>
-<script src="assets/js/videos.js?v=20261107c"></script>
+<script src="assets/js/site.js?v=20261113a"></script>
+<script src="assets/js/videos.js?v=20261113a"></script>
 <script>
   (function () {
     var q = new URLSearchParams(location.search);
     var code = (q.get("code") || "").toUpperCase();
-    var shot = q.get("s");
     var days = Math.min(90, Math.max(1, Number(q.get("d")) || 14));
-    if (/^GD-[A-Z0-9]{4}$/.test(code)) {
-      document.getElementById("code").textContent = code;
-      document.getElementById("th-upload").href = "pay.html?code=" + encodeURIComponent(code);
+    var good = /^GD-[A-Z0-9]{4}$/.test(code);
+    if (good) document.getElementById("code").textContent = code;
+
+    // The order message saved by the checkout (or the order form). After a reload on another phone it may be gone:
+    // then the customer just sends the order number.
+    var saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem("gd-order-msg") || "null"); } catch (e) { saved = null; }
+    function message() {
+      if (saved && saved.code === code && saved.msg) return saved.msg;
+      return GD.tx("th.dm.fallback", { code: good ? code : "" });
     }
-    document.getElementById("th-upload").classList.toggle("hidden", shot !== "0");
+
+    document.getElementById("th-send").addEventListener("click", function () {
+      GD.dm(message()).then(function (ok) { document.getElementById("th-copied").classList.toggle("hidden", !ok); });
+    });
+    document.getElementById("th-copy").addEventListener("click", function () {
+      var b = this;
+      GD.copy(message()).then(function (ok) {
+        b.textContent = ok ? GD.tx("th.dm.copied") : GD.tx("th.dm.copyFail");
+        if (!ok) { // select the text so it can be copied by hand
+          var r = document.createRange(); r.selectNodeContents(document.getElementById("th-msg"));
+          var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        }
+      });
+    });
+
     GD.mountTalking("thanks-video-wrap", "thanks-video", "thanks", { titleKey: "thanks.video.title", altKey: "thanks.video.alt" });
-    GD.onContent(function (c) {
-      document.getElementById("th-lead").textContent = shot === "1" ? GD.tx("th.inWithShot") : shot === "0" ? GD.tx("th.inNoShot") : "";
+    GD.onContent(function () {
+      document.getElementById("th-send").innerHTML =
+        '<svg class="ig-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg><span>' +
+        GD.esc(GD.tx("th.dm.send")) + "</span>";
+      document.getElementById("th-msg").textContent = message();
       var d = new Date(); d.setDate(d.getDate() + days);
-      document.getElementById("th-date").textContent = GD.tx("th.next.3.d", {
+      document.getElementById("th-date").textContent = GD.tx("th.dm.ready", {
         date: d.toLocaleDateString(GD.lang() === "ar" ? "ar-EG" : "en-GB", { day: "numeric", month: "long" })
       });
-      document.getElementById("th-ig").href = "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
     });
   })();
 </script>

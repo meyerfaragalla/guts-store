@@ -91,28 +91,26 @@
     }).join("");
   }
 
-  // ---------- About: the "150+" number and the workshop photo ----------
+  // ---------- About: Meyer's photo at the top (Videos tab, spot "About photo"; until it's added, a placeholder) ----------
   function renderAbout(c) {
-    var proof = pick(c.settings.proofLine, c.settings.proofLineAr);
-    var m = proof.match(/[\d٠-٩][\d٠-٩,٬]*\+?/);
-    var plus = /\+|أكتر من|أكثر من|more than/i.test(proof);
-    var box = $("big-num");
-    box.innerHTML = m ? '<span class="n" dir="ltr">' + esc(m[0].replace("+", "") + (plus ? "+" : "")) + '</span><span class="t">' +
-      esc(proof.replace(m[0], "").replace(/(أكتر من|أكثر من|more than)\s*/i, "").replace(/^[\s+]+|\s+$/g, "")) + "</span>" : "";
-    box.classList.toggle("hidden", !m);
-
-    var spot = (c.videos || {})["workshop-photo"];
-    var src = spot && GD.driveImage(spot.photo, 1200);
-    $("workshop").innerHTML = src ? '<img loading="lazy" src="' + esc(src) + '" alt="' + esc(GD.tx("about.photoAlt")) + '">' : phLabel();
+    var spot = (c.videos || {})["about-photo"];
+    var src = spot && GD.driveImage(spot.photo, 1400);
+    $("about-photo").innerHTML = src
+      ? '<img src="' + esc(src) + '" alt="' + esc(GD.tx("about2.photoAlt")) + '">'
+      : '<span class="about-ph" aria-hidden="true"><span class="gd-mark">GD</span></span>';
   }
 
   function renderSizeAll() { $("size-box").innerHTML = GD.shop.sizeDrawing("all"); }
 
   var renderers = { swords: function (c) { renderSwords(c); renderSizeAll(); }, designs: renderDesigns, display: renderDisplay, about: renderAbout };
+  // The Swords menu link "Commissions" lands on #custom: scroll there once the options are drawn.
+  if (page === "swords" && location.hash === "#custom") GD.getContent().then(function () {
+    setTimeout(function () { var el = $("custom"); if (el) el.scrollIntoView(); }, 50);
+  });
   if (renderers[page]) GD.onContent(renderers[page]);
 
   GD.getContent().catch(function () {
     var box = document.querySelector("[data-fill]");
-    if (box) box.innerHTML = '<p style="padding:0 20px">This couldn’t load right now. Please refresh, or message me on Instagram @guts_san_store.</p>';
+    if (box) box.innerHTML = '<p style="padding:0 20px">This couldn’t load right now. Please refresh, or message me on Instagram @guts.decor.</p>';
   });
 })();

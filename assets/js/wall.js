@@ -64,7 +64,7 @@
           '<div class="wall-actions">' +
             '<button type="button" class="btn btn-gold" id="wall-save">' + esc(t("wall.save", "Save picture", "احفظ الصورة")) + '</button>' +
             '<a class="btn btn-ghost" id="wall-order" href="#">' + esc(t("wall.order", "Order this sword", "اطلب السيف ده")) + '</a>' +
-            '<a class="link-u" id="wall-ig" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-track="tap:wall-ig">' + esc(t("wall.ig", "Send it to me on Instagram", "ابعتهالي على إنستجرام")) + '</a>' +
+            '<a class="link-u" id="wall-ig" href="https://ig.me/m/guts.decor" target="_blank" rel="noopener" data-track="tap:wall-ig">' + esc(t("wall.ig", "Send it to me on Instagram", "ابعتهالي على إنستجرام")) + '</a>' +
             '<label class="link-u wall-again">' + esc(t("wall.again", "Use another photo", "استخدم صورة تانية")) + '<input type="file" accept="image/*" id="wall-file2" hidden></label>' +
           '</div>' +
           '<p class="wall-note">' + esc(t("wall.note", "A preview to help you picture it. Your piece is made by hand, so small details may differ.", "معاينة تساعدك تتخيله. القطعة بتتعمل بالإيد فممكن تفاصيل صغيرة تختلف.")) + '</p>' +

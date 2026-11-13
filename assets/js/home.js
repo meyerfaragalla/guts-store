@@ -47,33 +47,32 @@
       : "";
     $("big-num").classList.toggle("hidden", !m);
 
-    $("final-ig").href = "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts_san_store");
+    $("final-ig").href = "https://ig.me/m/" + encodeURIComponent(c.settings.instagram || "guts.decor");
   }
 
   function slug(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
   // Every sword opens its own product page (it shows "Ask for the price" itself when there's no price yet).
   function designLink(c, d) { return "product.html?id=d-" + slug(d.name); }
 
+  // The levels, then the two other ways to get a sword (Build your own katana, Custom commission).
+  // The row of every sword's name was removed (Nov 2026): it grew with each new sword.
   function renderPills(c) {
-    var swords = (c.designs || []).map(function (d) {
-      return '<a class="pill" href="' + esc(designLink(c, d)) + '">' + esc(d.name) + "</a>";
-    }).join("");
-    var tiers = c.tiers.slice().sort(function (a, b) { return (a.price || Infinity) - (b.price || Infinity); }).map(function (t) {
+    var tiers = c.tiers.filter(function (t) { return t.price; }).sort(function (a, b) { return a.price - b.price; }).map(function (t) {
       var on = /most chosen|best seller/i.test(t.badge || "");
       var href = "level.html?l=" + slug(t.name);
       return '<a class="pill' + (on ? " on" : "") + '" href="' + esc(href) + '">' + esc(t.name) + "</a>";
     }).join("");
     $("pills").innerHTML =
-      '<span class="k">' + esc(GD.tx("home.pills.swords")) + '</span><div class="v">' + swords + "</div>" +
-      '<span class="k">' + esc(GD.tx("home.pills.tiers")) + '</span><div class="v">' + tiers + "</div>";
+      '<span class="k">' + esc(GD.tx("home.pills.tiers")) + '</span><div class="v">' + tiers +
+      GD.customPills() + "</div>";
   }
 
   function renderGrid(c) {
-    // Only designs marked "Show on Home" (column P); before that column reached the site, show them all.
+    // Only designs marked "Show on Home" (Ready Designs column P), at most 8, then "See all swords".
     var designs = (c.designs || []).filter(function (d) { return d.showOnHome !== false; }).sort(function (a, b) {
       function rank(d) { return /best seller/i.test(d.badge || "") ? 0 : d.shippingIncluded ? 2 : 1; }
       return rank(a) - rank(b);
-    });
+    }).slice(0, 8);
     $("design-grid").innerHTML = designs.map(function (d) {
       var img = GD.driveImage(d.photo, 700);
       var isSet = d.shippingIncluded;
@@ -121,6 +120,6 @@
   wireRails();
 
   GD.getContent().catch(function () {
-    $("design-grid").innerHTML = '<p style="padding:0 20px">This couldn’t load right now. Please refresh, or message me on Instagram @guts_san_store.</p>';
+    $("design-grid").innerHTML = '<p style="padding:0 20px">This couldn’t load right now. Please refresh, or message me on Instagram @guts.decor.</p>';
   });
 })();

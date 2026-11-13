@@ -4,7 +4,8 @@
   var GD = window.GD;
   var S = GD.shop;
   var esc = GD.esc;
-  var id = new URLSearchParams(location.search).get("id") || "";
+  // product.html?id=d-frostmourne, or a page made for Google (product-d-frostmourne.html) that names its piece itself.
+  var id = new URLSearchParams(location.search).get("id") || document.body.getAttribute("data-product") || "";
   var content = null;
   var product = null;
   var viewed = false;
@@ -366,6 +367,10 @@
       return;
     }
     if (!viewed) { viewed = true; GD.track("view:" + product.id); }
+    // Google: the piece's own page (written by tools/build_static.py) is the main address.
+    var canon = document.querySelector('link[rel="canonical"]');
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://gutsdecor.com/product-" + product.id + ".html";
     renderPhotos();
     renderTop();
     renderOptions();

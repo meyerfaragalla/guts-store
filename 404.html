@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Guts Decor</title>
+<script>
+  // A piece's page made for Google (product-d-frostmourne.html) that isn't written yet (a new sword, less than
+  // 15 minutes old) opens the normal product page instead.
+  (function () {
+    var m = location.pathname.match(/\/product-([adt]-[a-z0-9-]+)\.html$/);
+    location.replace(m ? "/product.html?id=" + m[1] : "/");
+  })();
+</script>
+<style>body{margin:0;background:#1E0B2E;color:#F3EDE2;font:15px/1.7 Montserrat,system-ui,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:24px}a{color:#C9A44C}</style>
+</head>
+<body>
+<p>This page moved. <a href="/">Go to Guts Decor</a></p>
+</body>
+</html>

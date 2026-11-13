@@ -723,3 +723,72 @@ body.wall-open { overflow: hidden; }
 .wall-actions { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 14px; }
 .wall-actions .btn-ghost { color: var(--i-ink, #1E0B2E); }
 .wall-again { cursor: pointer; }
+
+/* ---------- Nov 2026 batch ---------- */
+/* Sections switched off on the admin page */
+.sec-off { display: none !important; }
+/* "Copied! Paste it in the chat" */
+.toast { position: fixed; left: 50%; bottom: 24px; z-index: 400; transform: translate(-50%, 20px); max-width: calc(100% - 32px); padding: 14px 20px; background: var(--gold); color: var(--purple); font-weight: 600; font-size: 14px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+/* Preview from the admin page */
+.preview-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 390; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: var(--gold); color: var(--purple); font-size: 13px; font-weight: 600; }
+.preview-bar button { min-height: 40px; padding: 0 14px; border: 1px solid var(--purple); background: transparent; color: var(--purple); font: 600 12px var(--sans); cursor: pointer; }
+body:has(.preview-bar) .site-footer { padding-bottom: 80px; }
+
+/* Build your own katana / Custom commission */
+.custom-sec { padding: 8px 0 72px; }
+.custom-opts { display: grid; gap: 3px; max-width: 1100px; margin: 0 auto; }
+.custom-opt { background: var(--i-card); color: var(--i-ink); padding: 26px 22px 30px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.custom-opt h3 { margin: 0; font-size: 30px; line-height: 1.1; }
+.custom-opt p { margin: 0; font-size: 14.5px; line-height: 1.65; color: var(--i-body); }
+.custom-opt .btn { margin-top: 6px; }
+.custom-opt .btn-ghost { color: var(--i-ink); }
+@media (min-width: 760px) { .custom-opts { grid-template-columns: 1fr 1fr; padding: 0 20px; } }
+.pill-btn { background: none; font-family: inherit; cursor: pointer; }
+.pill-btn:hover { border-color: var(--gold); color: var(--gold); }
+.see-all { margin-top: 32px; padding: 0 20px; }
+
+/* The 3 ordering steps (Shipping & returns, thank-you page) */
+.steps3 { list-style: none; margin: 36px 0 0; padding: 0; border-bottom: 1px solid var(--i-line); }
+.steps3 li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding: 22px 0; border-top: 1px solid var(--i-line); font-size: 16px; line-height: 1.6; color: var(--i-body); }
+.steps3 .no { font-family: var(--serif); font-size: 30px; line-height: 1; color: var(--i-muted); }
+.steps3 .star { background: var(--purple); color: var(--ivory); padding: 22px 18px; margin: 0 -18px; border-top-color: var(--purple); }
+.steps3 .star .no { color: var(--gold); }
+.steps3 .star strong { display: block; font-family: var(--serif); font-weight: 500; font-size: 25px; line-height: 1.2; color: var(--gold); }
+.steps3 .star-note { display: block; margin-top: 6px; font-size: 14.5px; color: var(--p-soft); }
+.short-intro { min-height: 52vh; min-height: 52svh; }
+.ship-more { padding-top: 0; }
+
+/* Short version on product pages and at checkout */
+.pp-steps { margin-top: 18px; padding: 16px; border: 1px solid var(--i-line); background: var(--i-card); color: var(--i-ink); }
+.pp-steps-t { margin: 0 0 8px; font-weight: 600; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+.pp-steps ol { margin: 0 0 4px; padding-inline-start: 20px; font-size: 14px; line-height: 1.55; color: var(--i-body); }
+.pp-steps li { padding: 3px 0; }
+.pp-steps li.star { color: var(--i-ink); font-weight: 600; background: rgba(201, 164, 76, .22); margin-inline-start: -6px; padding: 5px 6px; }
+.pp-steps .link-u { min-height: 36px; }
+
+/* About */
+.about-top { background: var(--purple); padding-top: var(--header-h); }
+.about-photo { position: relative; aspect-ratio: 4 / 5; max-height: 78vh; width: 100%; overflow: hidden; background: var(--p-panel-2); display: flex; align-items: center; justify-content: center; }
+.about-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+.about-ph .gd-mark { width: 96px; height: 96px; font-size: 28px; }
+@media (min-width: 900px) { .about-photo { aspect-ratio: 16 / 9; } }
+.about-top .inner { max-width: 720px; margin: 0 auto; padding: 40px 24px 56px; }
+.about-q { margin: 0; font-style: italic; font-size: clamp(38px, 10vw, 64px); line-height: 1.05; }
+.about-story .inner p { font-size: 16.5px; line-height: 1.75; color: var(--i-body); margin: 0 0 20px; }
+.about-h { font-size: clamp(32px, 8vw, 48px); line-height: 1.05; margin: 40px 0 18px; }
+.about-story .inner .about-end { font-family: var(--serif); font-style: italic; font-size: 24px; line-height: 1.35; color: var(--i-ink); margin-top: 32px; }
+.about-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.about-buttons .btn-ghost { color: var(--i-ink); }
+
+/* Thank-you page: send the order on Instagram */
+.th-send { margin-top: 8px; width: 100%; max-width: 420px; }
+.th-copied { margin: 12px 0 0; color: var(--gold); font-weight: 600; }
+.th-msg-box { max-width: 520px; margin: 36px auto 0; text-align: start; border: 1px solid var(--p-line); padding: 18px; }
+.th-msg-label { margin: 0 0 10px; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--p-muted); }
+.th-msg { margin: 0 0 14px; white-space: pre-wrap; word-break: break-word; font: 14px/1.6 var(--sans); color: var(--p-soft); max-height: 340px; overflow: auto; user-select: all; -webkit-user-select: all; }
+.th-copy { min-height: 46px; padding: 0 22px; }
+.th-ready { margin-top: 20px; font-size: 14px; color: var(--i-muted); }
+.custom-sec .sec-title { padding: 0 20px 24px; max-width: 1400px; margin: 0 auto; }
+.custom-sec .sec-title h2 { font-style: italic; font-size: 34px; margin: 0; }
+#custom { scroll-margin-top: var(--header-h); padding-top: 40px; }

@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261107c">
+<link rel="stylesheet" href="assets/css/style.css?v=20261113a">
 </head>
 <body data-page="product">
 <header id="site-header"></header>
@@ -45,25 +45,35 @@
         </div>
         <div class="pp-added hidden" id="pp-added" role="status"><span data-t="pp.added"></span> <a class="link-u" href="cart.html" data-t="pp.viewCart"></a></div>
         <div class="pp-quote hidden" id="pp-quote"></div>
+        <!-- The 3 steps, short (full version on shipping.html): photos before you pay the rest stands out -->
+        <div class="pp-steps" data-sec="steps">
+          <p class="pp-steps-t" data-t="ship.short.title"></p>
+          <ol>
+            <li data-t="ship.short.1"></li>
+            <li class="star" data-t="ship.short.2"></li>
+            <li data-t="ship.short.3"></li>
+          </ol>
+          <a class="link-u" href="shipping.html" data-t="ship.more"></a>
+        </div>
         <!-- "See it on your wall" (Hormozi attraction offer, Miller transitional call to action); wall.js opens it -->
-        <div class="pp-mockup">
+        <div class="pp-mockup" data-sec="mockup">
           <p class="pp-mockup-t" data-t="pp.mockup.title"></p>
           <p class="pp-mockup-b" data-t="pp.mockup.body"></p>
           <button type="button" class="btn btn-gold pp-wall-btn" data-wall data-t="pp.wall.btn"></button>
-          <a class="link-u" href="https://ig.me/m/guts_san_store" target="_blank" rel="noopener" data-track="tap:mockup" data-t="pp.mockup.btn"></a>
+          <a class="link-u" href="https://ig.me/m/guts.decor" target="_blank" rel="noopener" data-track="tap:mockup" data-t="pp.mockup.btn"></a>
         </div>
       </form>
     </div>
   </section>
 
-  <section class="p-sec" id="pp-details-sec" aria-labelledby="pp-details-title">
+  <section class="p-sec" id="pp-details-sec" data-sec="details" aria-labelledby="pp-details-title">
     <div class="inner">
       <h2 class="head-2" id="pp-details-title" data-t="pp.details"></h2>
       <ul class="n-list on-purple" id="pp-details"></ul>
     </div>
   </section>
 
-  <section class="ivory i-sec size-sec hidden" id="pp-size-sec" aria-labelledby="pp-size-title">
+  <section class="ivory i-sec size-sec hidden" id="pp-size-sec" data-sec="size" aria-labelledby="pp-size-title">
     <div class="inner">
       <p class="eyebrow" data-t="size.label"></p>
       <h2 class="head-2" id="pp-size-title" data-rich="size.title"></h2>
@@ -72,7 +82,7 @@
     </div>
   </section>
 
-  <section class="ivory i-sec size-sec hidden" id="pp-scene-sec" aria-labelledby="pp-scene-title">
+  <section class="ivory i-sec size-sec hidden" id="pp-scene-sec" data-sec="scene" aria-labelledby="pp-scene-title">
     <div class="inner">
       <p class="eyebrow" data-t="scene.label"></p>
       <h2 class="head-2" id="pp-scene-title" data-rich="scene.title"></h2>
@@ -81,7 +91,7 @@
     </div>
   </section>
 
-  <section class="ivory i-sec" aria-labelledby="pp-g-title">
+  <section class="ivory i-sec" data-sec="guarantees" aria-labelledby="pp-g-title">
     <div class="inner">
       <h2 class="head-2" id="pp-g-title" data-t="pp.guarantees"></h2>
       <ul class="n-list">
@@ -92,11 +102,15 @@
     </div>
   </section>
 
-  <section class="p-sec hidden" id="pp-reviews-sec" aria-labelledby="pp-reviews-title">
+  <section class="p-sec hidden" id="pp-reviews-sec" data-sec="reviews" aria-labelledby="pp-reviews-title">
     <div class="inner">
       <h2 class="head-2 italic-title" id="pp-reviews-title" data-t="pp.reviews"></h2>
       <div class="pp-reviews" id="pp-reviews"></div>
     </div>
+  </section>
+  <section class="final" aria-labelledby="pp-end">
+    <h2 id="pp-end" data-t="how.end"></h2>
+    <a class="btn btn-gold" href="order.html" data-track="cta:product" data-t="home.start"></a>
   </section>
 </main>
 
@@ -107,9 +121,9 @@
 </div>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261107c"></script>
-<script src="assets/js/shop.js?v=20261107c"></script>
-<script src="assets/js/product.js?v=20261107c"></script>
-<script src="assets/js/wall.js?v=20261107c"></script>
+<script src="assets/js/site.js?v=20261113a"></script>
+<script src="assets/js/shop.js?v=20261113a"></script>
+<script src="assets/js/product.js?v=20261113a"></script>
+<script src="assets/js/wall.js?v=20261113a"></script>
 </body>
 </html>

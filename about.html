@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>About Meyer, the maker | Guts Decor</title>
-<meta name="description" content="Meyer designs, carves, paints and swing-tests every sword himself in his Cairo workshop. More than 150 pieces made by hand.">
+<meta name="description" content="Meyer designs every Guts Decor sword in 2D and 3D, then builds it by hand in Cairo, with the blade, guard and handle as separate pieces.">
 <link rel="canonical" href="https://gutsdecor.com/about.html">
 <meta name="theme-color" content="#1E0B2E">
 <link rel="icon" type="image/png" href="assets/img/favicon-64.png">
@@ -13,21 +13,33 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261107c">
+<link rel="stylesheet" href="assets/css/style.css?v=20261113a">
 </head>
 <body data-page="about">
 <header id="site-header"></header>
 
 <main id="main" class="page">
-  <section class="intro" aria-labelledby="about-title">
+  <!-- Photo at the top: Meyer with the Darius axe (Videos tab, spot "About photo"; replace it from the admin page) -->
+  <section class="about-top" aria-labelledby="about-title">
+    <div class="about-photo" id="about-photo" data-fill></div>
     <div class="inner">
       <p class="eyebrow" data-t="about.label"></p>
-      <h1 class="stepped" id="about-title" data-rich="about.headline" data-steps="0,20,8,30"></h1>
-      <p class="body-copy" data-t="home.story.text"></p>
-      <p class="body-copy" data-t="about.story.2"></p>
-      <p class="body-copy" data-t="about.story.3"></p>
-      <div class="photo-card" id="workshop" data-fill></div>
-      <div class="big-num" id="big-num"></div>
+      <h1 class="about-q" id="about-title" data-t="about2.q"></h1>
+    </div>
+  </section>
+
+  <section class="ivory i-sec about-story" data-sec="story" aria-label="Meyer's story">
+    <div class="inner">
+      <p data-t="about2.p1"></p>
+      <p data-t="about2.p2"></p>
+      <p data-t="about2.p3"></p>
+      <h2 class="about-h" data-t="about2.custom.t"></h2>
+      <p data-t="about2.custom.d"></p>
+      <p class="about-end" data-t="about2.end"></p>
+      <div class="about-buttons">
+        <a class="btn btn-gold" href="https://ig.me/m/guts.decor" target="_blank" rel="noopener" data-track="tap:about-ig" data-t="about2.btn.ig"></a>
+        <a class="btn btn-ghost" href="designs.html" data-track="tap:about-collection" data-t="about2.btn.collection"></a>
+      </div>
     </div>
   </section>
 
@@ -39,7 +51,7 @@
 </main>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261107c"></script>
-<script src="assets/js/info.js?v=20261107c"></script>
+<script src="assets/js/site.js?v=20261113a"></script>
+<script src="assets/js/info.js?v=20261113a"></script>
 </body>
 </html>

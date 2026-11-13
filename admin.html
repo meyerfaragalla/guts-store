@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin | Guts Decor</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1E0B2E">
+<link rel="icon" type="image/png" href="assets/img/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Montserrat:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/admin.css?v=20261113a">
+</head>
+<body class="adm">
+<!-- Admin page: changes go into the Website Content sheet as a draft. Nothing is live until Publish. -->
+<div class="adm-login" id="login">
+  <form class="adm-card" id="login-form">
+    <span class="adm-mark">GD</span>
+    <h1>Guts Decor admin</h1>
+    <label for="pw">Password</label>
+    <input type="password" id="pw" autocomplete="current-password" required>
+    <button type="submit" class="adm-btn gold" id="login-btn">Log in</button>
+    <p class="adm-err hidden" id="login-err" role="alert"></p>
+    <p class="adm-hint">First time? Open the Website Content sheet, Settings tab, and type a password (8 letters or more) next to
+      “Admin password (first time only)”. Log in here with it. The sheet cell empties itself after that.</p>
+  </form>
+</div>
+
+<div class="adm-app hidden" id="app">
+  <div class="adm-head">
+  <header class="adm-top">
+    <div class="adm-brand"><span class="adm-mark small">GD</span><span>Admin</span></div>
+    <div class="adm-state" id="state" aria-live="polite"></div>
+    <div class="adm-actions">
+      <button type="button" class="adm-btn" id="preview-btn">Preview</button>
+      <button type="button" class="adm-btn gold" id="publish-btn">Publish</button>
+    </div>
+  </header>
+  <nav class="adm-tabs" id="tabs" aria-label="Admin sections"></nav>
+  </div>
+  <div class="adm-msg hidden" id="msg" role="alert"></div>
+  <main class="adm-main" id="main"></main>
+  <div class="adm-save hidden" id="savebar">
+    <span id="save-count"></span>
+    <button type="button" class="adm-btn" id="discard-btn">Undo changes</button>
+    <button type="button" class="adm-btn gold" id="save-btn">Save draft</button>
+  </div>
+</div>
+
+<script src="assets/js/site.js?v=20261113a"></script>
+<script src="assets/js/admin.js?v=20261113a"></script>
+</body>
+</html>

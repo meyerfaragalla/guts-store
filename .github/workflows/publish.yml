@@ -58,13 +58,19 @@ jobs:
           fi
           echo "publish=yes" >> "$GITHUB_OUTPUT"
 
+      # Pages Google and AI tools can read without JavaScript: one page per piece, catalog text, Product data,
+      # share previews, Search Console code and a fresh sitemap (tools/build_static.py). Customers see no difference.
+      - if: steps.check.outputs.publish == 'yes'
+        name: Write the pages for Google
+        run: python3 tools/build_static.py . _site
+
       - if: steps.check.outputs.publish == 'yes'
         uses: actions/configure-pages@v5
 
       - if: steps.check.outputs.publish == 'yes'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - if: steps.check.outputs.publish == 'yes'
         id: deploy

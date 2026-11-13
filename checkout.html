@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261107c">
+<link rel="stylesheet" href="assets/css/style.css?v=20261113a">
 </head>
 <body data-page="checkout">
 <header id="site-header"></header>
@@ -69,23 +69,27 @@
           <div class="field"><label for="foundVia"><span data-t="co.found"></span> <span class="opt" data-t="co.optional"></span></label><select id="foundVia"></select></div>
         </fieldset>
 
-        <!-- Step 4: pay the deposit -->
+        <!-- Step 4: check and send. No payment on the site: the order is then sent in an Instagram chat, where the deposit is arranged. -->
         <fieldset class="co-step hidden" data-step="4">
           <legend class="sr-only" data-t="co.s4"></legend>
-          <p class="co-intro" data-t="co.pay.intro"></p>
+          <p class="co-intro" data-t="co.review.intro"></p>
           <div class="pay-panel">
-            <div class="pp-row"><span class="k" data-t="co.pay.amount"></span><span class="v gold" id="pay-amount"></span></div>
-            <div class="pp-row hidden" id="pay-to-row"><span class="k" data-t="co.pay.to"></span><span class="v"><span id="pay-to" dir="ltr"></span> <button type="button" class="copy-btn" id="pay-copy" data-t="co.pay.copy"></button></span></div>
-            <p class="pay-check hidden" id="pay-check"></p>
-            <p class="pay-wait hidden" id="pay-wait" data-t="co.pay.notReady"></p>
+            <div class="pp-row"><span class="k" data-t="co.review.total"></span><span class="v" id="rv-total"></span></div>
+            <div class="pp-row"><span class="k" data-t="co.shipping"></span><span class="v" id="rv-ship"></span></div>
+            <div class="pp-row"><span class="k" data-t="co.review.deposit"></span><span class="v gold" id="pay-amount"></span></div>
           </div>
-          <div class="video-spot hidden" id="pay-video-wrap"><div class="video-spot" id="pay-video"></div></div>
-          <div class="field"><label for="receipt"><span data-t="co.pay.shot"></span> <span class="opt" data-t="co.optional"></span></label>
-            <input type="file" id="receipt" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" aria-describedby="receipt-hint"><p class="hint" id="receipt-hint" data-t="co.pay.shot.hint"></p><div class="err hidden" id="err-receipt"></div></div>
-          <p class="co-refund" data-t="co.refund"></p>
+          <div class="pp-steps on-ivory">
+            <p class="pp-steps-t" data-t="ship.short.title"></p>
+            <ol>
+              <li data-t="ship.short.1"></li>
+              <li class="star" data-t="ship.short.2"></li>
+              <li data-t="ship.short.3"></li>
+            </ol>
+            <a class="link-u" href="shipping.html" target="_blank" data-t="ship.more"></a>
+          </div>
           <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input type="text" id="website" tabindex="-1" autocomplete="off"></div>
           <label class="check" for="terms"><input type="checkbox" id="terms"><span data-t="co.terms"></span></label>
-          <p class="co-links small"><a href="terms.html" target="_blank" data-t="footer.terms"></a> · <a href="privacy.html" target="_blank" data-t="footer.privacy"></a> · <a href="refund.html" target="_blank" data-t="footer.refund"></a></p>
+          <p class="co-links small"><a href="shipping.html" target="_blank" data-t="footer.shipping"></a> · <a href="terms.html" target="_blank" data-t="footer.terms"></a> · <a href="privacy.html" target="_blank" data-t="footer.privacy"></a> · <a href="refund.html" target="_blank" data-t="footer.refund"></a></p>
           <div class="err hidden" id="err-terms"></div>
         </fieldset>
 
@@ -111,9 +115,8 @@
 <div class="co-bar-bottom" id="co-bottom"><span id="co-bottom-text"></span></div>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261107c"></script>
-<script src="assets/js/videos.js?v=20261107c"></script>
-<script src="assets/js/shop.js?v=20261107c"></script>
-<script src="assets/js/checkout.js?v=20261107c"></script>
+<script src="assets/js/site.js?v=20261113a"></script>
+<script src="assets/js/shop.js?v=20261113a"></script>
+<script src="assets/js/checkout.js?v=20261113a"></script>
 </body>
 </html>

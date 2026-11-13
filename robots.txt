@@ -3,5 +3,6 @@ Disallow: /cart.html
 Disallow: /checkout.html
 Disallow: /thanks.html
 Disallow: /pay.html
+Disallow: /admin.html
 
 Sitemap: https://gutsdecor.com/sitemap.xml

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;500;600&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Montserrat:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20261107c">
+<link rel="stylesheet" href="assets/css/style.css?v=20261113a">
 </head>
 <body data-page="swords">
 <header id="site-header"></header>
@@ -30,10 +30,15 @@
   <section class="ivory grid-sec" aria-labelledby="levels-title" style="padding-top:72px">
     <div class="sec-title"><h2 id="levels-title" data-t="swords.levels"></h2></div>
     <div class="tiers" id="tiers" data-fill></div>
-    <p class="after-tiers"><a class="link-u" href="order.html?tier=VIP" data-track="tap:commissions" data-t="swords.commission"></a></p>
   </section>
 
-  <section class="ivory i-sec size-sec" aria-labelledby="size-title">
+  <!-- Besides the three levels: build your own katana, or a custom commission from a picture -->
+  <section class="ivory custom-sec" id="custom" data-sec="custom" aria-labelledby="custom-title">
+    <div class="sec-title"><h2 id="custom-title" data-t="custom.label"></h2></div>
+    <div data-custom-opts></div>
+  </section>
+
+  <section class="ivory i-sec size-sec" id="size" data-sec="size" aria-labelledby="size-title">
     <div class="inner">
       <p class="eyebrow" data-t="size.label"></p>
       <h2 class="head-2" id="size-title" data-rich="size.title"></h2>
@@ -49,8 +54,8 @@
 </main>
 
 <footer id="site-footer"></footer>
-<script src="assets/js/site.js?v=20261107c"></script>
-<script src="assets/js/shop.js?v=20261107c"></script>
-<script src="assets/js/info.js?v=20261107c"></script>
+<script src="assets/js/site.js?v=20261113a"></script>
+<script src="assets/js/shop.js?v=20261113a"></script>
+<script src="assets/js/info.js?v=20261113a"></script>
 </body>
 </html>

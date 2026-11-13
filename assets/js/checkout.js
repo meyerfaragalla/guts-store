@@ -1,4 +1,6 @@
-/* Checkout: four short steps from the cart (or one "Order now" piece) to the order system */
+/* Checkout: four short steps from the cart (or one "Order now" piece) to the order system.
+ * No payment on the site (Nov 2026): the order is saved as "Started (waiting for DM)", then the customer
+ * sends the order message in an Instagram chat, where the deposit is arranged by InstaPay. */
 (function () {
   "use strict";
   var GD = window.GD;
@@ -9,7 +11,6 @@
   var content = null;
   var step = 1;
   var startedAt = Date.now();
-  var instapay = null;
   var cartSaved = "";
 
   var GOVERNORATES = [
@@ -25,7 +26,6 @@
   var FOUND = [["Instagram Reel", "co.found.reel"], ["Instagram Story", "co.found.story"], ["Instagram post", "co.found.post"],
     ["Instagram ad", "co.found.ad"], ["TikTok", "co.found.tiktok"], ["Google", "co.found.google"],
     ["A friend", "co.found.friend"], ["Other", "co.found.other"]];
-  var TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
   function $(x) { return document.getElementById(x); }
   function val(x) { return $(x).value.trim(); }
@@ -44,8 +44,11 @@
     var total = lines.reduce(function (s, l) { return s + S.linePrice(content, l); }, 0);
     var gov = $("governorate").value;
     var allFree = lines.length && lines.every(function (l) { var p = S.find(content, l.id); return p.type === "design" && p.d.shippingIncluded; });
-    var ship = allFree ? 0 : !gov ? null : (gov === "Cairo" || gov === "Giza") ? content.settings.shipping : content.settings.shippingOutsideMin;
-    return { lines: lines, total: total, deposit: S.deposit(content, total), ship: ship, outside: gov && gov !== "Cairo" && gov !== "Giza", allFree: allFree };
+    // Shipping estimate per area (admin page > Settings > Shipping); older data only knew Cairo & Giza vs the rest.
+    var areas = content.shippingAreas || null;
+    var inTable = !!(areas && gov && typeof areas[gov] === "number");
+    var ship = allFree ? 0 : !gov ? null : inTable ? areas[gov] : (gov === "Cairo" || gov === "Giza") ? content.settings.shipping : content.settings.shippingOutsideMin;
+    return { lines: lines, total: total, deposit: S.deposit(content, total), ship: ship, outside: !inTable && gov && gov !== "Cairo" && gov !== "Giza", allFree: allFree };
   }
 
   // ---------- Showing a step ----------
@@ -57,23 +60,36 @@
     $("co-step").textContent = GD.tx("co.step", { n: GD.num(n) });
     $("co-bar").style.width = (n * 25) + "%";
     $("co-back").classList.toggle("hidden", n === 1);
-    $("co-next").textContent = GD.tx(n === 4 ? "co.send" : "co.next");
+    $("co-next").textContent = GD.tx(n === 4 ? "co.order" : "co.next");
     $("co-status").classList.add("hidden");
-    if (n === 4) loadInstapay();
+  }
+
+  // One line of the summary: name, version, height, mount and carved name, and every part chosen in the 3D builder.
+  function lineText(l) {
+    var p = S.find(content, l.id);
+    var bits = [];
+    if (l.version && S.hasVersions(p)) bits.push(l.version);
+    if (l.height) bits.push(GD.tx("pp.cm", { n: GD.num(l.height) }) || l.height + " cm");
+    if (l.sword) bits.push(l.sword);
+    if (l.mount) bits.push("+ " + l.mount.name + (l.mount.carve ? " (" + l.mount.carve + ")" : ""));
+    (Array.isArray(l.parts) ? l.parts : []).forEach(function (pt) { if (pt && pt.part) bits.push(pt.part + ": " + pt.option); });
+    return (l.qty > 1 ? GD.num(l.qty) + " × " : "") + S.displayName(p) + (bits.length ? " (" + bits.join(", ") + ")" : "");
   }
 
   function renderSummary() {
     var t = totals();
     $("co-items").innerHTML = t.lines.map(function (l) {
       var p = S.find(content, l.id);
-      return "<li><span>" + esc((l.qty > 1 ? GD.num(l.qty) + " × " : "") + S.displayName(p) + (l.version && S.hasVersions(p) ? " (" + l.version + ")" : "")) +
-        "</span><span>" + esc(GD.money(S.linePrice(content, l))) + "</span></li>";
+      return "<li><span>" + esc(lineText(l)) + "</span><span>" + esc(GD.money(S.linePrice(content, l))) + "</span></li>";
     }).join("");
     $("co-total").textContent = GD.money(t.total);
     $("co-sum-total").textContent = "· " + GD.money(t.total);
-    $("co-ship").textContent = t.allFree ? GD.tx("co.shipping.free") : t.ship === null ? GD.tx("co.shipping.pick")
+    var shipText = t.allFree ? GD.tx("co.shipping.free") : t.ship === null ? GD.tx("co.shipping.pick")
       : t.outside ? GD.tx("co.shipping.from", { price: GD.money(t.ship) }) : GD.money(t.ship);
-    $("co-bottom-text").textContent = GD.tx("pp.deposit", { amount: GD.money(t.deposit) });
+    $("co-ship").textContent = shipText;
+    $("rv-ship").textContent = shipText;
+    $("rv-total").textContent = GD.money(t.total);
+    $("co-bottom-text").textContent = GD.tx("co.review.depositLine", { amount: GD.money(t.deposit) }) || GD.tx("pp.deposit", { amount: GD.money(t.deposit) });
     $("pay-amount").textContent = GD.money(t.deposit);
   }
 
@@ -115,11 +131,7 @@
       need("governorate", !!$("governorate").value, "co.err.required");
       ["area", "street", "building", "floor", "apartment"].forEach(function (id) { need(id, !!val(id), "co.err.required"); });
     }
-    if (n === 4) {
-      var f = $("receipt").files[0];
-      need("receipt", !f || (TYPES.indexOf(f.type) !== -1 && f.size <= 10 * 1024 * 1024), "co.err.image");
-      need("terms", $("terms").checked, "co.err.terms");
-    }
+    if (n === 4) need("terms", $("terms").checked, "co.err.terms");
     if (first) $(first).focus();
     return ok;
   }
@@ -133,27 +145,6 @@
     cartSaved = key;
     GD.post({ action: "cartsave", email: val("email"), lang: GD.lang(), items: validItems() }).catch(function () {});
   }
-
-  // ---------- InstaPay details (only fetched on the payment step) ----------
-  function loadInstapay() {
-    if (instapay) return renderInstapay();
-    GD.get({ action: "instapay" }).then(function (r) { instapay = r && r.ok ? r : { ok: false }; renderInstapay(); })
-      .catch(function () { instapay = { ok: false }; renderInstapay(); });
-  }
-  function renderInstapay() {
-    var ok = instapay && instapay.ok;
-    $("pay-to-row").classList.toggle("hidden", !ok);
-    $("pay-check").classList.toggle("hidden", !ok);
-    $("pay-wait").classList.toggle("hidden", ok);
-    if (ok) {
-      $("pay-to").textContent = instapay.address;
-      $("pay-check").textContent = GD.tx("co.pay.check", { name: instapay.name });
-    }
-  }
-  $("pay-copy").addEventListener("click", function () {
-    if (!instapay || !instapay.ok || !navigator.clipboard) return;
-    navigator.clipboard.writeText(instapay.address).then(function () { $("pay-copy").textContent = GD.tx("co.pay.copied"); });
-  });
 
   // ---------- Moving through the steps ----------
   $("co-back").addEventListener("click", function () { if (step > 1) show(step - 1); window.scrollTo(0, 0); });
@@ -178,25 +169,19 @@
       floor: val("floor"), apartment: val("apartment"), landmark: val("landmark"), notes: val("notes"), foundVia: $("foundVia").value, src: GD.source(),
       terms: $("terms").checked, website: $("website").value, elapsed: Date.now() - startedAt
     };
-    var file = $("receipt").files[0];
-    var withFile = file ? new Promise(function (resolve, reject) {
-      var r = new FileReader();
-      r.onload = function () { payload.mime = file.type; payload.data = String(r.result).split(",")[1] || ""; resolve(); };
-      r.onerror = reject;
-      r.readAsDataURL(file);
-    }) : Promise.resolve();
-
-    withFile.then(function () { return GD.post(payload); }).then(function (res) {
+    GD.post(payload).then(function (res) {
       if (!res || !res.ok || !res.code) throw new Error((res && res.error) || "send");
       if (fromNow) { try { sessionStorage.removeItem("gd-now"); } catch (e) { /* ignore */ } } else GD.cart.set([]);
-      location.href = "thanks.html?code=" + encodeURIComponent(res.code) + "&s=" + (res.screenshot ? "1" : "0") +
+      // The full order message (written by the order system, so prices are the real ones) waits for the thank-you page.
+      try { sessionStorage.setItem("gd-order-msg", JSON.stringify({ code: res.code, msg: res.message || "" })); } catch (e) { /* ignore */ }
+      location.href = "thanks.html?code=" + encodeURIComponent(res.code) + "&dm=1" +
         "&d=" + (Math.max.apply(null, payload.items.map(function (l) { return S.readyDays(content, S.find(content, l.id)); })) || 14);
     }).catch(function (e2) {
       var key = { limit: "co.err.limit", changed: "co.err.changed" }[e2.message] || "co.err.send";
       $("co-status").textContent = GD.tx(key);
       $("co-status").classList.remove("hidden");
       btn.disabled = false;
-      btn.textContent = GD.tx("co.send");
+      btn.textContent = GD.tx("co.order");
     });
   }
 
@@ -225,8 +210,6 @@
     if (!$("occasionDate").value) $("occasionDate").value = d;
   })();
 
-  GD.mountTalking("pay-video-wrap", "pay-video", "payment", { titleKey: "pay.video.title", altKey: "pay.video.alt" });
-
   GD.onContent(function (c) {
     content = c;
     var empty = !validItems().length;
@@ -237,6 +220,5 @@
     fillSelects();
     renderSummary();
     show(step);
-    if (step === 4) renderInstapay();
   });
 })();

@@ -21,8 +21,12 @@ var MAX_UPLOADS_PER_ORDER = 5;
 var MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 var CONTENT_CACHE_SECONDS = 60;
 
-var STATUSES = ['New', 'Waitlist', 'Deposit uploaded', 'Deposit screenshot missing', 'Confirmed', 'Deposit paid', 'In progress',
-  'Balance due', 'Balance paid', 'Shipped', 'Delivered', 'Cancelled'];
+// "Started (waiting for DM)": the order form was sent, the customer still has to send it on Instagram (Nov 2026).
+// The admin page offers the short list ADMIN_STATUSES; the older ones stay valid for old rows.
+var STATUSES = ['Started (waiting for DM)', 'New', 'Waitlist', 'Deposit uploaded', 'Deposit screenshot missing', 'Confirmed', 'Deposit paid',
+  'In progress', 'Photos sent', 'Balance due', 'Balance paid', 'Paid in full', 'Shipped', 'Delivered', 'Cancelled'];
+var ADMIN_STATUSES = ['Started (waiting for DM)', 'Deposit paid', 'Photos sent', 'Paid in full', 'Shipped', 'Delivered', 'Cancelled'];
+var STARTED = 'Started (waiting for DM)';
 // Extra columns for shop orders (added to the Orders sheet automatically if missing).
 var SHOP_COLUMNS = ['Type', 'Items', 'Instagram', 'Items total', 'Shipping estimate', 'Reminder', 'Source link', 'Delivered on', 'Review asked'];
 var ORDER_COLUMNS = [
@@ -119,6 +123,7 @@ function doPost(e) {
     if (d.action === 'track') return json_(handleTrack_(d));
     if (d.action === 'checkout') return json_(handleCheckout_(d));
     if (d.action === 'cartsave') return json_(handleCartSave_(d));
+    if (String(d.action || '').indexOf('admin') === 0) return json_(handleAdmin_(d));
     return json_({ ok: false, error: 'unknown-action' });
   } catch (err) {
     console.error(err);
@@ -211,19 +216,68 @@ function catalog_() {
       benefitEn: r['Benefit line (EN)'], benefitAr: r['Benefit line (AR)'], bonusEn: r['Bonus / note'], bonusAr: r['Bonus / note (AR)']
     };
   });
+  // Shipping estimate per governorate (tab "Shipping areas"). Empty tab = the two old Settings rows.
+  var areas = {};
+  readTable_('Shipping areas').forEach(function (r) {
+    var n = toNum_(r['Estimate (LE)']);
+    if (r['Governorate'] && n !== null) areas[r['Governorate']] = n;
+  });
   return {
-    s: s, tiers: tiers, designs: designs, addons: addons,
+    s: s, tiers: tiers, designs: designs, addons: addons, areas: areas,
     depositPct: firstNum_(s['Deposit %'], 50),
     shipping: firstNum_(s['Shipping (LE)'], 200),
     shippingOutsideMin: firstNum_(s['Shipping outside Cairo & Giza'], 300)
   };
 }
 
-function publicContent_() {
-  var cache = CacheService.getScriptCache();
-  var hit = cache.get('content');
-  if (hit) return JSON.parse(hit);
+function shippingFor_(c, gov) {
+  if (typeof c.areas[gov] === 'number') return c.areas[gov];
+  return gov === 'Cairo' || gov === 'Giza' ? c.shipping : c.shippingOutsideMin;
+}
 
+// What the website shows. Once Meyer has pressed Publish on the admin page, this is the published copy
+// (saved in Drive), so changes in the sheet stay a draft until the next Publish. Before the first Publish,
+// it is read straight from the sheet, as before.
+function publicContent_() {
+  var hit = cacheGetBig_('content');
+  if (hit) return JSON.parse(hit);
+  var out = readPublished_() || buildContent_();
+  var spotsPerMonth = firstNum_(settings_()['Spots per month'], 0);
+  out.settings.spotsLeft = spotsPerMonth ? Math.max(0, spotsPerMonth - confirmedThisMonth_()) : null;
+  cachePutBig_('content', JSON.stringify(out), CONTENT_CACHE_SECONDS);
+  return out;
+}
+
+function clearContentCache_() { cacheRemoveBig_('content'); }
+
+// Google's cache holds at most 100 KB per entry, so bigger texts are split into pieces.
+function cachePutBig_(key, str, seconds) {
+  try {
+    var parts = {}, n = 0;
+    for (var i = 0; i < str.length; i += 30000) parts[key + '_' + (n++)] = str.slice(i, i + 30000); // Arabic letters take up to 3 bytes
+    parts[key + '_n'] = String(n);
+    CacheService.getScriptCache().putAll(parts, seconds);
+  } catch (err) { /* caching is only a speed-up */ }
+}
+function cacheGetBig_(key) {
+  var cache = CacheService.getScriptCache();
+  var n = Number(cache.get(key + '_n'));
+  if (!n) return null;
+  var keys = [];
+  for (var i = 0; i < n; i++) keys.push(key + '_' + i);
+  var got = cache.getAll(keys), out = '';
+  for (var j = 0; j < n; j++) { if (got[keys[j]] == null) return null; out += got[keys[j]]; }
+  return out;
+}
+function cacheRemoveBig_(key) {
+  var cache = CacheService.getScriptCache();
+  var keys = [key, key + '_n'];
+  for (var i = 0; i < 80; i++) keys.push(key + '_' + i);
+  cache.removeAll(keys);
+}
+
+// Everything the website needs, read fresh from the sheet (the draft). Only safe, public fields.
+function buildContent_() {
   var c = catalog_();
   var s = c.s;
   var cats = String(s['Show gallery categories'] || '').split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(String);
@@ -235,8 +289,6 @@ function publicContent_() {
   var reviews = rows.filter(function (r) { return /^review$/i.test(r['Category']); }).map(function (r) {
     return { photo: r['Photo (Drive link)'], altEn: r['Title (EN)'], altAr: r['Title (AR)'], product: columnStarting_(r, 'Product') };
   });
-  var spotsPerMonth = firstNum_(s['Spots per month'], 0);
-
   // Every customer-facing word, in English and Arabic, from the Text tab.
   var text = {};
   readTable_('Text').forEach(function (r) {
@@ -274,12 +326,21 @@ function publicContent_() {
       contactEmailEnc: Utilities.base64Encode((contactEmail_(s) || s['Order email'] || '').split('').reverse().join('')),
       instagram: String(s['Instagram handle'] || '').replace(/^@/, '').trim(),
       whatsapp: String(s['WhatsApp number'] || '').replace(/[^\d]/g, ''),
+      // Empty switch = on (as before this switch existed); "No" hides the WhatsApp button even with a number.
+      whatsappOn: !/^no$/i.test(String(s['WhatsApp button on'] || '').trim()),
+      builderOn: isYes_(s['3D builder on']),
+      builderUrl: String(s['3D builder link'] || '').trim(),
+      searchConsole: String(s['Search Console code'] || '').replace(/[^A-Za-z0-9_\-]/g, ''),
       express: isYes_(s['Express delivery on']),
       daysToMake: firstNum_(s['Days to make'], 14),
       plaqueUpgrade: firstNum_(s["Collector's plaque upgrade (LE)"], 1200),
-      spotsPerMonth: spotsPerMonth,
-      spotsLeft: spotsPerMonth ? Math.max(0, spotsPerMonth - confirmedThisMonth_()) : null
+      spotsPerMonth: firstNum_(s['Spots per month'], 0),
+      spotsLeft: null
     },
+    shippingAreas: c.areas,
+    sections: readTable_('Sections').filter(function (r) { return r['Page'] && r['Section']; }).map(function (r) {
+      return { page: r['Page'], id: r['Section'], show: !/^no$/i.test(r['Show (Yes/No)']), order: toNum_(r['Order']) };
+    }),
     text: text,
     tiers: c.tiers,
     designs: c.designs,
@@ -291,11 +352,6 @@ function publicContent_() {
     reviews: reviews,
     videos: videos
   };
-  try {
-    cache.put('content', JSON.stringify(out), CONTENT_CACHE_SECONDS);
-  } catch (err) {
-    // Google's cache holds at most 100 KB; when the Text tab grows past that, skip caching rather than fail.
-  }
   return out;
 }
 
@@ -395,7 +451,7 @@ function handleOrder_(d) {
 
   // The price is always worked out here from the sheet, never taken from the browser.
   var inCairoGiza = d.governorate === 'Cairo' || d.governorate === 'Giza';
-  var shipping = inCairoGiza ? c.shipping : c.shippingOutsideMin;
+  var shipping = shippingFor_(c, d.governorate);
   var addonsTotal = addons.reduce(function (sum, a) { return sum + a.price; }, 0);
   var estimate = tier.price ? tier.price + addonsTotal + shipping : '';
 
@@ -424,7 +480,7 @@ function handleOrder_(d) {
     var row = {
       'Order code': code,
       'Received': new Date(),
-      'Status': full ? 'Waitlist' : 'New',
+      'Status': full ? 'Waitlist' : STARTED,
       'Name': clean_(d.name, 80),
       'Email': clean_(email, 120),
       'Phone': "'" + phoneDigits,
@@ -456,12 +512,22 @@ function handleOrder_(d) {
     lock.releaseLock();
   }
 
+  var message = orderMessage_(row['Language'], code, {
+    name: row['Name'], phone: phoneDigits, city: d.governorate + ', ' + row['Area'],
+    gift: d.isGift ? row['Recipient'] + (row['Occasion date'] ? ' (' + row['Occasion date'] + ')' : '') : '',
+    lines: [{ qty: 1, name: row['Design'], total: tier.price || 0, details: [['dm.order.level', tier.name]]
+      .concat(row['Premium gift'] ? [['dm.order.mount', row['Premium gift']]] : [])
+      .concat(addons.map(function (a) { return ['', '+ ' + a.name]; }))
+      .concat(row['Engraving'] ? [['dm.order.blade', row['Engraving']]] : []) }],
+    total: estimate ? tier.price + addonsTotal : '', shipping: shipping,
+    deposit: estimate ? Math.round((tier.price + addonsTotal) * c.depositPct / 100) : 0, notes: row['Notes']
+  });
   countEvent_('order:sent');
   notifyMeyerNewOrder_(c.s, row, inCairoGiza);
   sendCustomer_(c.s, row['Email'].replace(/^'/, ''), row['Language'], 'received', {
-    code: code, tier: tier.name, design: row['Design'], estimate: estimate, outside: !inCairoGiza, waitlist: full
+    code: code, tier: tier.name, design: row['Design'], estimate: estimate, outside: !inCairoGiza, waitlist: full, message: message
   });
-  return { ok: true, code: code };
+  return { ok: true, code: code, message: message };
 }
 
 // =====================================================================
@@ -550,8 +616,12 @@ function onOrdersEdit(e) {
   if (sh.getName() !== 'Orders' || e.range.getRow() < 2) return;
   var m = colMap_(sh);
   if (e.range.getColumn() !== m['Status'] + 1 || e.range.getNumRows() !== 1) return;
+  applyStatus_(sh, e.range.getRow());
+}
 
-  var r = e.range.getRow();
+// What happens when an order's Status changes (in the sheet, or on the admin page's Orders tab).
+function applyStatus_(sh, r) {
+  var m = colMap_(sh);
   var row = sh.getRange(r, 1, 1, sh.getLastColumn()).getValues()[0];
   var status = row[m['Status']];
   var s = settings_();
@@ -578,7 +648,7 @@ function onOrdersEdit(e) {
   } else if (status === 'Deposit paid') {
     var when = sh.getRange(r, m['Deposit confirmed on'] + 1);
     if (!when.getValue()) when.setValue(new Date());
-    CacheService.getScriptCache().remove('content'); // refresh the spots counter
+    clearContentCache_(); // refresh the spots counter
     if (sendCustomer_(s, to, info.lang, 'deposit', info)) logEmail('Deposit received');
   } else if (status === 'Balance due') {
     var paid = Number(row[m['Deposit']]) || 0;
@@ -593,7 +663,7 @@ function onOrdersEdit(e) {
       if (!dcell.getValue()) dcell.setValue(new Date());
     }
   } else if (status === 'Cancelled') {
-    CacheService.getScriptCache().remove('content');
+    clearContentCache_();
   }
 }
 
@@ -611,6 +681,9 @@ function sendTestEmail() {
   Logger.log(ok ? 'Test email sent to ' + to + ' from ' + (senderEmail_(s) || 'the Guts Decor Gmail') + ', Reply-to ' + (contactEmail_(s) || 'none') + '.' :
     'Not sent: connect the mailer first (MAILER_URL and MAILER_SECRET in Project Settings → Script Properties). Nothing was sent to the customer.');
 }
+
+// The Instagram username from Settings (admin page > Settings), without the @.
+function igHandle_(s) { return String(s['Instagram handle'] || 'guts.decor').replace(/^@/, '').trim() || 'guts.decor'; }
 
 // The address customers write to (Email us button, Reply-to) and the one automatic emails come from.
 function contactEmail_(s) { return filled_(s['Contact email']) ? String(s['Contact email']).trim() : ''; }
@@ -692,7 +765,10 @@ function customerMessage_(s, lang, kind, info) {
   var scamGeneric = ar
     ? 'تنبيه: أنا مبقبلش غير InstaPay على الاسم اللي هبعتهولك في إيميل التأكيد، وعمري ما هطلب منك تدفع على حساب تاني.'
     : 'Please note: I only ever accept InstaPay to the name I send in my confirmation email. I will never ask you to pay a different account.';
-  var sign = ar ? '\n\nماير\nGuts Decor\nhttps://www.instagram.com/guts_san_store/' : '\n\nMeyer\nGuts Decor\nhttps://www.instagram.com/guts_san_store/';
+  var igUrl = 'https://www.instagram.com/' + igHandle_(s) + '/';
+  var sign = ar ? '\n\nماير\nGuts Decor\n' + igUrl : '\n\nMeyer\nGuts Decor\n' + igUrl;
+  var dmStep = info.message ? '\n\n' + tx_('email.dm.send', lang, { link: 'https://ig.me/m/' + igHandle_(s), ig: '@' + igHandle_(s) }) +
+    '\n\n' + info.message : '';
 
   if (kind === 'received') {
     var est = info.estimate ? (info.outside ? (ar ? 'من ' : 'from ') : '') + money_(info.estimate, lang) : (ar ? 'بالاتفاق' : 'by quote');
@@ -701,13 +777,13 @@ function customerMessage_(s, lang, kind, info) {
       body: 'أهلًا،\n\nشكرًا على طلبك! كود طلبك: ' + info.code + '\n\nالمستوى: ' + info.tier + '\nالتصميم: ' + info.design +
         '\nالسعر التقريبي: ' + est + '\n\n' +
         (info.waitlist ? 'الشهر ده اتملى، فهحجزلك مكان في الشهر الجاي.\n\n' : '') +
-        'هرد عليك خلال ٢٤ ساعة وأأكدلك الميعاد والسعر النهائي. مفيش أي دفع قبل ما أأكد.\n\n' + scamGeneric + sign
+        'هرد عليك خلال ٢٤ ساعة وأأكدلك الميعاد والسعر النهائي. مفيش أي دفع قبل ما أأكد.' + dmStep + '\n\n' + scamGeneric + sign
     } : {
       subject: 'I got your order request: ' + info.code,
       body: 'Hi,\n\nThank you for your request! Your order code is ' + info.code + '.\n\nLevel: ' + info.tier + '\nDesign: ' + info.design +
         '\nEstimated price: ' + est + '\n\n' +
         (info.waitlist ? "This month is full, so I'll reserve you a spot for next month.\n\n" : '') +
-        "I'll reply within 24 hours to confirm your date and final price. Nothing is due before I confirm.\n\n" + scamGeneric + sign
+        "I'll reply within 24 hours to confirm your date and final price. Nothing is due before I confirm." + dmStep + '\n\n' + scamGeneric + sign
     };
   }
   if (kind === 'confirmed') {
@@ -927,31 +1003,39 @@ function priceLine_(c, line) {
   var qty = Number(line.qty) || 1;
   if (qty < 1 || qty > 10 || qty !== Math.floor(qty)) return null;
 
-  var name = p.d.name, parts = [], each = p.d.price;
+  // details: [Text-tab key, value] pairs for the order message the customer sends on Instagram.
+  var name = p.d.name, parts = [], details = [], each = p.d.price;
+  if (p.type === 'tier') details.push(['dm.order.level', p.d.name]);
+  else if (p.type === 'design' && !p.d.classicPrice && p.d.level) details.push(['dm.order.level', p.d.level]);
   if (p.type === 'design' && p.d.classicPrice) {
     if (line.version !== 'Classic' && line.version !== 'Premium') return null;
     if (line.version === 'Classic') each = p.d.classicPrice;
     parts.push(line.version);
+    details.push(['dm.order.level', line.version]);
   }
   if (p.type === 'design' && p.d.askHeight) {
     var h = Number(line.height);
     if (!(h >= 160 && h <= 190)) return null;
     parts.push('height ' + h + ' cm');
+    details.push(['dm.order.height', h + ' cm']);
   }
   if (p.type === 'tier') {
     var sword = String(line.sword || '').trim();
     if (sword.length < 2 || sword.length > 80) return null;
     parts.push('sword: ' + sword);
+    details.push(['dm.order.sword', sword]);
   }
   var collectors = p.type === 'tier' && /^collector/i.test(p.d.name);
   if (line.blade) {
     if (!collectors || String(line.blade).length > 20) return null;
     parts.push('name on blade: ' + String(line.blade).trim());
+    details.push(['dm.order.blade', String(line.blade).trim()]);
   }
   if (line.plaque) {
     if (!collectors) return null;
     each += firstNum_(c.s["Collector's plaque upgrade (LE)"], 1200);
     parts.push('BIG PLAQUE UPGRADE');
+    details.push(['dm.order.plaque', 'Yes']);
   }
   if (line.mount) {
     var mName = String(line.mount.name || '');
@@ -961,12 +1045,51 @@ function priceLine_(c, line) {
     if (!m) return null;
     each += m.price;
     parts.push('+ ' + mName + ', carved name: ' + carve);
+    details.push(['dm.order.mount', mName + ' (' + carve + ')']);
+  }
+  // Every part chosen in the 3D builder (blade, habaki, guard, handle, wrap, pommel, scabbard...), sent with the line.
+  if (line.parts !== undefined) {
+    if (!Array.isArray(line.parts) || line.parts.length > 30) return null;
+    for (var i = 0; i < line.parts.length; i++) {
+      var pt = line.parts[i] || {};
+      var part = clean_(pt.part, 40), opt = clean_(pt.option, 80);
+      if (!part || !opt) return null;
+      parts.push(part + ': ' + opt);
+      details.push(['', part + ': ' + opt]);
+    }
   }
   var total = each * qty;
   return {
     total: total, plaque: !!line.plaque, shippingIncluded: p.type === 'design' && !!p.d.shippingIncluded,
+    name: name, qty: qty, details: details,
     label: qty + ' x ' + name + (parts.length ? ' (' + parts.join('; ') + ')' : '') + ' = ' + total.toLocaleString('en-US') + ' LE'
   };
+}
+
+// The order message the customer copies and sends on Instagram, in their language. Wording: Text tab rows dm.order.*
+// (admin page > Settings > Order message). Lists everything, so Meyer never has to ask again.
+function orderMessage_(lang, code, info) {
+  var L = function (k, v) { return (tx_(k, lang) || k) + ' ' + v; };
+  var out = [tx_('dm.order.title', lang, { code: code }) || ('Order ' + code), ''];
+  out.push(L('dm.order.name', info.name));
+  out.push(L('dm.order.phone', info.phone));
+  out.push(L('dm.order.city', info.city));
+  if (info.instagram) out.push(L('dm.order.ig', '@' + info.instagram));
+  if (info.gift) out.push(L('dm.order.gift', info.gift));
+  out.push('');
+  info.lines.forEach(function (p) {
+    out.push((p.qty > 1 ? p.qty + ' x ' : '') + p.name + (p.total ? ' = ' + money_(p.total, lang) : ''));
+    (p.details || []).forEach(function (d) { out.push('   ' + (d[0] ? L(d[0], d[1]) : d[1])); });
+  });
+  if (info.extra) info.extra.forEach(function (x) { out.push(x); });
+  out.push('');
+  if (info.total !== '' && info.total != null) out.push(L('dm.order.total', money_(info.total, lang)));
+  if (info.shipping !== null && info.shipping !== undefined) out.push(L('dm.order.shipping', info.shipping ? money_(info.shipping, lang) : tx_('dm.order.free', lang)));
+  if (info.deposit) out.push(L('dm.order.deposit', money_(info.deposit, lang)));
+  if (info.notes) out.push(L('dm.order.notes', info.notes));
+  var end = tx_('dm.order.end', lang);
+  if (end) out.push('', end);
+  return out.join('\n');
 }
 
 function instapayDetails_() {
@@ -1029,7 +1152,7 @@ function handleCheckout_(d) {
   var itemsTotal = priced.reduce(function (s, p) { return s + p.total; }, 0);
   var allShipFree = priced.every(function (p) { return p.shippingIncluded; });
   var inCairoGiza = d.governorate === 'Cairo' || d.governorate === 'Giza';
-  var shipping = allShipFree ? 0 : (inCairoGiza ? c.shipping : c.shippingOutsideMin);
+  var shipping = allShipFree ? 0 : shippingFor_(c, d.governorate);
   var deposit = Math.round(itemsTotal * c.depositPct / 100);
 
   var lock = LockService.getScriptLock();
@@ -1052,7 +1175,7 @@ function handleCheckout_(d) {
     if (d.mime && d.data) receipt = saveReceipt_(code, d.mime, d.data);
     row = {
       'Order code': code, 'Received': new Date(),
-      'Status': receipt ? 'Deposit uploaded' : 'Deposit screenshot missing',
+      'Status': STARTED,
       'Type': 'Shop', 'Items': priced.map(function (p) { return p.label; }).join('\n'),
       'Name': clean_(d.name, 80), 'Email': clean_(email, 120), 'Phone': "'" + phoneDigits,
       'Instagram': clean_(String(d.instagram || '').replace(/^@/, ''), 30),
@@ -1079,30 +1202,35 @@ function handleCheckout_(d) {
   try { countEvents_(events); } catch (err) { console.error(err); }
 
   var s = c.s;
-  ownerMail_(s, (receipt ? '' : '[No screenshot yet] ') + 'New shop order ' + code + ' (' + itemsTotal.toLocaleString('en-US') + ' LE)',
+  var lang = d.lang === 'ar' ? 'ar' : 'en';
+  var message = orderMessage_(lang, code, {
+    name: row['Name'], phone: phoneDigits, city: d.governorate + ', ' + row['Area'], instagram: row['Instagram'],
+    gift: d.isGift ? row['Recipient'] + (row['Occasion date'] ? ' (' + row['Occasion date'] + ')' : '') : '',
+    lines: priced, total: itemsTotal, shipping: shipping, deposit: deposit, notes: row['Notes']
+  });
+  ownerMail_(s, 'Order started ' + code + ' (' + itemsTotal.toLocaleString('en-US') + ' LE), waiting for their Instagram message',
+    'They were asked to send this message on Instagram:\n\n' + message + '\n\n----------\n' +
     'Items:\n' + row['Items'] + '\n\nItems total: ' + itemsTotal + ' LE\nDeposit (' + c.depositPct + '%): ' + deposit + ' LE\n' +
-      'Shipping estimate: ' + shipping + ' LE' + (inCairoGiza || allShipFree ? '' : ' (minimum, check the real cost)') + '\n\n' +
+      'Shipping estimate: ' + shipping + ' LE\n\n' +
       ['Name', 'Email', 'Phone', 'Instagram', 'Governorate', 'Area', 'Street', 'Building', 'Floor', 'Apartment', 'Landmark',
         'Gift', 'Recipient', 'Occasion date', 'Notes', 'Found us via', 'Source link'].filter(function (h) { return row[h]; })
         .map(function (h) { return h + ': ' + String(row[h]).replace(/^'/, ''); }).join('\n') +
-      '\n\nScreenshot: ' + (receipt || 'not uploaded yet') +
-      '\n\nCheck the deposit in your InstaPay app, then set Status to "Deposit paid". If you can not take the order, refund within 24 hours.' +
+      '\n\nWhen the deposit arrives by InstaPay, set Status to "Deposit paid" (admin page > Orders, or the Orders sheet).' +
       '\nOrders sheet: ' + sh.getParent().getUrl());
-  deliver_(s, email, shopEmail_(s, d.lang, code, priced, itemsTotal, deposit, shipping, !!receipt), code);
-  return { ok: true, code: code, deposit: deposit, screenshot: !!receipt };
+  deliver_(s, email, shopEmail_(s, lang, code, priced, itemsTotal, deposit, shipping, message), code);
+  return { ok: true, code: code, deposit: deposit, message: message };
 }
 
-function shopEmail_(s, lang, code, priced, itemsTotal, deposit, shipping, gotShot) {
-  var payLink = SITE_URL + 'pay.html?code=' + encodeURIComponent(code);
+// "Your order is started": asks them to send the order message on Instagram, where the deposit is arranged.
+function shopEmail_(s, lang, code, priced, itemsTotal, deposit, shipping, message) {
+  var ig = igHandle_(s);
   var name = s['InstaPay name to check'];
   var body = [
     tx_('email.hi', lang),
-    tx_('email.shop.intro', lang, { code: code }),
-    tx_('email.shop.items', lang) + '\n' + priced.map(function (p) { return '- ' + p.label; }).join('\n'),
-    tx_('email.shop.total', lang, { total: money_(itemsTotal, lang), deposit: money_(deposit, lang), shipping: money_(shipping, lang) }),
-    gotShot ? tx_('email.shop.gotShot', lang) : tx_('email.shop.noShot', lang, { link: payLink }),
+    tx_('email.dm.intro', lang, { code: code }),
+    tx_('email.dm.send', lang, { link: 'https://ig.me/m/' + ig, ig: '@' + ig }),
+    message,
     tx_('email.shop.next', lang),
-    tx_('email.refund', lang),
     filled_(name) ? tx_('email.scam', lang, { name: name }) : '',
     tx_('email.sign', lang)
   ].filter(String).join('\n\n');
@@ -1346,4 +1474,436 @@ function monthlyReport() {
     (leadRows.length ? ' (' + Math.round(won * 100 / leadRows.length) + '%)' : '') +
     '\n\nProfit is not in this email: costs live in Product Pricing, which this system never reads.' +
     '\nNext: Claude uses these numbers in the monthly review of "Guts Decor — How We Run the Business".');
+}
+
+
+// =====================================================================
+// Admin page (gutsdecor.com/admin.html): Meyer runs the site without code.
+// Built on THIS sheet (no second system). Edits go into the sheet = the draft.
+// Publish freezes a copy that the website shows, and saves a version (date + time) that can be restored.
+// Content only: the page can't change layout or code. Every value is checked here before it is saved.
+// =====================================================================
+var ADMIN_SESSION_SECONDS = 6 * 3600;
+var ADMIN_MAX_FAILS = 8;               // wrong passwords allowed per 15 minutes (for everyone together)
+var VERSIONS_FOLDER_NAME = 'Guts Decor — Website versions';
+var PHOTOS_FOLDER_NAME = 'Guts Decor — Website photos';
+var FIRST_PASSWORD_SETTING = 'Admin password (first time only)';
+// The sheet tabs the admin page can edit, and that every version keeps a copy of.
+var CONTENT_TABS = ['Settings', 'Text', 'Gallery', 'Tiers', 'Ready Designs', 'Add-ons', 'Builder Options', 'Videos', 'Sections', 'Shipping areas'];
+// Table tabs: which column names a row.
+var TABLE_KEYS = { 'Ready Designs': 'Design', 'Tiers': 'Tier', 'Add-ons': 'Add-on', 'Gallery': 'Photo (Drive link)', 'Videos': 'Spot',
+  'Sections': 'Section', 'Shipping areas': 'Governorate', 'Builder Options': '' };
+var LEVELS = ['Classic', 'Premium', "Collector's"];
+// Settings shown on the admin page: [Settings row name, kind, plain-words help]. Other rows stay in the sheet only.
+var ADMIN_SETTINGS = [
+  ['Instagram handle', 'text', 'Your Instagram username. Every Instagram button on the site uses it.'],
+  ['WhatsApp number', 'phone', 'Store WhatsApp number only (never your personal number). Empty = no WhatsApp button.'],
+  ['WhatsApp button on', 'yesno', 'Yes = show the WhatsApp button (needs a number above).'],
+  ['3D builder on', 'yesno', 'Yes = "Build your own katana" opens the 3D builder. No = it opens an Instagram message.'],
+  ['3D builder link', 'text', 'The 3D builder page, for example builder.html. Used only when the builder is on.'],
+  ['Search Console code', 'text', 'The code from Google Search Console (only the part inside content="...").'],
+  ['Deposit %', 'number', 'How much the customer pays to start, in percent.'],
+  ['Days to make', 'number', 'Used for "Ready in X days" on product pages.'],
+  ['Spots per month', 'number', 'Orders you take per month.'],
+  ["Collector's plaque upgrade (LE)", 'number', "Extra price for the big plaque on Collector's."],
+  ['Express delivery on', 'yesno', 'Yes = show the express option.'],
+  ['Proof line', 'text', 'The big number line, in English (only true numbers).'],
+  ['Proof line (AR)', 'text', 'The same line in Arabic.'],
+  ['Reply promise', 'text', 'Your reply promise, in English.'],
+  ['Reply promise (AR)', 'text', 'The same promise in Arabic.'],
+  ['Show gallery categories', 'text', 'Gallery categories shown on the site, separated by commas.']
+];
+
+function handleAdmin_(d) {
+  if (d.action === 'adminLogin') return adminLogin_(d);
+  if (!adminCheck_(d.token)) return { ok: false, error: 'login' };
+  var lock;
+  try {
+    switch (d.action) {
+      case 'adminLoad': return adminLoad_();
+      case 'adminDraft': return buildDraft_();
+      case 'adminOrders': return adminOrders_();
+      case 'adminVersions': return adminVersions_();
+      case 'adminUpload': return adminUpload_(d);
+    }
+    lock = LockService.getScriptLock();
+    lock.waitLock(20000);
+    switch (d.action) {
+      case 'adminSave': return adminSave_(d.changes);
+      case 'adminRow': return adminRow_(d);
+      case 'adminPublish': return adminPublish_(d.label);
+      case 'adminRestore': return adminRestore_(String(d.id || ''));
+      case 'adminStatus': return adminStatus_(String(d.code || ''), String(d.status || ''));
+      case 'adminPassword': return adminPassword_(d);
+    }
+    return { ok: false, error: 'unknown-action' };
+  } finally {
+    if (lock) lock.releaseLock();
+  }
+}
+
+// ---------- Password and sessions ----------
+function hash_(salt, pw) {
+  return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + '|' + pw, Utilities.Charset.UTF_8));
+}
+
+function adminLogin_(d) {
+  var cache = CacheService.getScriptCache();
+  var fails = Number(cache.get('adm-fails') || 0);
+  if (fails >= ADMIN_MAX_FAILS) return { ok: false, error: 'locked' };
+  var props = PropertiesService.getScriptProperties();
+  var pw = String(d.password || '');
+  if (!props.getProperty('ADMIN_HASH')) {
+    // First time: the password Meyer typed in the Settings tab becomes the admin password, then that cell is emptied.
+    var first = settings_()[FIRST_PASSWORD_SETTING] || '';
+    if (first.length < 8) return { ok: false, error: 'nopassword' };
+    var salt0 = Utilities.getUuid();
+    props.setProperties({ ADMIN_SALT: salt0, ADMIN_HASH: hash_(salt0, first) });
+    setSetting_(FIRST_PASSWORD_SETTING, '');
+  }
+  if (hash_(props.getProperty('ADMIN_SALT'), pw) !== props.getProperty('ADMIN_HASH')) {
+    cache.put('adm-fails', String(fails + 1), 900);
+    return { ok: false, error: 'wrong' };
+  }
+  var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 12);
+  cache.put('admt:' + token, '1', ADMIN_SESSION_SECONDS);
+  return { ok: true, token: token };
+}
+
+function adminCheck_(token) {
+  token = String(token || '');
+  if (!/^[a-f0-9]{40,64}$/.test(token)) return false;
+  var cache = CacheService.getScriptCache();
+  if (!cache.get('admt:' + token)) return false;
+  cache.put('admt:' + token, '1', ADMIN_SESSION_SECONDS);
+  return true;
+}
+
+function adminPassword_(d) {
+  var props = PropertiesService.getScriptProperties();
+  if (hash_(props.getProperty('ADMIN_SALT'), String(d.old || '')) !== props.getProperty('ADMIN_HASH')) return { ok: false, error: 'wrong' };
+  var pw = String(d.password || '');
+  if (pw.length < 8 || pw.length > 100) return { ok: false, error: 'short' };
+  var salt = Utilities.getUuid();
+  props.setProperties({ ADMIN_SALT: salt, ADMIN_HASH: hash_(salt, pw) });
+  return { ok: true };
+}
+
+// ---------- Reading everything the admin page edits ----------
+function buildDraft_() {
+  var out = buildContent_();
+  var spotsPerMonth = out.settings.spotsPerMonth;
+  out.settings.spotsLeft = spotsPerMonth ? Math.max(0, spotsPerMonth - confirmedThisMonth_()) : null;
+  out.draft = true;
+  return out;
+}
+
+function columnKind_(tab, h) {
+  if (/^Show|^Pay now$|^Shipping included$|^Ask height|^Customizable|^Ready in 4 days$/i.test(h)) return 'yesno';
+  if (/^Level \(/i.test(h)) return 'level';
+  if (tab === 'Gallery' && h === 'Category') return 'category';
+  if (/photo|video link|captions .* \(file\)|image/i.test(h)) return 'photo';
+  if (/^Order$|\(LE\)|\(days\)|^Price$/i.test(h) && !(tab === 'Add-ons' && /^Price/i.test(h))) return 'number';
+  if (/\((EN|AR)\)|what's included|^Arabic$|^English$|note/i.test(h)) return 'long';
+  return 'text';
+}
+
+function readTab_(name) {
+  var sh = SpreadsheetApp.getActive().getSheetByName(name);
+  if (!sh || sh.getLastRow() < 1) return null;
+  var values = sh.getDataRange().getDisplayValues();
+  var headers = values.shift().map(function (h) { return String(h).trim(); });
+  var key = TABLE_KEYS[name] || headers[0];
+  var keyCol = headers.indexOf(key);
+  var rows = [];
+  values.forEach(function (r, i) {
+    if (r.join('').trim() === '') return;
+    rows.push({ row: i + 2, values: r });
+  });
+  return { name: name, headers: headers, key: key, keyCol: keyCol,
+    kinds: headers.map(function (h) { return columnKind_(name, h); }), rows: rows };
+}
+
+function adminLoad_() {
+  var s = settings_();
+  var tabs = {};
+  ['Ready Designs', 'Tiers', 'Add-ons', 'Gallery', 'Videos', 'Sections', 'Shipping areas', 'Builder Options'].forEach(function (n) {
+    var t = readTab_(n);
+    if (t) tabs[n] = t;
+  });
+  var text = [];
+  var tsh = SpreadsheetApp.getActive().getSheetByName('Text');
+  tsh.getDataRange().getDisplayValues().slice(1).forEach(function (r, i) {
+    if (r[0]) text.push({ row: i + 2, key: String(r[0]).trim(), where: r[1], en: r[2], ar: r[3], note: r[4] || '' });
+  });
+  return {
+    ok: true,
+    settings: ADMIN_SETTINGS.map(function (x) { return { name: x[0], kind: x[1], help: x[2], value: s[x[0]] || '' }; }),
+    text: text,
+    tabs: tabs,
+    statuses: ADMIN_STATUSES,
+    levels: LEVELS,
+    categories: ['Swords', 'Mounts & stands', 'Plaques', 'Pedestals', 'Bookshelf', 'Review'],
+    published: PropertiesService.getScriptProperties().getProperty('PUBLISHED_AT') || ''
+  };
+}
+
+// ---------- Checking and saving ----------
+function safeCell_(v, max) {
+  var s = String(v == null ? '' : v).replace(/\r\n?/g, '\n').replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, ' ').slice(0, max || 3000);
+  return /^[=+@]|^-[\d(=]/.test(s) ? "'" + s : s;
+}
+
+// Returns an error in plain words, or '' when the value is fine.
+function checkValue_(kind, v, header, isKey) {
+  v = String(v == null ? '' : v).trim();
+  if (isKey && !v) return '"' + header + '" can\'t be empty.';
+  if (kind === 'number' && v !== '' && !/^\d+(\.\d+)?$/.test(v.replace(/,/g, '')) && !/^to fill$/i.test(v)) return '"' + header + '" must be a number (like 3200), or empty.';
+  if (kind === 'yesno' && v !== '' && !/^(yes|no)$/i.test(v)) return '"' + header + '" must be Yes or No.';
+  if (kind === 'level' && v !== '' && LEVELS.indexOf(v) === -1) return '"' + header + '" must be Classic, Premium or Collector\'s.';
+  if (kind === 'phone' && v !== '' && !/^\+?\d{10,15}$/.test(v.replace(/[\s\-()]/g, ''))) return 'The WhatsApp number must be 10 to 15 digits.';
+  return '';
+}
+
+function setSetting_(name, value) {
+  var sh = SpreadsheetApp.getActive().getSheetByName('Settings');
+  var names = sh.getRange(1, 1, Math.max(1, sh.getLastRow()), 1).getValues().map(function (r) { return String(r[0]).trim(); });
+  var r = names.indexOf(name);
+  if (r === -1) sh.appendRow([name, value]);
+  else sh.getRange(r + 1, 2).setValue(value);
+}
+
+// changes: [{ type: 'text', row, key, en, ar }, { type: 'setting', name, value }, { type: 'cell', tab, row, key, values: { header: value } }]
+function adminSave_(changes) {
+  if (!Array.isArray(changes) || !changes.length || changes.length > 400) return { ok: false, error: 'invalid' };
+  var ss = SpreadsheetApp.getActive();
+  var errors = [];
+  var plan = [];
+  changes.forEach(function (ch, i) {
+    if (!ch || typeof ch !== 'object') { errors.push('Change ' + (i + 1) + ' is not valid.'); return; }
+    if (ch.type === 'text') {
+      var tsh = ss.getSheetByName('Text');
+      var row = Number(ch.row);
+      if (!(row >= 2) || String(tsh.getRange(row, 1).getValue()).trim() !== String(ch.key)) { errors.push('The text "' + ch.key + '" moved in the sheet. Reload the page and try again.'); return; }
+      plan.push(function () { tsh.getRange(row, 3, 1, 2).setValues([[safeCell_(ch.en), safeCell_(ch.ar)]]); });
+    } else if (ch.type === 'setting') {
+      var def = ADMIN_SETTINGS.filter(function (x) { return x[0] === ch.name; })[0];
+      if (!def) { errors.push('Unknown setting "' + ch.name + '".'); return; }
+      var v = String(ch.value == null ? '' : ch.value).trim();
+      if (def[0] === 'Instagram handle') {
+        v = v.replace(/^@/, '');
+        if (!/^[A-Za-z0-9._]{1,30}$/.test(v)) { errors.push('The Instagram username can only have letters, numbers, dots and _.'); return; }
+        v = '@' + v;
+      }
+      var e = checkValue_(def[1], v, def[0], false);
+      if (e) { errors.push(e); return; }
+      plan.push(function () { setSetting_(def[0], safeCell_(v, 300)); });
+    } else if (ch.type === 'cell') {
+      var t = readTab_(String(ch.tab));
+      if (!t || TABLE_KEYS[t.name] === undefined) { errors.push('Unknown table.'); return; }
+      var r = Number(ch.row);
+      var current = t.rows.filter(function (x) { return x.row === r; })[0];
+      if (!current || (t.keyCol >= 0 && current.values[t.keyCol] !== String(ch.key))) { errors.push('"' + ch.key + '" moved in the sheet. Reload the page and try again.'); return; }
+      var vals = ch.values || {};
+      var bad = false;
+      Object.keys(vals).forEach(function (h) {
+        var col = t.headers.indexOf(h);
+        if (col === -1) { errors.push('Unknown column "' + h + '".'); bad = true; return; }
+        var err = checkValue_(t.kinds[col], vals[h], h, col === t.keyCol);
+        if (err) { errors.push((ch.key ? ch.key + ': ' : '') + err); bad = true; }
+      });
+      if (bad) return;
+      plan.push(function () {
+        var sh = ss.getSheetByName(t.name);
+        Object.keys(vals).forEach(function (h) {
+          var v2 = String(vals[h] == null ? '' : vals[h]).trim();
+          if (t.kinds[t.headers.indexOf(h)] === 'number') v2 = v2.replace(/,/g, '');
+          sh.getRange(r, t.headers.indexOf(h) + 1).setValue(safeCell_(v2));
+        });
+      });
+    } else errors.push('Change ' + (i + 1) + ' is not valid.');
+  });
+  if (errors.length) return { ok: false, error: 'check', messages: errors.slice(0, 10) };
+  plan.forEach(function (fn) { fn(); });
+  return { ok: true, saved: plan.length };
+}
+
+// Add, delete or move a row in a table tab. op: add | delete | up | down
+function adminRow_(d) {
+  var t = readTab_(String(d.tab));
+  if (!t || TABLE_KEYS[t.name] === undefined) return { ok: false, error: 'invalid' };
+  var sh = SpreadsheetApp.getActive().getSheetByName(t.name);
+  if (d.op === 'add') {
+    var vals = d.values || {};
+    var row = t.headers.map(function (h, i) {
+      var v = vals[h] == null ? '' : String(vals[h]).trim();
+      return v;
+    });
+    var errs = [];
+    t.headers.forEach(function (h, i) { var e = checkValue_(t.kinds[i], row[i], h, i === t.keyCol); if (e) errs.push(e); });
+    if (t.keyCol >= 0 && t.rows.some(function (x) { return x.values[t.keyCol] === row[t.keyCol]; })) errs.push('"' + row[t.keyCol] + '" already exists.');
+    if (errs.length) return { ok: false, error: 'check', messages: errs };
+    sh.appendRow(row.map(function (v) { return safeCell_(v); }));
+    return { ok: true };
+  }
+  var r = Number(d.row);
+  var current = t.rows.filter(function (x) { return x.row === r; })[0];
+  if (!current || (t.keyCol >= 0 && current.values[t.keyCol] !== String(d.key))) return { ok: false, error: 'check', messages: ['That row moved in the sheet. Reload the page and try again.'] };
+  if (d.op === 'delete') { sh.deleteRow(r); return { ok: true }; }
+  if (d.op === 'up' || d.op === 'down') {
+    var idx = t.rows.indexOf(current);
+    var other = t.rows[d.op === 'up' ? idx - 1 : idx + 1];
+    if (!other) return { ok: true };
+    var width = sh.getLastColumn();
+    var a = sh.getRange(r, 1, 1, width), b = sh.getRange(other.row, 1, 1, width);
+    var av = cellsOf_(a), bv = cellsOf_(b);
+    a.setValues(bv); b.setValues(av);
+    return { ok: true };
+  }
+  return { ok: false, error: 'invalid' };
+}
+
+// A range's cells, keeping formulas where there are any.
+function cellsOf_(range) {
+  var v = range.getValues(), f = range.getFormulas();
+  return v.map(function (row, i) { return row.map(function (x, j) { return f[i][j] || x; }); });
+}
+
+// ---------- Photos ----------
+function folderProp_(prop, name) {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty(prop);
+  if (id) { try { return DriveApp.getFolderById(id); } catch (err) { /* deleted: make a new one */ } }
+  var f = DriveApp.createFolder(name);
+  props.setProperty(prop, f.getId());
+  return f;
+}
+
+function adminUpload_(d) {
+  var ext = IMAGE_TYPES[d.mime];
+  if (!ext || typeof d.data !== 'string' || d.data.length > Math.ceil(MAX_UPLOAD_BYTES / 3) * 4 + 8) return { ok: false, error: 'check', messages: ['Photos only (JPG, PNG, WEBP), up to 10 MB.'] };
+  var bytes = Utilities.base64Decode(d.data);
+  if (!bytes.length || bytes.length > MAX_UPLOAD_BYTES || !looksLikeImage_(bytes, d.mime)) return { ok: false, error: 'check', messages: ['That file is not a photo.'] };
+  var name = String(d.name || 'photo').replace(/[^\w.\- ]+/g, '').slice(0, 60) || 'photo';
+  var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd_HHmm');
+  var file = folderProp_('PHOTOS_FOLDER_ID', PHOTOS_FOLDER_NAME).createFile(Utilities.newBlob(bytes, d.mime, stamp + '_' + name.replace(/\.\w+$/, '') + '.' + ext));
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return { ok: true, link: 'https://drive.google.com/file/d/' + file.getId() + '/view' };
+}
+
+// ---------- Publish, versions, restore ----------
+function snapshotTabs_() {
+  var ss = SpreadsheetApp.getActive();
+  var tabs = {};
+  CONTENT_TABS.forEach(function (n) {
+    var sh = ss.getSheetByName(n);
+    if (!sh || sh.getLastRow() < 1) return;
+    tabs[n] = cellsOf_(sh.getDataRange());
+  });
+  return tabs;
+}
+
+function saveVersion_(label, content) {
+  var now = new Date();
+  var when = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+  var data = { when: when, label: label || '', content: content, tabs: snapshotTabs_() };
+  var file = folderProp_('VERSIONS_FOLDER_ID', VERSIONS_FOLDER_NAME)
+    .createFile('Version ' + Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy-MM-dd HH-mm-ss') + (label ? ' - ' + String(label).replace(/[^\w ]+/g, '').slice(0, 40) : '') + '.json',
+      JSON.stringify(data), 'application/json');
+  return { id: file.getId(), when: when };
+}
+
+function writePublished_(content) {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('PUBLISHED_FILE_ID');
+  var text = JSON.stringify(content);
+  var file = null;
+  if (id) { try { file = DriveApp.getFileById(id); file.setContent(text); } catch (err) { file = null; } }
+  if (!file) {
+    file = folderProp_('VERSIONS_FOLDER_ID', VERSIONS_FOLDER_NAME).createFile('LIVE - what the website shows (do not delete).json', text, 'application/json');
+    props.setProperty('PUBLISHED_FILE_ID', file.getId());
+  }
+  props.setProperty('PUBLISHED_AT', Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm'));
+  clearContentCache_();
+}
+
+function readPublished_() {
+  var id = PropertiesService.getScriptProperties().getProperty('PUBLISHED_FILE_ID');
+  if (!id) return null;
+  try { return JSON.parse(DriveApp.getFileById(id).getBlob().getDataAsString()); } catch (err) { console.error(err); return null; }
+}
+
+function adminPublish_(label) {
+  var content = buildContent_();
+  if (!content.text || !Object.keys(content.text).length) return { ok: false, error: 'check', messages: ['The Text tab looks empty, so nothing was published.'] };
+  var v = saveVersion_(label || 'Published', content);
+  writePublished_(content);
+  return { ok: true, when: v.when };
+}
+
+function adminVersions_() {
+  var folder = folderProp_('VERSIONS_FOLDER_ID', VERSIONS_FOLDER_NAME);
+  var files = [], it = folder.getFilesByType('application/json');
+  while (it.hasNext()) {
+    var f = it.next();
+    if (/^Version /.test(f.getName())) files.push({ id: f.getId(), name: f.getName().replace(/^Version /, '').replace(/\.json$/, ''), t: f.getDateCreated().getTime() });
+  }
+  files.sort(function (a, b) { return b.t - a.t; });
+  return { ok: true, versions: files.slice(0, 40), published: PropertiesService.getScriptProperties().getProperty('PUBLISHED_AT') || '' };
+}
+
+// Puts an older version back: the sheet tabs AND the website. The current state is saved first, so this can be undone.
+function adminRestore_(id) {
+  if (!/^[\w-]{20,}$/.test(id)) return { ok: false, error: 'invalid' };
+  var data;
+  try {
+    var f = DriveApp.getFileById(id);
+    if (!/^Version /.test(f.getName())) return { ok: false, error: 'invalid' };
+    data = JSON.parse(f.getBlob().getDataAsString());
+  } catch (err) { return { ok: false, error: 'invalid' }; }
+  if (!data || !data.content || !data.tabs) return { ok: false, error: 'invalid' };
+  saveVersion_('Before restoring ' + data.when, buildContent_());
+  var ss = SpreadsheetApp.getActive();
+  Object.keys(data.tabs).forEach(function (n) {
+    if (CONTENT_TABS.indexOf(n) === -1) return;
+    var cells = data.tabs[n];
+    if (!cells.length || !cells[0].length) return;
+    var sh = ss.getSheetByName(n) || ss.insertSheet(n);
+    sh.getRange(1, 1, Math.max(sh.getLastRow(), cells.length), Math.max(sh.getLastColumn(), cells[0].length)).clearContent();
+    sh.getRange(1, 1, cells.length, cells[0].length).setValues(cells);
+  });
+  writePublished_(data.content);
+  return { ok: true, when: data.when };
+}
+
+// ---------- Orders ----------
+function adminOrders_() {
+  var sh = ordersSheet_();
+  if (sh.getLastRow() < 2) return { ok: true, orders: [], statuses: ADMIN_STATUSES };
+  var m = colMap_(sh);
+  var first = Math.max(2, sh.getLastRow() - 199);
+  var rows = sh.getRange(first, 1, sh.getLastRow() - first + 1, sh.getLastColumn()).getValues();
+  var tz = Session.getScriptTimeZone();
+  var get = function (r, h) { return m[h] === undefined ? '' : r[m[h]]; };
+  var orders = rows.filter(function (r) { return r[m['Order code']]; }).map(function (r) {
+    var when = get(r, 'Received');
+    return {
+      code: get(r, 'Order code'), received: when instanceof Date ? Utilities.formatDate(when, tz, 'yyyy-MM-dd HH:mm') : String(when),
+      status: get(r, 'Status'), name: get(r, 'Name'), phone: String(get(r, 'Phone')).replace(/^'/, ''), instagram: get(r, 'Instagram'),
+      city: [get(r, 'Governorate'), get(r, 'Area')].filter(String).join(', '),
+      items: get(r, 'Items') || [get(r, 'Tier'), get(r, 'Design')].filter(String).join(' · '),
+      total: get(r, 'Estimated total'), deposit: get(r, 'Deposit')
+    };
+  }).reverse();
+  return { ok: true, orders: orders, statuses: ADMIN_STATUSES };
+}
+
+function adminStatus_(code, status) {
+  if (STATUSES.indexOf(status) === -1) return { ok: false, error: 'invalid' };
+  var sh = ordersSheet_();
+  var r = findOrderRow_(sh, code);
+  if (r < 2) return { ok: false, error: 'check', messages: ['Order ' + code + ' was not found.'] };
+  sh.getRange(r, colMap_(sh)['Status'] + 1).setValue(status);
+  applyStatus_(sh, r); // same emails and dates as changing it in the sheet
+  return { ok: true };
 }
