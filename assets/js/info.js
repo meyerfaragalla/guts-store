@@ -95,6 +95,7 @@
   function renderAbout(c) {
     var spot = (c.videos || {})["about-photo"];
     var src = spot && GD.driveImage(spot.photo, 1400);
+    $("about-photo").classList.toggle("has-img", !!src);
     $("about-photo").innerHTML = src
       ? '<img src="' + esc(src) + '" alt="' + esc(GD.tx("about2.photoAlt")) + '">'
       : '<span class="about-ph" aria-hidden="true"><span class="gd-mark">GD</span></span>';
